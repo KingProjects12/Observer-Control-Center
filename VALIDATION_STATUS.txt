@@ -1,0 +1,17 @@
+Observer Control Center v2.0.2-preview.1
+
+Verified in current Linux artifact environment:
+- all six WPF XAML documents parse as XML;
+- XAML Click/Loaded/MouseLeftButtonDown/TextChanged event handlers exist;
+- update UI source and host/repository lock changes present;
+- no obvious corporate/private IPv4 address in source/docs (excluding intentionally generic scanner patterns);
+- both GitHub Actions pipelines run PublicSourceAudit.ps1;
+- package ZIP integrity and expected source files will be verified during packaging.
+
+NOT verified here:
+- dotnet build / dotnet test against .NET 10 SDK (not available in this environment);
+- actual Windows GUI operation / island rendering / notifications;
+- actual GitHub release response and user acceptance;
+- real live Keenetic API collection (not yet ported to WPF branch).
+
+Before public release: run tests + dotnet build + publish on Windows, review full git history/credentials/assets, and choose a license.

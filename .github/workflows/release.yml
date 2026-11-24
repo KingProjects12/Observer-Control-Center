@@ -33,7 +33,7 @@ jobs:
           if (!(Test-Path $exe)) { throw "EXE missing" }
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Observer.ControlCenter.exe" | Set-Content -Path "$exe.sha256" -Encoding ascii
-      - name: Publish GitHub Release
+      - name: Publish GitHub Release (stable or preview)
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

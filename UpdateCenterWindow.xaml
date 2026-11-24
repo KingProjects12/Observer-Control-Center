@@ -1,0 +1,65 @@
+<Window x:Class="Observer.ControlCenter.UpdateCenterWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="Observer · Обновления" Width="690" Height="610" MinWidth="620" MinHeight="540"
+ WindowStartupLocation="CenterOwner" Background="#0B1724" Foreground="#EAF4FA"
+ ResizeMode="CanResize" WindowStyle="SingleBorderWindow" FontFamily="Segoe UI">
+ <Window.Resources>
+  <Style TargetType="Button">
+   <Setter Property="Background" Value="#17364B"/>
+   <Setter Property="Foreground" Value="#E9F7FD"/>
+   <Setter Property="Padding" Value="14,9"/>
+   <Setter Property="Margin" Value="0,0,9,0"/>
+   <Setter Property="BorderBrush" Value="#286880"/>
+   <Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="Cursor" Value="Hand"/>
+  </Style>
+  <Style TargetType="TextBox">
+   <Setter Property="Background" Value="#102639"/>
+   <Setter Property="Foreground" Value="White"/>
+   <Setter Property="BorderBrush" Value="#327A8A"/>
+   <Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="Padding" Value="11,8"/>
+   <Setter Property="FontSize" Value="13"/>
+  </Style>
+ </Window.Resources>
+ <Grid Margin="26,20">
+  <Grid.RowDefinitions>
+   <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+   <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+  </Grid.RowDefinitions>
+  <StackPanel Grid.Row="0" Margin="0,0,0,18">
+   <TextBlock Text="OBSERVER   //   RELEASE CENTER" Foreground="#45DFE7" FontWeight="Bold" FontSize="19"/>
+   <TextBlock x:Name="InstalledVersion" Foreground="#91B2C7" Margin="0,5,0,0"/>
+  </StackPanel>
+  <Border Grid.Row="1" Padding="16" Background="#102D40" CornerRadius="13" BorderBrush="#28647A" BorderThickness="1" Margin="0,0,0,14">
+   <StackPanel>
+    <TextBlock Text="ИСТОЧНИК ОБНОВЛЕНИЙ · GitHub Releases" FontSize="11" Foreground="#93BFD0"/>
+    <TextBox x:Name="RepoBox" Margin="0,7,0,9" ToolTip="owner/repo, например example/observer"/>
+    <DockPanel LastChildFill="False">
+     <CheckBox DockPanel.Dock="Left" x:Name="AutoCheckBox" Content="Проверять при запуске и каждые 6 часов" VerticalAlignment="Center" Foreground="#E4F2F6"/>
+     <Button DockPanel.Dock="Right" Content="СОХРАНИТЬ" HorizontalAlignment="Right" Click="Save_Click"/>
+    </DockPanel>
+   </StackPanel>
+  </Border>
+  <Border Grid.Row="2" Background="#122435" BorderBrush="#256A79" BorderThickness="1" CornerRadius="12" Padding="15" Margin="0,0,0,12">
+   <StackPanel>
+    <TextBlock x:Name="StatusText" Text="Проверка обновлений" Foreground="#63E3D4" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+    <TextBlock Text="Обновления проверяются только при запущенной программе. Нет принудительного скачивания и установки." Foreground="#9CB5C8" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
+   </StackPanel>
+  </Border>
+  <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,9">
+   <Button x:Name="CheckButton" Content="↻  ПРОВЕРИТЬ СЕЙЧАС" Click="Check_Click"/>
+   <Button Content="ОТКРЫТЬ GITHUB RELEASES" Click="Open_Click"/>
+   <Button x:Name="DismissButton" Content="НЕ НАПОМИНАТЬ ОБ ЭТОЙ ВЕРСИИ" Click="Dismiss_Click" Visibility="Collapsed"/>
+  </StackPanel>
+  <Border Grid.Row="4" Background="#0F1F2F" CornerRadius="12" BorderThickness="1" BorderBrush="#234C62" Padding="15">
+   <DockPanel>
+    <TextBlock DockPanel.Dock="Top" Text="ЧТО НОВОГО" Foreground="#48D9E5" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><TextBlock x:Name="ReleaseNotes" Text="Список изменений появится после проверки." TextWrapping="Wrap" FontSize="12" Foreground="#C3D9E8"/></ScrollViewer>
+   </DockPanel>
+  </Border>
+  <TextBlock Grid.Row="5" Margin="0,13,0,0" FontSize="10" Foreground="#7E9FB4" TextWrapping="Wrap"
+   Text="Для портативной Single-File версии установка не запускается автоматически: скачайте официальный релиз и замените EXE после закрытия программы."/>
+ </Grid>
+</Window>

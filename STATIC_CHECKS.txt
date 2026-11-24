@@ -1,0 +1,10 @@
+Observer 2.0.1 GitHub Updates static verification
+Files: 30
+XAML files: 5 valid XML
+XAML event handlers: 25 referenced and found in C# files
+GitHub repo can be embedded on release build: yes
+No checked private network addresses in public source: yes
+No binary downloaded or executed by updater: yes
+Native Windows / WPF build: NOT RUN (no .NET 10 SDK in this environment)
+Tests: Tests/Observer.UpdateTests.csproj included for Windows SDK; NOT EXECUTED locally
+License: choose before publication; derived Atoll code not bundled

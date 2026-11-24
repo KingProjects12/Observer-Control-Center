@@ -1,0 +1,39 @@
+<Window x:Class="Observer.ControlCenter.UpdateNoticeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Observer — обновление"
+        Width="392" Height="154" ResizeMode="NoResize" WindowStyle="None"
+        AllowsTransparency="True" Background="Transparent" Topmost="True"
+        ShowInTaskbar="False" ShowActivated="False">
+  <Border Margin="8" CornerRadius="14" Background="#101E2B"
+          BorderBrush="#436777" BorderThickness="1" Padding="17">
+    <Border.Effect>
+      <DropShadowEffect Color="#000000" BlurRadius="16" ShadowDepth="4" Opacity="0.65"/>
+    </Border.Effect>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <DockPanel Grid.Row="0" LastChildFill="True">
+        <Button DockPanel.Dock="Right" Content="×" Width="24" Height="24"
+                FontSize="15" Foreground="#B2C9D7" Background="Transparent"
+                BorderThickness="0" Cursor="Hand" ToolTip="Закрыть уведомление"
+                Click="Close_Click"/>
+        <TextBlock Text="OBSERVER  /  ОБНОВЛЕНИЕ" FontWeight="Bold" FontSize="12" Foreground="#5EE4D8" VerticalAlignment="Center"/>
+      </DockPanel>
+      <TextBlock Grid.Row="1" x:Name="VersionText" Text="Доступна новая версия"
+                 Foreground="#F0F8FD" FontSize="15" FontWeight="SemiBold"
+                 VerticalAlignment="Center" TextWrapping="Wrap"/>
+      <StackPanel Grid.Row="2" Orientation="Horizontal">
+        <Button Content="ПОСМОТРЕТЬ ИЗМЕНЕНИЯ" Padding="12,7" Background="#164E58"
+                Foreground="#E5F8F6" BorderBrush="#2D8991" BorderThickness="1"
+                Cursor="Hand" Click="Open_Click"/>
+        <Button Content="ПОЗЖЕ" Padding="12,7" Margin="8,0,0,0"
+                Foreground="#BDCDD8" Background="#192734" BorderBrush="#304555"
+                BorderThickness="1" Cursor="Hand" Click="Close_Click"/>
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>
