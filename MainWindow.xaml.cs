@@ -31,7 +31,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         TrafficGrid.ItemsSource = _devices;
         TopBars.ItemsSource = _bars;
-        AddLog("OBSERVER 2.0.4 PREVIEW  //  WPF / .NET 10 / GitHub release notices");
+        AddLog("OBSERVER 2.0.5 PREVIEW  //  WPF / .NET 10 / GitHub release notices");
         AddLog("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials");
         ShowPage("overview");
         StartUpdateChecks();
