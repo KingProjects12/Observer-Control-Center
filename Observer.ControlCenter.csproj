@@ -10,6 +10,7 @@
     <Version>2.0.4-preview.1</Version>
     <ObserverUpdateRepo Condition="'$(ObserverUpdateRepo)' == ''"></ObserverUpdateRepo>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\ObserverApp.ico</ApplicationIcon>
     <!-- Single-EXE settings are passed by Publish-SingleExe.ps1; don't force them for Debug. -->
   </PropertyGroup>
   <ItemGroup>
@@ -22,4 +23,8 @@
   <ItemGroup>
     <Resource Include="Assets\ObserverEye.png" />
   </ItemGroup>
+  <!-- Generate the Windows shell/taskbar icon before the WPF build. No external tooling. -->
+  <Target Name="GenerateObserverAppIcon" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\Generate-AppIcon.ps1&quot; -Source &quot;$(MSBuildProjectDirectory)\Assets\ObserverEye.png&quot; -Target &quot;$(MSBuildProjectDirectory)\Assets\ObserverApp.ico&quot;" />
+  </Target>
 </Project>
