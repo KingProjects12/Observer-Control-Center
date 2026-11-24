@@ -77,7 +77,9 @@ jobs:
           }
           $flags = @()
           if ($tag.Contains('-')) { $flags += '--prerelease' }
+          $installer = Get-ChildItem 'dist/Observer-Control-Center-Setup-*.exe' | Select-Object -First 1
+          if (!$installer) { throw 'Installer for release not found' }
           gh release create $tag "dist/Observer.ControlCenter.exe" "dist/Observer.ControlCenter.exe.sha256" `
-            "dist/Observer-Control-Center-Setup-*.exe" "dist/Observer-Control-Center-Setup-*.exe.sha256" `
+            $installer.FullName "$($installer.FullName).sha256" `
             --target $env:GITHUB_SHA --title "Observer $tag" --generate-notes @flags
           if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
