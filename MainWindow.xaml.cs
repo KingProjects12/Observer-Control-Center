@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Microsoft.Win32;
 using Observer.ControlCenter.Models;
 using Observer.ControlCenter.Services;
@@ -112,6 +113,38 @@ public partial class MainWindow : Window
             PageTitle.Text = page == "traffic" ? "TOP TRAFFIC / NETWORK ANALYTICS" : "ОБЗОР СЕТИ";
             TableTitle.Text = "ТОП ПОТРЕБИТЕЛЕЙ";
             TableHint.Text = "Объём за выбранное окно монитора Keenetic";
+        }
+        AnimateWorkspacePage();
+    }
+
+    // Short, unobtrusive page transition; no delays or blocking of networking/UI commands.
+    // Kept separate from the island Show/Hide transition to prevent stale animation clocks.
+    private void AnimateWorkspacePage()
+    {
+        if (!IsLoaded || !SystemParameters.ClientAreaAnimation) return;
+        WorkspacePanel.BeginAnimation(OpacityProperty, null);
+        WorkspacePanel.Opacity = 1;
+        WorkspacePanel.BeginAnimation(OpacityProperty, new DoubleAnimation
+        {
+            From = 0.78,
+            To = 1.0,
+            Duration = TimeSpan.FromMilliseconds(190),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            FillBehavior = FillBehavior.Stop
+        });
+
+        if (WorkspacePanel.RenderTransform is TranslateTransform offset)
+        {
+            offset.BeginAnimation(TranslateTransform.YProperty, null);
+            offset.Y = 0;
+            offset.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation
+            {
+                From = 8,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(220),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+                FillBehavior = FillBehavior.Stop
+            });
         }
     }
 
