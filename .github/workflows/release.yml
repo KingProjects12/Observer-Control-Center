@@ -1,0 +1,45 @@
+name: Publish Observer Windows EXE to GitHub Releases
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+permissions:
+  contents: write
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Public repository safety preflight
+        shell: pwsh
+        run: ./tools/PublicSourceAudit.ps1
+      - name: Offline version / release tests
+        shell: pwsh
+        run: dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
+      - name: Publish single self-contained EXE
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          dotnet publish Observer.ControlCenter.csproj -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true -p:PublishTrimmed=false `
+            -p:DebugType=None -p:DebugSymbols=false `
+            "-p:Version=$version" "-p:ObserverUpdateRepo=$env:GITHUB_REPOSITORY" -o dist
+          if ($LASTEXITCODE -ne 0) { throw "publish failed" }
+          $exe = 'dist/Observer.ControlCenter.exe'
+          if (!(Test-Path $exe)) { throw "EXE missing" }
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Observer.ControlCenter.exe" | Set-Content -Path "$exe.sha256" -Encoding ascii
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $flags = @()
+          if ($env:GITHUB_REF_NAME.Contains('-')) { $flags += '--prerelease' }
+          gh release create $env:GITHUB_REF_NAME "dist/Observer.ControlCenter.exe" "dist/Observer.ControlCenter.exe.sha256" `
+            --verify-tag --title "Observer $env:GITHUB_REF_NAME" --generate-notes @flags
+          if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
