@@ -1,4 +1,4 @@
-name: Windows build and offline updater tests
+name: Windows build, update tests and preview artifact
 on:
   push:
     branches: [main]
@@ -17,6 +17,34 @@ jobs:
         shell: pwsh
         run: ./tools/PublicSourceAudit.ps1
       - name: Offline update logic tests
+        shell: pwsh
         run: dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
       - name: Compile Windows WPF
+        shell: pwsh
         run: dotnet build Observer.ControlCenter.csproj --configuration Release
+      - name: Verify generated Windows ICO
+        shell: pwsh
+        run: |
+          $path = "Assets/ObserverApp.ico"
+          if (!(Test-Path $path)) { throw "ICO missing from build" }
+          $b = [System.IO.File]::ReadAllBytes((Resolve-Path $path))
+          if ($b.Length -lt 100 -or $b[0] -ne 0 -or $b[1] -ne 0 -or $b[2] -ne 1 -or $b[3] -ne 0) {
+            throw "Invalid Windows ICO header"
+          }
+          Write-Host "App icon OK ($($b.Length) bytes)"
+      - name: Publish self-contained preview EXE
+        shell: pwsh
+        run: |
+          dotnet publish Observer.ControlCenter.csproj -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true -p:PublishTrimmed=false `
+            -p:DebugType=None -p:DebugSymbols=false `
+            "-p:ObserverUpdateRepo=$env:GITHUB_REPOSITORY" -o dist
+          if ($LASTEXITCODE -ne 0) { throw "publish failed" }
+          if (!(Test-Path 'dist/Observer.ControlCenter.exe')) { throw "Missing preview EXE" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Observer-preview-win-x64
+          path: dist/Observer.ControlCenter.exe
+          if-no-files-found: error
+          retention-days: 7
