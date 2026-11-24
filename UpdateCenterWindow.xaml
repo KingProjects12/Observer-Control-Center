@@ -37,7 +37,7 @@
     <TextBlock Text="ИСТОЧНИК ОБНОВЛЕНИЙ · GitHub Releases" FontSize="11" Foreground="#93BFD0"/>
     <TextBox x:Name="RepoBox" Margin="0,7,0,9" ToolTip="owner/repo, например example/observer"/>
     <DockPanel LastChildFill="False">
-     <CheckBox DockPanel.Dock="Left" x:Name="AutoCheckBox" Content="Проверять при запуске и каждые 6 часов" VerticalAlignment="Center" Foreground="#E4F2F6"/>
+     <CheckBox DockPanel.Dock="Left" x:Name="AutoCheckBox" Content="Проверять при запуске и каждую минуту (тестовый режим)" VerticalAlignment="Center" Foreground="#E4F2F6"/>
      <Button DockPanel.Dock="Right" Content="СОХРАНИТЬ" HorizontalAlignment="Right" Click="Save_Click"/>
     </DockPanel>
    </StackPanel>
