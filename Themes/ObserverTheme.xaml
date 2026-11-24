@@ -62,6 +62,51 @@
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="Margin" Value="0,0,0,8"/>
     <Setter Property="Height" Value="43"/>
+    <Setter Property="RenderTransform">
+      <Setter.Value><TranslateTransform X="0"/></Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <EventTrigger RoutedEvent="MouseEnter">
+        <BeginStoryboard>
+          <Storyboard>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                             To="4" Duration="0:0:0.12"/>
+          </Storyboard>
+        </BeginStoryboard>
+      </EventTrigger>
+      <EventTrigger RoutedEvent="MouseLeave">
+        <BeginStoryboard>
+          <Storyboard>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                             To="0" Duration="0:0:0.16"/>
+          </Storyboard>
+        </BeginStoryboard>
+      </EventTrigger>
+    </Style.Triggers>
+  </Style>
+  <!-- Tiny lift effects for KPI panels, without reflow or layout jitter. -->
+  <Style x:Key="HoverCardBorder" TargetType="Border" BasedOn="{StaticResource CardBorder}">
+    <Setter Property="RenderTransform">
+      <Setter.Value><TranslateTransform Y="0"/></Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <EventTrigger RoutedEvent="MouseEnter">
+        <BeginStoryboard>
+          <Storyboard>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             To="-3" Duration="0:0:0.14"/>
+          </Storyboard>
+        </BeginStoryboard>
+      </EventTrigger>
+      <EventTrigger RoutedEvent="MouseLeave">
+        <BeginStoryboard>
+          <Storyboard>
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             To="0" Duration="0:0:0.18"/>
+          </Storyboard>
+        </BeginStoryboard>
+      </EventTrigger>
+    </Style.Triggers>
   </Style>
   <Style x:Key="TextInput" TargetType="TextBox">
     <Setter Property="Background" Value="#0B1825"/>
@@ -133,6 +178,9 @@
   <Style TargetType="DataGridRow">
     <Setter Property="BorderThickness" Value="0"/>
     <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="#1A3446"/>
+      </Trigger>
       <Trigger Property="IsSelected" Value="True">
         <Setter Property="Background" Value="#175265"/>
       </Trigger>
