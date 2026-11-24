@@ -18,6 +18,7 @@ namespace Observer.ControlCenter;
 public partial class MainWindow : Window
 {
     private readonly ObservableCollection<TrafficDevice> _devices = [];
+    private readonly ObservableCollection<ConsoleEntry> _consoleItems = [];
     private readonly ObservableCollection<TopBar> _bars = [];
     private MiniIslandWindow? _island;
     private DataTable? _connections;
@@ -29,9 +30,10 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        LogList.ItemsSource = _consoleItems;
         TrafficGrid.ItemsSource = _devices;
         TopBars.ItemsSource = _bars;
-        AddLog("OBSERVER 2.0.5 PREVIEW  //  WPF / .NET 10 / GitHub release notices");
+        AddLog("OBSERVER 2.0.7 PREVIEW  //  WPF / .NET 10 / GitHub release notices");
         AddLog("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials");
         ShowPage("overview");
         StartUpdateChecks();
@@ -47,9 +49,10 @@ public partial class MainWindow : Window
 
     private void AddLog(string message)
     {
-        LogList.Items.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-        while (LogList.Items.Count > 200) LogList.Items.RemoveAt(0);
-        if (LogList.Items.Count > 0) LogList.ScrollIntoView(LogList.Items[LogList.Items.Count - 1]);
+        var entry = new ConsoleEntry($"[{DateTime.Now:HH:mm:ss}] {message}", ConsoleEntry.Classify(message));
+        _consoleItems.Add(entry);
+        while (_consoleItems.Count > 300) _consoleItems.RemoveAt(0);
+        LogList.ScrollIntoView(entry);
         BottomStatus.Text = message;
     }
 
