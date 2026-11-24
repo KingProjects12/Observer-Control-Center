@@ -2,7 +2,7 @@
 
 Windows network monitoring and diagnostics console for system administrators. Built with C#, WPF and .NET 10.
 
-> **Current state: v2.0.4 preview.** The WPF application can display existing Observer CSV reports but is **not yet a live Keenetic collector**. The tested NAT / TOP TRAFFIC collector remains in Observer v1.9.1; migration is planned.
+> **Current state: v2.0.6 preview.** The WPF application can display existing Observer CSV reports but is **not yet a live Keenetic collector**. The tested NAT / TOP TRAFFIC collector remains in Observer v1.9.1; migration is planned.
 
 ## Current preview
 
@@ -10,7 +10,7 @@ Windows network monitoring and diagnostics console for system administrators. Bu
 - TOP TRAFFIC from existing CSV data, charts, device search
 - Import of existing network-connection CSV reports
 - Read-only TCP 80/443 diagnostics for an explicitly entered IP
-- GitHub release notifications (no silent downloads or auto-execution)
+- GitHub release notifications (temporary 1-minute polling while validating updates; automatic 30-minute backoff on GitHub HTTP 403/429; no silent downloads or auto-execution)
 
 ## Building on Windows
 
@@ -26,7 +26,7 @@ Self-contained Windows x64 executable: `dist\Observer.ControlCenter.exe`.
 
 For a local preview, configure the update source in the app as:
 `KingProjects12/Observer-Control-Center`.
-Official GitHub Actions release builds embed this source automatically.
+Official GitHub Actions preview and release builds embed this source automatically. For test versions, a successful CI run uploads a Windows EXE artifact; CI artifacts are not GitHub Releases and do not trigger update notices.
 
 ## Privacy and security
 
