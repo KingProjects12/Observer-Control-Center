@@ -76,6 +76,17 @@ public partial class MainWindow
                     AddLog($"NEW RELEASE  //  {discovered.Tag} · нажми ОБНОВЛЕНИЯ");
                     UpdateToastText.Text = $"Observer {discovered.Tag} доступен. Посмотреть изменения?";
                     UpdateToast.Visibility = Visibility.Visible;
+                    if (SystemParameters.ClientAreaAnimation)
+                    {
+                        UpdateToast.BeginAnimation(OpacityProperty, null);
+                        UpdateToast.Opacity = 1;
+                        UpdateToast.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation
+                        {
+                            From = 0.0, To = 1.0,
+                            Duration = TimeSpan.FromMilliseconds(210),
+                            FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop
+                        });
+                    }
                     ShowUpdateNotice(discovered);
                 }
             }

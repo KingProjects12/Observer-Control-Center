@@ -17,11 +17,16 @@ public partial class UpdateNoticeWindow : Window
         InitializeComponent();
         VersionText.Text = $"Доступна новая версия {version}";
         _openDetails = openDetails;
-        Loaded += (_, _) =>
+        Loaded += async (_, _) =>
         {
             var area = SystemParameters.WorkArea;
             Left = area.Right - Width - 14;
             Top = area.Bottom - Height - 14;
+            if (SystemParameters.ClientAreaAnimation)
+            {
+                Opacity = 0;
+                await WindowMotion.FadeAsync(this, 1, 230);
+            }
             _autoClose.Start();
         };
         _autoClose.Tick += (_, _) => Close();

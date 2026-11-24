@@ -3,8 +3,17 @@ on:
   push:
     tags:
       - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version, e.g. v2.0.5 (or v2.1.0-preview.1)'
+        required: true
+        type: string
 permissions:
   contents: write
+concurrency:
+  group: observer-release-${{ github.event.inputs.version || github.ref_name }}
+  cancel-in-progress: false
 jobs:
   windows-release:
     runs-on: windows-latest
@@ -13,33 +22,53 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Resolve and validate version
+        id: meta
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
+            '${{ github.event.inputs.version }}'
+          } else {
+            $env:GITHUB_REF_NAME
+          }
+          if ($tag -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$') {
+            throw "Invalid release tag: $tag"
+          }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          $version = $tag.Substring(1)
+          "version=$version" >> $env:GITHUB_OUTPUT
       - name: Public repository safety preflight
         shell: pwsh
         run: ./tools/PublicSourceAudit.ps1
-      - name: Offline version / release tests
+      - name: Offline update and SemVer tests
         shell: pwsh
         run: dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
-      - name: Publish single self-contained EXE
+      - name: Publish self-contained EXE with icon
         shell: pwsh
         run: |
-          $version = $env:GITHUB_REF_NAME -replace '^v', ''
           dotnet publish Observer.ControlCenter.csproj -c Release -r win-x64 --self-contained true `
             -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
             -p:EnableCompressionInSingleFile=true -p:PublishTrimmed=false `
             -p:DebugType=None -p:DebugSymbols=false `
-            "-p:Version=$version" "-p:ObserverUpdateRepo=$env:GITHUB_REPOSITORY" -o dist
+            "-p:Version=${{ steps.meta.outputs.version }}" "-p:ObserverUpdateRepo=$env:GITHUB_REPOSITORY" -o dist
           if ($LASTEXITCODE -ne 0) { throw "publish failed" }
           $exe = 'dist/Observer.ControlCenter.exe'
           if (!(Test-Path $exe)) { throw "EXE missing" }
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Observer.ControlCenter.exe" | Set-Content -Path "$exe.sha256" -Encoding ascii
-      - name: Publish GitHub Release (stable or preview)
+      - name: Create public release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          $tag = '${{ steps.meta.outputs.tag }}'
+          gh release view $tag --json tagName --jq .tagName *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release $tag already exists; nothing to overwrite."
+            exit 0
+          }
           $flags = @()
-          if ($env:GITHUB_REF_NAME.Contains('-')) { $flags += '--prerelease' }
-          gh release create $env:GITHUB_REF_NAME "dist/Observer.ControlCenter.exe" "dist/Observer.ControlCenter.exe.sha256" `
-            --verify-tag --title "Observer $env:GITHUB_REF_NAME" --generate-notes @flags
+          if ($tag.Contains('-')) { $flags += '--prerelease' }
+          gh release create $tag "dist/Observer.ControlCenter.exe" "dist/Observer.ControlCenter.exe.sha256" `
+            --target $env:GITHUB_SHA --title "Observer $tag" --generate-notes @flags
           if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }

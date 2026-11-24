@@ -22,3 +22,4 @@ dist/
 secrets.json
 **/update-settings.json
 # Publish examples only after stripping confidential addresses/names
+Assets/ObserverApp.ico

@@ -1,7 +1,7 @@
 <Window x:Class="Observer.ControlCenter.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Observer Control Center — Preview" Width="1450" Height="900"
+        Icon="/Assets/ObserverEye.png" Title="Observer Control Center — Preview" Width="1450" Height="900"
         MinWidth="1040" MinHeight="675" WindowStartupLocation="CenterScreen"
         WindowStyle="None" ResizeMode="CanResize" Opacity="0" Background="#09111D"
         Foreground="{StaticResource TextMain}" FontFamily="Segoe UI" Loaded="Window_Loaded">
@@ -41,7 +41,7 @@
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="OBSERVER" FontSize="27" FontWeight="Bold" Foreground="#F5FCFF"/>
           <TextBlock Text="  //  CONTROL CENTER" Margin="0,8,0,0" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" FontSize="17"/>
-          <TextBlock Text="  v2.0.4 ISLAND MOTION" Margin="14,12,0,0" Foreground="{StaticResource TextSecondary}" FontSize="10"/>
+          <TextBlock Text="  v2.0.5 UI POLISH" Margin="14,12,0,0" Foreground="{StaticResource TextSecondary}" FontSize="10"/>
         </StackPanel>
         <TextBlock Text="WHO  →  WHERE  →  WHEN      /      NETWORK ANALYTICS" FontSize="10" Foreground="#92B0C3" Margin="0,4,0,0"/>
       </StackPanel>
@@ -59,7 +59,8 @@
   </Border>
 
   <!-- Navigation and workspace -->
-  <Grid Grid.Row="1" Margin="13,13,13,10">
+  <Grid x:Name="WorkspacePanel" Grid.Row="1" Margin="13,13,13,10">
+    <Grid.RenderTransform><TranslateTransform Y="0"/></Grid.RenderTransform>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="218"/>
       <ColumnDefinition Width="13"/>
@@ -125,16 +126,16 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="0" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="УСТРОЙСТВА" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiDevices" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="2" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="ТРАФИК / ОКНО" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiTraffic" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="4" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="4" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="УЧТЕНО АКТИВНЫХ" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiActive" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="6" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="6" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="ИСТОЧНИК" Style="{StaticResource LabelSmall}"/><TextBlock Text="CSV" Foreground="{DynamicResource Accent}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
         </Border>
       </Grid>
@@ -221,7 +222,7 @@
     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
     <TextBlock x:Name="BottomStatus" Text="READY // Откройте экспорт v1.9.1 или импортируйте CSV" VerticalAlignment="Center"
                Foreground="#74C6CA" FontSize="11" Margin="18,0,0,0"/>
-    <TextBlock Grid.Column="1" Text="OBSERVER 2.0.4 PREVIEW  •  AUTHORIZED NETWORKS ONLY" Foreground="#6D91A5" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
+    <TextBlock Grid.Column="1" Text="OBSERVER 2.0.5 PREVIEW  •  AUTHORIZED NETWORKS ONLY" Foreground="#6D91A5" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
   </Grid>
  </Grid>
  </Border>
