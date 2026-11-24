@@ -1,0 +1,22 @@
+name: Windows build and offline updater tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Public repository safety preflight
+        shell: pwsh
+        run: ./tools/PublicSourceAudit.ps1
+      - name: Offline update logic tests
+        run: dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
+      - name: Compile Windows WPF
+        run: dotnet build Observer.ControlCenter.csproj --configuration Release
