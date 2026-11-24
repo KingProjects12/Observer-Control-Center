@@ -13,9 +13,9 @@ if ((Test-Path -LiteralPath $Target) -and
 
 $image = [System.Drawing.Image]::FromFile($Source)
 try {
-    $pictures = New-Object 'System.Collections.Generic.List[byte[]]'
+    $pictures = [System.Collections.Generic.List[byte[]]]::new()
     foreach ($size in @(16,32,48,256)) {
-        $bitmap = New-Object System.Drawing.Bitmap($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+        $bitmap = [System.Drawing.Bitmap]::new($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
         try {
             $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
             try {
@@ -30,7 +30,7 @@ try {
                 $graphics.DrawImage($image, $left, $top, $drawW, $drawH)
             }
             finally { $graphics.Dispose() }
-            $stream = New-Object System.IO.MemoryStream
+            $stream = [System.IO.MemoryStream]::new()
             try {
                 $bitmap.Save($stream, [System.Drawing.Imaging.ImageFormat]::Png)
                 $pictures.Add([byte[]]$stream.ToArray())
@@ -44,7 +44,7 @@ try {
     [System.IO.Directory]::CreateDirectory($targetDir) | Out-Null
     $file = [System.IO.File]::Create($Target)
     try {
-        $writer = New-Object System.IO.BinaryWriter($file)
+        $writer = [System.IO.BinaryWriter]::new($file)
         try {
             $writer.Write([uint16]0)   # reserved
             $writer.Write([uint16]1)   # icon
