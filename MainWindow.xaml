@@ -126,16 +126,16 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="0" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="УСТРОЙСТВА" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiDevices" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="2" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="ТРАФИК / ОКНО" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiTraffic" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="4" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="4" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="УЧТЕНО АКТИВНЫХ" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiActive" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="6" Style="{StaticResource CardBorder}" Padding="15,11">
+        <Border Grid.Column="6" Style="{StaticResource HoverCardBorder}" Padding="15,11">
           <StackPanel><TextBlock Text="ИСТОЧНИК" Style="{StaticResource LabelSmall}"/><TextBlock Text="CSV" Foreground="{DynamicResource Accent}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
         </Border>
       </Grid>
