@@ -44,4 +44,9 @@ Assert(GitHubReleaseClient.ParseLatest(Json("v2.1.0", draft: true), "example/obs
 Assert(UpdateSettingsStore.ResolveRepository("attacker/repo", "owner/observer") == "owner/observer", "embedded repository wins");
 Assert(UpdateSettingsStore.ResolveRepository("owner/custom", "") == "owner/custom", "local preview may select repository");
 Assert(UpdateSettingsStore.ResolveRepository("invalid/slash/slug", "") == "", "invalid repository ignored");
+Assert(UpdatePollingPolicy.TestInterval == TimeSpan.FromMinutes(1), "testing interval is exactly one minute");
+Assert(UpdatePollingPolicy.RateLimitCooldown == TimeSpan.FromMinutes(30), "rate limit cooldown is thirty minutes");
+var blockedAt = DateTimeOffset.Parse("2026-11-25T00:00:00Z");
+Assert(UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(1), blockedAt.AddMinutes(30)), "rate limited checks are skipped");
+Assert(!UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(30), blockedAt.AddMinutes(30)), "checks resume when cooldown ends");
 Console.WriteLine($"ALL {passed} UPDATE CHECKS PASSED");

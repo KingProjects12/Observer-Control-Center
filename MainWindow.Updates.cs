@@ -12,7 +12,8 @@ public partial class MainWindow
 {
     private readonly UpdateSettings _updateSettings = UpdateSettingsStore.Load();
     private readonly CancellationTokenSource _updateShutdown = new();
-    private readonly DispatcherTimer _updateTimer = new() { Interval = TimeSpan.FromHours(6) };
+    private readonly DispatcherTimer _updateTimer = new() { Interval = UpdatePollingPolicy.TestInterval };
+    private DateTimeOffset _updatesBlockedUntilUtc = DateTimeOffset.MinValue;
     private bool _updateCheckBusy;
     private GitHubRelease? _latestRelease;
     private UpdateCenterWindow? _updateCenter;
@@ -30,7 +31,7 @@ public partial class MainWindow
         if (GitHubReleaseClient.IsValidRepository(_updateSettings.Repository))
             _updateMessage = "Источник обновлений: " + _updateSettings.Repository;
         _updateTimer.Tick += async (_, _) => await CheckUpdatesAsync(manual: false);
-        _updateTimer.Start();
+        // Start the timer after the initial delayed check to avoid two requests in the first minute.
         _ = CheckShortlyAfterStartAsync();
         RefreshUpdateBanner();
     }
@@ -43,6 +44,11 @@ public partial class MainWindow
             await CheckUpdatesAsync(manual: false);
         }
         catch (OperationCanceledException) when (_updateShutdown.IsCancellationRequested) { }
+        finally
+        {
+            if (!_updateShutdown.IsCancellationRequested)
+                _updateTimer.Start();
+        }
     }
 
     internal async Task<GitHubRelease?> CheckUpdatesAsync(bool manual)
@@ -55,6 +61,13 @@ public partial class MainWindow
             return null;
         }
         if (_updateCheckBusy) return _latestRelease;
+        if (UpdatePollingPolicy.IsThrottled(DateTimeOffset.UtcNow, _updatesBlockedUntilUtc))
+        {
+            _updateMessage = $"GitHub временно ограничил запросы. Следующая попытка после {_updatesBlockedUntilUtc.ToLocalTime():HH:mm}.";
+            if (manual) AddLog("UPDATES  //  GitHub API rate-limit cooldown is active");
+            RefreshUpdateBanner();
+            return _latestRelease;
+        }
         _updateCheckBusy = true;
         try
         {
@@ -94,10 +107,15 @@ public partial class MainWindow
         catch (OperationCanceledException) when (_updateShutdown.IsCancellationRequested) { }
         catch (HttpRequestException e)
         {
+            // The public GitHub API may limit unauthenticated clients to ~60 requests/hour.
+            // Poll every minute during testing, but stop if GitHub returns HTTP 403 or 429.
+            bool limited = e.StatusCode == HttpStatusCode.Forbidden || (int?)e.StatusCode == 429;
+            if (limited)
+                _updatesBlockedUntilUtc = DateTimeOffset.UtcNow + UpdatePollingPolicy.RateLimitCooldown;
             _updateMessage = e.StatusCode == HttpStatusCode.NotFound
                 ? "GitHub не нашёл опубликованный стабильный Release (HTTP 404)."
                 : e.StatusCode == HttpStatusCode.Forbidden || (int?)e.StatusCode == 429
-                ? "GitHub отклонил запрос или исчерпан лимит проверок. Повтори позже."
+                ? "GitHub отклонил запрос или исчерпан лимит. Автоматические проверки приостановлены на 30 минут."
                 : "GitHub временно недоступен. Проверь сеть и повтори позже.";
             if (manual) AddLog($"UPDATES ERROR  //  HTTP {e.StatusCode?.ToString() ?? "network"}");
         }

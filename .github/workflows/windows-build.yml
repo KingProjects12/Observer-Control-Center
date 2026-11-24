@@ -47,4 +47,4 @@ jobs:
           name: Observer-preview-win-x64
           path: dist/Observer.ControlCenter.exe
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
