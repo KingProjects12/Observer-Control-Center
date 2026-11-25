@@ -219,7 +219,7 @@
   <!-- Non-blocking in-app update notification; app must be running. -->
   <Border x:Name="UpdateToast" Grid.Row="1" Panel.ZIndex="15" Visibility="Collapsed"
           Width="390" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,20,0"
-          Padding="17" CornerRadius="14" BorderThickness="1" BorderBrush="#48A6AF" Background="#102E3F">
+          Padding="17" CornerRadius="14" BorderThickness="1" BorderBrush="#48A6AF" Background="#BD102E3F">
     <Border.Effect><DropShadowEffect Color="#000000" BlurRadius="18" ShadowDepth="7" Opacity="0.6"/></Border.Effect>
     <StackPanel>
       <TextBlock Text="●  НОВАЯ ВЕРСИЯ OBSERVER" FontWeight="Bold" Foreground="#5FE7DD" FontSize="12"/>
