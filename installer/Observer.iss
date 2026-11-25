@@ -1,7 +1,7 @@
 ; Observer Control Center — per-user Windows installer.
 ; Unsigned preview installers may still trigger Microsoft SmartScreen.
 #ifndef MyAppVersion
-  #define MyAppVersion "2.1.1"
+  #define MyAppVersion "2.1.2"
 #endif
 
 #define AppName "Observer Control Center"

@@ -4,12 +4,17 @@ using Observer.ControlCenter.Services;
 namespace Observer.ControlCenter;
 public partial class MainWindow
 {
-    private void AccessAnalyzer_Click(object sender,RoutedEventArgs e)=>new AccessAnalyzerWindow(_reportPath.Length>0&&Path.GetFileName(_reportPath).StartsWith("07_Office_To_Connections",StringComparison.OrdinalIgnoreCase)?_reportPath:null){Owner=this}.ShowDialog();
+    private void AccessAnalyzer_Click(object sender,RoutedEventArgs e)
+    {
+        using var selected=BeginNavigationAction(NavAccess);
+        new AccessAnalyzerWindow(_reportPath.Length>0&&Path.GetFileName(_reportPath).StartsWith("07_Office_To_Connections",StringComparison.OrdinalIgnoreCase)?_reportPath:null){Owner=this}.ShowDialog();
+    }
     private void LegacyCollect_Click(object sender,RoutedEventArgs e)=>OpenLegacyCollector();
     private void LegacyVpn_Click(object sender,RoutedEventArgs e)=>OpenLegacyCollector(vpn:true);
     private void LegacyTraffic_Click(object sender,RoutedEventArgs e)=>OpenLegacyCollector(traffic:true);
     private void OpenLegacyCollector(bool vpn=false,bool traffic=false)
     {
+        using var selected=BeginNavigationAction(vpn?NavVpn:traffic?NavCollectTraffic:NavNat);
         var window=new LegacyCollectorWindow(RouterIP.Text.Trim(),vpn,traffic){Owner=this};
         window.ShowDialog();RouterIP.Text=window.Address;
         if(window.SelectedCsv is not { } path)return;
@@ -33,6 +38,9 @@ public partial class MainWindow
         Group("SYSTEM","СИСТЕМА");
         Item("Updates","Обновления",Updates_Click);
         Item("Guide / F1","Справка / F1",Help_Click);
-        menu.IsOpen=true;
+        var selected=BeginNavigationAction(NavTools);
+        menu.Closed+=(_,_)=>selected.Dispose();
+        try { menu.IsOpen=true; }
+        catch { selected.Dispose(); throw; }
     }
 }

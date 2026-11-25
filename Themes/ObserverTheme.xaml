@@ -38,15 +38,16 @@
             <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalAlignment="Center" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"/>
           </Border>
-          <Border x:Name="SignalSelection" Visibility="{DynamicResource SignalOnly}" Opacity="0" BorderBrush="{DynamicResource Accent}" BorderThickness="1.5" CornerRadius="12" IsHitTestVisible="False">
+          <Border x:Name="SignalSelection" Opacity="0" BorderBrush="{DynamicResource Accent}" BorderThickness="1.5" CornerRadius="12" IsHitTestVisible="False">
             <Border.Effect><DropShadowEffect Color="#69DFFF" ShadowDepth="0" BlurRadius="10" Opacity="0.48"/></Border.Effect>
             <Border Background="{DynamicResource Accent}" Width="3" Height="18" CornerRadius="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="3,0,0,0"/>
           </Border>
           </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="Tag" Value="selected">
-              <Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="SignalSelection" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.20"/></Storyboard></BeginStoryboard></Trigger.EnterActions>
-              <Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="SignalSelection" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.14"/></Storyboard></BeginStoryboard></Trigger.ExitActions>
+              <Setter TargetName="SignalSelection" Property="Opacity" Value="1"/>
+              <Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="SignalSelection" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.20" FillBehavior="Stop"/></Storyboard></BeginStoryboard></Trigger.EnterActions>
+              <Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="SignalSelection" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:0.14" FillBehavior="Stop"/></Storyboard></BeginStoryboard></Trigger.ExitActions>
             </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
               <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/>

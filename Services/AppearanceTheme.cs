@@ -151,12 +151,13 @@ internal static class AppearanceTheme
     {
         var next=new ResourceDictionary();
         foreach(var (key,classic,alternate) in Colors) next[key]=BrushFor(signal?alternate:classic);
-        next["SignalOnly"]=signal?Visibility.Visible:Visibility.Collapsed;
-        next["NavSpacing"]=new Thickness(0,0,0,signal?9:5);
+        next["NavSpacing"]=new Thickness(0,0,0,9);
         next["CardGradient"]=signal?Gradient("#121B2B","#101827","#192338"):Gradient("#E912151A","#EE090B0E","#ED0D1014");
         next["HeaderGradient"]=signal?Gradient("#0B101A","#121B2B","#192338",.65):Gradient("#F510141A","#F707090D","#F5101015",.65);
         next["IslandGradient"]=signal?Gradient("#121B2B","#0B101A","#192338",.58):Gradient("#FC0B0D10","#FE060709","#FC101014",.58);
-        next["SignalHeroGradient"]=Gradient("#0B101A","#121B2B","#192338");
+        next["SignalHeroGradient"]=signal?Gradient("#0B101A","#121B2B","#192338"):Gradient("#F510141A","#F707090D","#F5101015");
+        next["BrandLine"]=BrushFor(signal?"#40536C":"#34515D");
+        next["BrandNode"]=BrushFor(signal?"#121B2B":"#080C12");
         foreach(int i in new[]{0,2,4,6})
             next["Kpi"+i+"Gradient"]=signal?(i%4==0?Gradient("#112B3D","#121B2B","#192338"):Gradient("#20213E","#121B2B","#252445")):next["CardGradient"];
         next["Accent"]=BrushFor(purple?(signal?"#B3A0FF":"#B392FF"):(signal?"#69DFFF":"#3DE7EA"));

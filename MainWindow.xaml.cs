@@ -124,9 +124,7 @@ public partial class MainWindow : Window
     private void ShowPage(string page)
     {
         _page = page;
-        NavOverview.Tag = page == "overview" ? "selected" : null;
-        NavTraffic.Tag = page == "traffic" ? "selected" : null;
-        NavConnections.Tag = page == "connections" ? "selected" : null;
+        RefreshNavigationSelection();
         bool showConnections = page == "connections";
         TrafficGrid.Visibility = showConnections ? Visibility.Collapsed : Visibility.Visible;
         ConnectionsGrid.Visibility = showConnections ? Visibility.Visible : Visibility.Collapsed;
@@ -205,6 +203,7 @@ public partial class MainWindow : Window
 
     private void Import_Click(object sender, RoutedEventArgs e)
     {
+        using var selected = BeginNavigationAction(NavImport);
         var fileDialog = new OpenFileDialog
         {
             Title = UiText.T("Import Keenetic Observer report", "Импортировать отчёт Keenetic Observer"),
@@ -222,8 +221,9 @@ public partial class MainWindow : Window
         else LoadTraffic(fileDialog.FileName);
     }
 
-    private void Reports_Click(object sender, RoutedEventArgs e)
+    private async void Reports_Click(object sender, RoutedEventArgs e)
     {
+        using var selected = BeginNavigationAction(NavReports);
         if (!Directory.Exists(ReportLocator.ResultsRoot))
         {
             AddLog(UiText.T("REPORTS  //  report folder has not been created", "REPORTS  //  папка отчётов ещё не создана"));
@@ -235,6 +235,8 @@ public partial class MainWindow : Window
             Arguments = $"\"{folder}\"", UseShellExecute = true
         });
         AddLog(UiText.T("REPORTS  //  opened local data folder", "REPORTS  //  открыта папка с локальными данными"));
+        // Explorer is independent: brief visual acknowledgement, not a modal lifetime.
+        await Task.Delay(650);
     }
 
     private async void RouterCheck_Click(object sender, RoutedEventArgs e)

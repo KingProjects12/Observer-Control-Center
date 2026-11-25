@@ -7,7 +7,11 @@ namespace Observer.ControlCenter;
 
 public partial class MainWindow
 {
-    private void Help_Click(object sender, RoutedEventArgs e) => new WorkspaceGuideWindow { Owner = this }.ShowDialog();
+    private void Help_Click(object sender, RoutedEventArgs e)
+    {
+        using var selected=BeginNavigationAction(NavHelp);
+        new WorkspaceGuideWindow { Owner = this }.ShowDialog();
+    }
 }
 
 internal sealed class WorkspaceGuideWindow : Window

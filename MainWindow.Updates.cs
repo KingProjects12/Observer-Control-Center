@@ -245,5 +245,9 @@ public partial class MainWindow
         finally { _openingUpdateCenter = false; }
     }
 
-    private void Updates_Click(object sender, RoutedEventArgs e) => ShowUpdateCenter();
+    private void Updates_Click(object sender, RoutedEventArgs e)
+    {
+        using var selected=sender is System.Windows.Controls.MenuItem ? BeginNavigationAction(NavTools) : null;
+        ShowUpdateCenter();
+    }
 }
