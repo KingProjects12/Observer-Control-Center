@@ -61,15 +61,24 @@ internal static class UiSmoke
                     foreach(string name in new[]{"NavAccess","NavNat","NavVpn","NavCollectTraffic","NavReports","NavImport","NavTools","NavHelp"})
                     {
                         var action=FindButton(main,name);
+                        // An offline window is never shown; a clipped sidebar child may not have its template realized by layout.
+                        action.ApplyTemplate();
                         using(main.BeginNavigationAction(action))
                         {
                             Layout(main);
                             Require((action.Tag as string)=="selected" && nav.Tag==null,"temporary selection "+name);
+                            action.ApplyTemplate();
                             var halo=action.Template.FindName("SignalSelection",action) as Border;
-                            Require(halo?.Visibility==Visibility.Visible,"selection overlay "+name);
+                            Require(halo!=null,"selection template part "+name);
+                            Require((double)halo!.GetAnimationBaseValue(UIElement.OpacityProperty)==1d,"selected overlay opacity "+name);
+                            action.IsEnabled=false;
+                            Require((double)halo.GetAnimationBaseValue(UIElement.OpacityProperty)==1d,"modal owner disabled overlay "+name);
+                            action.IsEnabled=true;
                             Require(action.Margin.Bottom==9,"spacing "+name);
                         }
                         Require((nav.Tag as string)=="selected" && action.Tag==null,"selection restored "+name);
+                        var inactive=(Border)action.Template.FindName("SignalSelection",action);
+                        Require((double)inactive.GetAnimationBaseValue(UIElement.OpacityProperty)==0d,"inactive overlay opacity "+name);
                     }
                     var menu=main.BeginNavigationAction(FindButton(main,"NavTools"));
                     using(main.BeginNavigationAction(FindButton(main,"NavHelp")))

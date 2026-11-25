@@ -62,6 +62,13 @@
               <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource Tone_263139}"/>
               <Setter Property="Foreground" Value="{DynamicResource Tone_71808C}"/>
             </Trigger>
+            <!-- The owner is disabled by ShowDialog; keep the selected navigation action recognizable. -->
+            <MultiTrigger>
+              <MultiTrigger.Conditions><Condition Property="Tag" Value="selected"/><Condition Property="IsEnabled" Value="False"/></MultiTrigger.Conditions>
+              <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource Tone_16313A}"/>
+              <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/>
+              <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+            </MultiTrigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
