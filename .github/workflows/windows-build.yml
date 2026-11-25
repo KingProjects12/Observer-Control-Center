@@ -18,7 +18,11 @@ jobs:
         run: ./tools/PublicSourceAudit.ps1
       - name: Offline update logic tests
         shell: pwsh
-        run: dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
+        run: |
+          dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw 'Update tests failed' }
+          dotnet run --project LegacyCollectorTests/LegacyCollectorTests.csproj --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw 'Legacy collector tests failed' }
       - name: Compile Windows WPF
         shell: pwsh
         run: dotnet build Observer.ControlCenter.csproj --configuration Release

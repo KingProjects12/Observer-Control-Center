@@ -23,7 +23,12 @@ public static class UiText
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(IsRussian ? "ru-RU" : "en-US");
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
     }
-    public static string KeeneticConnect => T("◉   Keenetic · NAT", "◉   Keenetic · NAT");
+    public static string KeeneticConnect => T("◉   Connect / NAT", "◉   Подключение / NAT");
+    public static string LegacyConnect => T("CONNECT", "ПОДКЛЮЧИТЬСЯ");
+    public static string LegacyVpn => T("◈   VPN REMOTE", "◈   VPN REMOTE");
+    public static string LegacyTraffic => T("◫   Collect traffic", "◫   Собрать трафик");
+    public static string LegacyTools => T("☰   Tools ▾", "☰   Инструменты ▾");
+    public static string LegacyHint => T("Enter router credentials in Connect / NAT. Reports stay on this computer.", "Введите логин и пароль в «Подключение / NAT». Отчёты остаются на этом компьютере.");
     public static string T(string english, string russian) => IsRussian ? russian : english;
     public static string SelectNotes(string notes, bool russian)
     {
@@ -59,9 +64,9 @@ public static class UiText
     public static string X026 => T("✓ HTTP/HTTPS TCP check", "✓ HTTP/HTTPS проверка TCP");
     public static string X027 => T("✓ NAT API / ○ TOP Traffic: planned", "✓ NAT API / ○ TOP Traffic: позже");
     public static string X028 => T("NETWORK OVERVIEW", "ОБЗОР СЕТИ");
-    public static string X029 => T("Load a report from Keenetic Observer v1.9.1", "Загрузите отчёт от Keenetic Observer v1.9.1");
+    public static string X029 => T("Connect to Keenetic or open a local report", "Подключитесь к Keenetic или откройте локальный отчёт");
     public static string X030 => T("Device IP", "IP устройства");
-    public static string X031 => T("Managed device address. TCP check requires no login.", "Адрес управляемого устройства. Проверка TCP не требует логина.");
+    public static string X031 => T("Managed router address. Connect to enter credentials and collect data.", "Адрес роутера. Нажмите «Подключиться», чтобы ввести данные для входа и собрать отчёт.");
     public static string X032 => T("CHECK TCP", "ПРОВЕРИТЬ TCP");
     public static string X033 => T("DEVICES", "УСТРОЙСТВА");
     public static string X034 => T("TRAFFIC / WINDOW", "ТРАФИК / ОКНО");

@@ -39,7 +39,7 @@ public partial class MainWindow : Window
         HeaderVersionText.Text = (UiText.IsRussian ? $"  v{GitHubReleaseClient.AppVersionText} ЧЁРНОЕ СТЕКЛО" : $"  v{GitHubReleaseClient.AppVersionText} BLACK GLASS");
         FooterVersionText.Text = (UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY");
         AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
-        AddLog(UiText.T("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials", "READ-ONLY  //  предпросмотр не подключается к Keenetic API и не хранит пароли"));
+        AddLog(UiText.T("READ-ONLY // Keenetic NAT / VPN / TOP Traffic collector. Credentials are not stored.", "READ-ONLY // Сбор NAT / VPN / TOP Traffic. Пароли не сохраняются."));
         ShowPage("overview");
         StartUpdateChecks();
     }
@@ -205,7 +205,7 @@ public partial class MainWindow : Window
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
         if (fileDialog.ShowDialog(this) != true) return;
-        if (Path.GetFileName(fileDialog.FileName).StartsWith("01_All_Connections", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(fileDialog.FileName).StartsWith("02_Target_", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(fileDialog.FileName).StartsWith("05_Office_Related", StringComparison.OrdinalIgnoreCase))
+        if (!Path.GetFileName(fileDialog.FileName).StartsWith("08_Top_Traffic", StringComparison.OrdinalIgnoreCase))
         {
             LoadConnections(fileDialog.FileName);
             ShowPage("connections");

@@ -18,7 +18,7 @@ A Windows network administration console with Black Liquid Glass, local traffic 
 
 Observer is a desktop console for authorized network administrators. It imports existing CSV reports and helps explore devices, connections and traffic in one place.
 
-**Latest public release: 2.0.9. Version 2.0.10-preview.2 is under testing.** Direct Keenetic NAT and TOP TRAFFIC API collection is not yet included; the collector remains in v1.9.1. This is a public test project, not a production monitoring system.
+**2.0.12 public test:** the original v1.9.1 collector is integrated into WPF, including NAT, VPN REMOTE, TOP Traffic, central-flow import and CSV/XLSX reports. Actual router and GUI verification is still needed.
 
 ## Features
 
@@ -27,14 +27,15 @@ Observer is a desktop console for authorized network administrators. It imports 
 - Colored event log; select and copy text with Ctrl+C or copy all displayed lines.
 - Import `08_Top_Traffic.csv` and `01_All_Connections.csv`; device ranking, totals, charts and filters for names, IP and MAC addresses.
 - Local report folders and read-only TCP checks on ports 80 and 443 of an explicitly supplied address. No router configuration changes or API authentication.
-- GitHub release notifications. The 2.0.10 preview adds verified EXE replacement, backup and restart without a setup wizard; 2.0.9 still launches setup.
-- English and Russian interface in 2.0.10-preview.2. Installer language is saved per user and retained by self-update. Standalone launch defaults to English when no language has been set.
+- Live read-only Keenetic x-ndw2 authentication and NAT snapshots, local office /24 filtering, VPN REMOTE (existing authorized route), TOP Traffic (four windows), central-flow CSV import, raw evidence, CSV/XLSX reports. No credentials persisted. x-ndw4 unsupported.
+- GitHub release notifications. Self-update adds verified EXE replacement, backup and restart without a setup wizard; 2.0.9 still launches setup.
+- English and Russian interface. Original collector logs and reports can retain Russian strings. Installer language is saved per user and retained by self-update. Standalone launch defaults to English when no language has been set.
 
 ## Installation
 
 1. Open [the latest release](https://github.com/KingProjects12/Observer-Control-Center/releases/latest).
 2. Under Assets, download `Observer-Control-Center-Setup-<version>-win-x64.exe` and run setup.
-3. In the bilingual preview, choose English or Russian in the installer; Observer uses that choice.
+3. Choose English or Russian in the installer; Observer uses that choice.
 4. Start Observer from the Start menu or shortcut.
 
 For portable launch, download `Observer.ControlCenter.exe`. Both distributions are self-contained. Preview builds are available from [GitHub Actions](https://github.com/KingProjects12/Observer-Control-Center/actions).
@@ -49,6 +50,7 @@ Requirements: Windows 10/11 x64, .NET 10 SDK or Visual Studio with .NET desktop 
 git clone https://github.com/KingProjects12/Observer-Control-Center.git
 cd Observer-Control-Center
 dotnet run --project Tests/Observer.UpdateTests.csproj -c Release
+dotnet run --project LegacyCollectorTests/LegacyCollectorTests.csproj -c Release
 dotnet build Observer.ControlCenter.csproj -c Release
 .\Publish-SingleExe.cmd
 ```
@@ -57,7 +59,7 @@ Output: `dist\Observer.ControlCenter.exe`. Official builds lock the GitHub updat
 
 ## Roadmap
 
-- Port authorized Keenetic NAT / TOP TRAFFIC collection from v1.9.1.
+- Verify the integrated Keenetic collector on authorized routers and finish English collector diagnostics.
 - Network Analytics CSV and XLSX reports, site registry and observation history.
 - Windows 10/11 UI, performance, language and self-update testing.
 - Trusted code signing.

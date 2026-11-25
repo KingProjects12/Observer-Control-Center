@@ -87,15 +87,12 @@
           <Button x:Name="NavReports" Content="{x:Static loc:UiText.X016}" Style="{StaticResource NavigationButton}" Click="Reports_Click"/>
           <Button Content="{x:Static loc:UiText.X017}" Style="{StaticResource NavigationButton}" Click="Updates_Click"/>
           <TextBlock Text="{x:Static loc:UiText.X018}" Style="{StaticResource NavGroupTitle}"/>
-          <Button Content="{x:Static loc:UiText.KeeneticConnect}" Style="{StaticResource NavigationButton}" Click="KeeneticCollect_Click"/>
-          <Button Content="{x:Static loc:UiText.X019}" Style="{StaticResource NavigationButton}" Click="RouterCheck_Click"/>
-          <Button Content="{x:Static loc:UiText.X020}" Style="{StaticResource NavigationButton}" Click="Import_Click"/>
-          <Button Content="{x:Static loc:UiText.X021}" Style="{StaticResource NavigationButton}" Click="Theme_Click"/>
-           <Button x:Name="GlassModeButton" Content="{x:Static loc:UiText.X022}" Style="{StaticResource NavigationButton}" Click="Glass_Click" ToolTip="{x:Static loc:UiText.X023}"/>
-          <TextBlock Text="{x:Static loc:UiText.X024}" Style="{StaticResource NavGroupTitle}"/>
-          <TextBlock Text="{x:Static loc:UiText.X025}" Foreground="#7FC8C7" FontSize="11" Margin="9,0,0,7"/>
-          <TextBlock Text="{x:Static loc:UiText.X026}" Foreground="#7FC8C7" FontSize="11" Margin="9,0,0,7"/>
-          <TextBlock Text="{x:Static loc:UiText.X027}" Foreground="#E2B47D" FontSize="11" TextWrapping="Wrap" Margin="9,0,0,7"/>
+          <Button Content="{x:Static loc:UiText.KeeneticConnect}" Style="{StaticResource NavigationButton}" Click="LegacyCollect_Click"/>
+          <Button Content="{x:Static loc:UiText.LegacyVpn}" Style="{StaticResource NavigationButton}" Click="LegacyVpn_Click"/>
+          <Button Content="{x:Static loc:UiText.LegacyTraffic}" Style="{StaticResource NavigationButton}" Click="LegacyTraffic_Click"/>
+          <Button Content="{x:Static loc:UiText.LegacyTools}" Style="{StaticResource NavigationButton}" Click="LegacyTools_Click"/>
+          <Button x:Name="GlassModeButton" Visibility="Collapsed" Content="{x:Static loc:UiText.X022}" Style="{StaticResource NavigationButton}" Click="Glass_Click"/>
+          <TextBlock Text="{x:Static loc:UiText.LegacyHint}" Foreground="#7FC8C7" FontSize="11" TextWrapping="Wrap" Margin="9,12,0,7"/>
         </StackPanel>
       </DockPanel>
     </Border>
@@ -122,7 +119,7 @@
             <TextBlock Text="{x:Static loc:UiText.X030}" Style="{StaticResource LabelSmall}" Margin="0,0,0,4"/>
             <TextBox x:Name="RouterIP" Text="" Style="{StaticResource TextInput}" ToolTip="{x:Static loc:UiText.X031}"/>
           </StackPanel>
-          <Button Grid.Column="2" Content="{x:Static loc:UiText.X032}" Style="{StaticResource AccentButton}" Margin="6,17,0,1" Click="RouterCheck_Click"/>
+          <Button Grid.Column="2" Content="{x:Static loc:UiText.LegacyConnect}" Style="{StaticResource AccentButton}" Margin="6,17,0,1" Click="LegacyCollect_Click"/>
         </Grid>
       </Border>
       <Grid Grid.Row="1" Margin="0,0,0,10">

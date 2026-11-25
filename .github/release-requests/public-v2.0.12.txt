@@ -1,0 +1,1 @@
+Publish v2.0.12 once on merge to main after Windows tests and release safety audit.

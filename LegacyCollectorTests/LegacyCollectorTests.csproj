@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>disable</Nullable></PropertyGroup>
+ <ItemGroup>
+  <Compile Include="../LegacyCollector/*.cs" Exclude="../LegacyCollector/LegacyCollectorWindow.cs;../LegacyCollector/LegacyMainWindow.cs" />
+  <EmbeddedResource Include="../LegacyCollector/Assets/TrafficNetworkAnalyticsTemplate.xlsx" LogicalName="TrafficNetworkAnalyticsTemplate.xlsx" />
+ </ItemGroup>
+</Project>
