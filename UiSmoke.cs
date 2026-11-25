@@ -22,7 +22,7 @@ internal static class UiSmoke
             Require(UiText.IsRussian==(language=="russian"),"language");
             var main=new MainWindow(true);
             var update=new UpdateCenterWindow(main);
-            Window[] windows=[main,update,new LegacyCollectorWindow(""),new LegacyCollectorWindow("",vpn:true),new LegacyCollectorWindow("",traffic:true),new WorkspaceGuideWindow(),new MiniIslandWindow(main),new UpdateNoticeWindow("v0.0.0",()=>{})];
+            Window[] windows=[main,update,new LegacyCollectorWindow(""),new LegacyCollectorWindow("",vpn:true),new LegacyCollectorWindow("",traffic:true),new WorkspaceGuideWindow(),new AccessAnalyzerWindow(),new MiniIslandWindow(main),new UpdateNoticeWindow("v0.0.0",()=>{})];
             try
             {
                 foreach(var w in windows) Layout(w);

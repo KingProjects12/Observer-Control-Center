@@ -2,6 +2,9 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Documents;
+using System.Windows.Data;
+using Observer.ControlCenter.Models;
 using KeeneticObserver;
 using Microsoft.Win32;
 using Observer.ControlCenter.Services;
@@ -11,7 +14,17 @@ namespace Observer.ControlCenter;
 // WPF shell for the complete original v1.9.1 collector. No legacy WinForms UI.
 internal sealed class LegacyCollectorWindow : Window
 {
-    private readonly TextBox _address, _user, _target, _samples, _interval, _log;
+    private readonly TextBox _address, _user, _target, _samples, _interval;
+    private readonly RichTextBox _log;
+    private readonly TextBlock _batchSummary;
+    private readonly ProgressBar _batchProgress;
+    private readonly DataGrid _batchGrid;
+    private readonly Button _retry,_access;
+    private readonly Dictionary<string,RouterLive> _live=new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string,(string User,string Password)> _overrides=new(StringComparer.OrdinalIgnoreCase);
+    private readonly System.Text.StringBuilder _logText=new();
+    private BatchNatResult? _lastBatch;
+    private sealed class RouterLive { public string Router{get;set;}="";public string Status{get;set;}="NOT_STARTED";public string Samples{get;set;}="";public string Office{get;set;}=""; }
     private readonly PasswordBox _password;
     private readonly CheckBox _https, _vpn;
     private readonly ComboBox _period, _view;
@@ -91,7 +104,13 @@ internal sealed class LegacyCollectorWindow : Window
             var demoItem = new MenuItem { Header=T("Offline demo test", "Офлайн демо-тест") }; demoItem.Click += async (_,_) => await Run("demo"); menu.Items.Add(demoItem);
             menu.IsOpen=true;
         }));
+        _commands.Add(Button(T("ROUTER LOGIN", "ЛОГИН РОУТЕРА"), (_,_)=>EditLogin()));
+        _retry=Button(T("RETRY INCOMPLETE", "ПОВТОРИТЬ ПРОБЛЕМНЫЕ"), async (_,_)=>await Run("retry"));_retry.IsEnabled=false;
         _stop = Button(T("STOP", "СТОП"), (_,_) => _running?.Cancel()); _stop.IsEnabled = false; _stop.ToolTip=T("Cancel collection and retain available results.","Остановить сбор, сохранить доступные результаты.");
+        _batchSummary=new TextBlock{TextWrapping=TextWrapping.Wrap,Foreground=Brushes.Turquoise,Margin=new Thickness(0,8,0,4)};section.Children.Add(_batchSummary);
+        _batchProgress=new ProgressBar{Minimum=0,Maximum=1,Height=9,Margin=new Thickness(0,3,0,8)};section.Children.Add(_batchProgress);
+        _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=210,MinHeight=75};
+        foreach(string key in new[]{"Router","Status","Samples","Office"}){var c=new DataGridTextColumn{Header=key,Binding=new Binding(key),Width=new DataGridLength(1,DataGridLengthUnitType.Star)};if(key=="Status"){var st=new Style(typeof(TextBlock));st.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(key){Converter=new StatusBrushConverter()}));c.ElementStyle=st;}_batchGrid.Columns.Add(c);}section.Children.Add(_batchGrid);
         Group("04 / RESULTS", "04 / РЕЗУЛЬТАТЫ", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
         Label(T("Report view", "Отображение отчёта"));
         _view = new ComboBox { DisplayMemberPath = "Label" }; section.Children.Add(_view);
@@ -100,11 +119,12 @@ internal sealed class LegacyCollectorWindow : Window
         _show = Button(T("SHOW IN OBSERVER", "ПОКАЗАТЬ В OBSERVER"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); DialogResult = true; } }); _show.IsEnabled = false; _show.ToolTip=T("Open the selected CSV in the main table.","Показать выбранный CSV в главной таблице.");
         _excel = Button(T("OPEN EXCEL", "ОТКРЫТЬ EXCEL"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false; _excel.ToolTip=T("Open the generated Excel workbook.","Открыть сформированный файл Excel.");
         _reports = Button(T("OPEN REPORTS", "ОТКРЫТЬ ОТЧЁТЫ"), (_,_) => Open(_folder)); _reports.IsEnabled = false; _reports.ToolTip=T("Open the current report folder.","Открыть папку текущего отчёта.");
+        _access=Button(T("ANALYZE ACCESS", "АНАЛИЗ ДОСТУПОВ"),(_,_)=>{var csv=_folder==null?null:Path.Combine(_folder,"07_Office_To_Connections.csv");new AccessAnalyzerWindow(csv,_target.Text){Owner=this}.ShowDialog();});_access.IsEnabled=false;
         Group("05 / ACTIVITY", "05 / ЖУРНАЛ", "Progress and diagnostic details. Copy the log when troubleshooting.", "Прогресс и диагностика. При ошибке скопируйте журнал.");
         _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Turquoise }; section.Children.Add(_status);
-        _log = new TextBox { IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = Brushes.Black, Foreground = Brushes.White, Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);
+        _log = new RichTextBox { IsReadOnly = true, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = Brushes.Black, Foreground = Brushes.White, Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);
         var copyLog = new Button { Content=T("COPY LOG","КОПИРОВАТЬ ЖУРНАЛ"), Style=(Style)FindResource("FlatButton"), HorizontalAlignment=HorizontalAlignment.Right, Margin=new Thickness(0,8,0,0) };
-        copyLog.Click += (_,_) => { if(_log.Text.Length==0)return; try { Clipboard.SetText(_log.Text); } catch(System.Runtime.InteropServices.COMException) { _status.Text=T("Clipboard unavailable.","Буфер обмена недоступен."); } }; section.Children.Add(copyLog);
+        copyLog.Click += (_,_) => { if(_logText.Length==0)return; try { Clipboard.SetText(_logText.ToString()); } catch(System.Runtime.InteropServices.COMException) { _status.Text=T("Clipboard unavailable.","Буфер обмена недоступен."); } }; section.Children.Add(copyLog);
         Label(T("Read-only. The existing VPN must already be connected. NAT and TOP Traffic do not prove all VPN/LAN flows. Raw reports are confidential.", "Только чтение. VPN должен уже существовать и быть подключён. NAT и TOP Traffic не показывают гарантированно все VPN/LAN-потоки. Сырые отчёты конфиденциальны."));
     }
     private sealed record View(string File, string Label);
@@ -116,7 +136,54 @@ internal sealed class LegacyCollectorWindow : Window
         try { if (!string.IsNullOrWhiteSpace(path) && (File.Exists(path) || Directory.Exists(path))) Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); }
         catch (Exception ex) { _status.Text = ex.Message; }
     }
-    private void Report(string message) { _log.AppendText(message + Environment.NewLine); _log.ScrollToEnd(); _status.Text = message; }
+    private void Report(string message)
+    {
+        _logText.AppendLine(message);
+        var entry=new ConsoleEntry(message,ConsoleEntry.Classify(message));
+        _log.Document.Blocks.Add(new Paragraph(new System.Windows.Documents.Run(message){Foreground=entry.Color}){Margin=new Thickness(0,0,0,2)});
+        while(_log.Document.Blocks.Count>2500 && _log.Document.Blocks.FirstBlock is { } first)_log.Document.Blocks.Remove(first);
+        if(!_log.IsKeyboardFocusWithin||_log.Selection.IsEmpty)_log.ScrollToEnd();
+        _status.Text=message;_status.Foreground=entry.Color;
+        if(message.StartsWith("[")&&message.IndexOf(']') is int end&&end>0&&_live.TryGetValue(message[1..end],out var r))
+        {
+            string line=message[(end+1)..].Trim();
+            if(line=="START")r.Status="CHECKING";
+            else if(line.StartsWith("CONNECTED"))r.Status="CONNECTED";
+            else if(line.Contains("POST /auth status=200"))r.Status="AUTH OK";
+            else if(line.StartsWith("Снимок ")){r.Samples=line.Split(' ').ElementAtOrDefault(1)??"";r.Status="COLLECTING";}
+            else if(line.StartsWith("COMPLETE | OFFICE ")||line.StartsWith("PARTIAL | OFFICE ")){r.Status=line.Split('|')[0].Trim();r.Office=line.Split(' ').Last();}
+            else if(line.StartsWith("FAILED:")||line=="CANCELLED")r.Status=line;
+            else return;
+            RefreshLive();
+        }
+    }
+    private void RefreshLive()
+    {
+        _batchGrid.ItemsSource=_live.Values.ToArray();
+        int done=_live.Values.Count(r=>r.Status is "COMPLETE" or "PARTIAL" or "CANCELLED" || r.Status.StartsWith("FAILED"));
+        _batchProgress.Maximum=Math.Max(1,_live.Count);_batchProgress.Value=done;
+        _batchSummary.Text=$"{done}/{_live.Count} | OK {_live.Values.Count(r=>r.Status=="COMPLETE")} | PARTIAL {_live.Values.Count(r=>r.Status=="PARTIAL")} | FAILED {_live.Values.Count(r=>r.Status.StartsWith("FAILED"))} | CANCELLED {_live.Values.Count(r=>r.Status=="CANCELLED")}";
+    }
+    private void EditLogin()
+    {
+        try
+        {
+            var addresses=BatchNatCollector.ParseAddresses(_address.Text,_https.IsChecked==true,_vpn.IsChecked==true);
+            var dialog=new Window{Owner=this,Title=T("Per-router credentials","Учётные данные роутера"),Width=420,Height=300,WindowStartupLocation=WindowStartupLocation.CenterOwner,Background=Background,Foreground=Foreground};
+            DarkTitleBar.Apply(dialog);var panel=new StackPanel{Margin=new Thickness(16)};dialog.Content=panel;
+            var choice=new ComboBox{ItemsSource=addresses,SelectedIndex=0};panel.Children.Add(choice);
+            panel.Children.Add(new TextBlock{Text=T("Username","Логин"),Margin=new Thickness(0,6,0,2)});
+            var user=new TextBox{Text=_user.Text};panel.Children.Add(user);
+            panel.Children.Add(new TextBlock{Text=T("Password (session only)","Пароль (только на эту сессию)"),Margin=new Thickness(0,6,0,2)});
+            var pass=new PasswordBox();panel.Children.Add(pass);
+            var save=new Button{Content=T("SET FOR ROUTER","ЗАДАТЬ ДЛЯ РОУТЕРА"),Style=(Style)FindResource("AccentButton"),Margin=new Thickness(0,10,0,0)};panel.Children.Add(save);
+            var clear=new Button{Content=T("USE COMMON LOGIN","ИСПОЛЬЗОВАТЬ ОБЩИЙ ЛОГИН"),Style=(Style)FindResource("FlatButton"),Margin=new Thickness(0,5,0,0)};panel.Children.Add(clear);
+            save.Click+=(_,_)=>{if(choice.SelectedItem is string a&&user.Text.Trim().Length>0&&pass.Password.Length>0){_overrides[a]=(user.Text.Trim(),pass.Password);pass.Clear();dialog.DialogResult=true;Report("READY: per-router login set for "+a);}};
+            clear.Click+=(_,_)=>{if(choice.SelectedItem is string a)_overrides.Remove(a);pass.Clear();dialog.DialogResult=true;};
+            dialog.ShowDialog();pass.Clear();
+        }
+        catch(Exception ex){Report("ERROR: "+ex.Message);}
+    }
     private void SetReport(string folder, string? excel, string status, bool traffic)
     {
         _folder = folder; _excelPath = excel;
@@ -128,6 +195,8 @@ internal sealed class LegacyCollectorWindow : Window
     private async Task Run(string operation)
     {
         if (_running != null) return;
+        bool retry=operation=="retry";if(retry&&_lastBatch==null)return;
+        var prior=retry?_lastBatch:null;if(retry)operation="nat";
         var addr = Address; var user = _user.Text.Trim(); bool https = _https.IsChecked==true, vpn = _vpn.IsChecked==true;
         int samples = 3, interval = 5, detail = _period.SelectedIndex;
         string? import = null;
@@ -136,21 +205,25 @@ internal sealed class LegacyCollectorWindow : Window
         {
             if (operation is "nat" or "traffic" or "probe")
             {
-                routers = BatchNatCollector.ParseAddresses(_address.Text,https,vpn || operation=="probe");
+                routers = retry ? prior!.Statuses.Where(s=>s.Status!="COMPLETE").Select(s=>s.Router).ToArray() : BatchNatCollector.ParseAddresses(_address.Text,https,vpn || operation=="probe");
+                if(routers.Length==0){Report("READY: no incomplete routers");return;}
+                foreach(var router in routers)if(vpn||operation=="probe")RemoteVpn.RequirePrivateTarget(Engine.ParseRouterUri(router,https));
                 if(operation!="nat" && routers.Length!=1) throw new ArgumentException(T("TOP Traffic and TCP checks require one router. Use Collect NAT for a list.", "TOP Traffic и проверка TCP требуют один роутер. Для списка используйте «Собрать NAT»."));
                 addr=routers[0];
-                if (operation != "probe" && (user.Length == 0 || _password.Password.Length == 0)) throw new ArgumentException(T("Enter username and password.", "Введите логин и пароль."));
+                if (operation != "probe" && routers.Any(r=>!_overrides.ContainsKey(r)) && (user.Length == 0 || _password.Password.Length == 0)) throw new ArgumentException(T("Enter username and password.", "Введите логин и пароль."));
                 if (operation != "probe" && !https && MessageBox.Show(this,T("HTTP is not encrypted. Continue only on an authorized trusted network or VPN?", "HTTP не шифруется. Продолжить только в разрешённой доверенной сети или VPN?"),Title,MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes) return;
             }
             if (operation == "demo") Engine.SetTargetSubnet(Engine.DemoSubnet);
-            if (operation is "nat" or "import") { Engine.SetTargetSubnet(_target.Text); SaveTarget(Engine.TargetSubnet); }
+            if (operation is "nat" or "import") { Engine.SetTargetSubnet(_target.Text); if(prior!=null&&prior.Target!=Engine.TargetSubnet)throw new ArgumentException("Retry requires the original target.");SaveTarget(Engine.TargetSubnet); }
             if (operation == "nat" && (!int.TryParse(_samples.Text,out samples) || samples is <1 or >12 || !int.TryParse(_interval.Text,out interval) || interval is <1 or >60)) throw new ArgumentException(T("Invalid sample settings.", "Некорректные параметры снимков."));
             if (operation == "import") { var dialog = new OpenFileDialog { Filter="CSV (*.csv)|*.csv", CheckFileExists=true }; if (dialog.ShowDialog(this)!=true) return; import=dialog.FileName; }
         }
         catch(Exception ex) { Report(ex.Message); return; }
         using var cts = new CancellationTokenSource(); _running=cts; _stop.IsEnabled=true;
         foreach(var b in _commands) b.IsEnabled=false;
-        _show.IsEnabled=_excel.IsEnabled=_reports.IsEnabled=false;
+        _show.IsEnabled=_excel.IsEnabled=_reports.IsEnabled=_retry.IsEnabled=_access.IsEnabled=false;
+        if(operation=="nat"){_live.Clear();if(prior!=null)foreach(var s in prior.Statuses)_live[s.Router]=new RouterLive{Router=s.Router,Status=s.Status,Office=s.OfficeRows};foreach(var a in routers)_live[a]=new RouterLive{Router=a};RefreshLive();}
+        _address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=false;
         string secret = _password.Password; _password.Clear();
         var progress = new Progress<string>(Report); Action<string> log = s => ((IProgress<string>)progress).Report(s);
         try
@@ -164,13 +237,18 @@ internal sealed class LegacyCollectorWindow : Window
             }
             else if(operation=="traffic")
             {
-                var result=await Task.Run(()=>TrafficMonitor.Run(addr,user,secret,https,vpn,detail,cts.Token,log),cts.Token);
+                var login=_overrides.TryGetValue(addr,out var local)?local:(user,secret);
+                var result=await Task.Run(()=>TrafficMonitor.Run(addr,login.Item1,login.Item2,https,vpn,detail,cts.Token,log),cts.Token);
                 SetReport(result.Folder,result.Excel,T("Traffic devices: ","Устройств в рейтинге: ")+result.Rows.Count,true);
             }
-            else if(operation=="nat" && routers.Length>1)
+            else if(operation=="nat")
             {
-                var result=await Task.Run(()=>BatchNatCollector.Run(routers,user,secret,https,vpn,samples,interval,ReportLocator.ResultsRoot,cts.Token,log));
-                SetReport(result.Folder,result.Excel,T("Combined office rows: ","Общий отчёт в офис: ")+result.OfficeCount+$" | OK {result.Complete} | PARTIAL {result.Partial} | FAILED {result.Failed} | CANCELLED/NOT STARTED {result.Skipped}",false);
+                var credentials=new Dictionary<string,(string User,string Password)>(_overrides,StringComparer.OrdinalIgnoreCase);
+                var result=await Task.Run(()=>BatchNatCollector.Run(routers,user,secret,https,vpn,samples,interval,ReportLocator.ResultsRoot,cts.Token,log,(a,ct,l)=>{var login=credentials.TryGetValue(a,out var local)?local:(user,secret);return Engine.Run(false,a,login.Item1,login.Item2,https,samples,interval,ct,l,vpn);},prior));
+                credentials.Clear();_lastBatch=result;
+                foreach(var s in result.Statuses)_live[s.Router]=new RouterLive{Router=s.Router,Status=s.Status,Office=s.OfficeRows,Samples=_live.TryGetValue(s.Router,out var current)?current.Samples:""};RefreshLive();
+                var single=result.Statuses.Length==1&&result.Complete==1?result.Statuses[0].ReportFolder:null;
+                SetReport(single??result.Folder,single==null?result.Excel:Path.Combine(single,"Keenetic_Network_Connections.xlsx"),T("Combined office rows: ","Общий отчёт в офис: ")+result.OfficeCount+$" | OK {result.Complete} | PARTIAL {result.Partial} | FAILED {result.Failed} | CANCELLED/NOT STARTED {result.Skipped}",false);
                 if(string.IsNullOrEmpty(result.Excel)) Report(T("Excel unavailable; CSV is saved.","Excel недоступен; CSV сохранён."));
             }
             else
@@ -181,10 +259,10 @@ internal sealed class LegacyCollectorWindow : Window
         }
         catch(OperationCanceledException){Report(T("Cancelled.","Отменено."));}
         catch(Exception ex){Report(T("Operation failed: ","Ошибка операции: ")+ex.Message);}
-        finally {secret="";_running=null; _stop.IsEnabled=false;foreach(var b in _commands)b.IsEnabled=true;_show.IsEnabled=_view.SelectedItem!=null;_excel.IsEnabled=File.Exists(_excelPath);_reports.IsEnabled=Directory.Exists(_folder);}
+        finally {secret="";_running=null; _stop.IsEnabled=false;foreach(var b in _commands)b.IsEnabled=true;_show.IsEnabled=_view.SelectedItem!=null;_excel.IsEnabled=File.Exists(_excelPath);_reports.IsEnabled=Directory.Exists(_folder);_retry.IsEnabled=_lastBatch?.Statuses.Any(s=>s.Status!="COMPLETE")==true;_access.IsEnabled=_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv"));_address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=true;}
     }
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
-        if(_running!=null){_running.Cancel();e.Cancel=true;} _password.Clear();base.OnClosing(e);
+        if(_running!=null){_running.Cancel();e.Cancel=true;}else{_overrides.Clear();_password.Clear();}base.OnClosing(e);
     }
 }

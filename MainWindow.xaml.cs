@@ -73,6 +73,7 @@ public partial class MainWindow : Window
         if (!LogList.IsKeyboardFocusWithin || LogList.Selection.IsEmpty)
             LogList.ScrollToEnd();
         BottomStatus.Text = message;
+        BottomStatus.Foreground=entry.Color;
     }
 
     private void LoadTraffic(string file)
@@ -251,8 +252,9 @@ public partial class MainWindow : Window
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (TrafficGrid?.ItemsSource == null) return;
         string phrase = SearchBox.Text.Trim();
+        if(_connections!=null){var escaped=phrase.Replace("'","''").Replace("[","[[]").Replace("%","[%]").Replace("*","[*]");_connections.DefaultView.RowFilter=phrase.Length==0?"":string.Join(" OR ",_connections.Columns.Cast<System.Data.DataColumn>().Select(c=>"CONVERT(["+c.ColumnName.Replace("\\","\\\\").Replace("]","\\]")+"], 'System.String') LIKE '%"+escaped+"%'"));}
+        if (TrafficGrid?.ItemsSource == null) return;
         var view = CollectionViewSource.GetDefaultView(TrafficGrid.ItemsSource);
         view.Filter = x => x is TrafficDevice r && (phrase.Length == 0 ||
             r.Name.Contains(phrase, StringComparison.OrdinalIgnoreCase) ||

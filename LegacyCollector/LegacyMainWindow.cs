@@ -4,6 +4,7 @@ using Observer.ControlCenter.Services;
 namespace Observer.ControlCenter;
 public partial class MainWindow
 {
+    private void AccessAnalyzer_Click(object sender,RoutedEventArgs e)=>new AccessAnalyzerWindow(_reportPath.Length>0&&Path.GetFileName(_reportPath).StartsWith("07_Office_To_Connections",StringComparison.OrdinalIgnoreCase)?_reportPath:null){Owner=this}.ShowDialog();
     private void LegacyCollect_Click(object sender,RoutedEventArgs e)=>OpenLegacyCollector();
     private void LegacyVpn_Click(object sender,RoutedEventArgs e)=>OpenLegacyCollector(vpn:true);
     private void LegacyTraffic_Click(object sender,RoutedEventArgs e)=>OpenLegacyCollector(traffic:true);

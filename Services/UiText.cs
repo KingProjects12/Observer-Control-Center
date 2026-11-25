@@ -56,6 +56,7 @@ public static class UiText
     public static string HintVpn => T("Collect and diagnose over an existing VPN route", "Сбор и диагностика через существующий VPN-маршрут");
     public static string HintCollectTraffic => T("Collect a traffic monitor window from Keenetic", "Сбор данных монитора трафика Keenetic за период");
     public static string HintReports => T("Open the local report folder", "Открыть папку локальных отчётов");
+    public static string AccessAnalyzerLabel => T("◉   Access analyzer", "◉   Анализ доступов");
     public static string LegacyConnect => T("CONNECT", "ПОДКЛЮЧИТЬСЯ");
     public static string LegacyVpn => T("◈   VPN REMOTE", "◈   VPN REMOTE");
     public static string LegacyTraffic => T("◫   Collect traffic", "◫   Собрать трафик");

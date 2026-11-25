@@ -39,14 +39,15 @@ public sealed class ConsoleEntry
     public static string Classify(string message)
     {
         string line = message.ToUpperInvariant();
-        if (line.Contains("ERROR") || line.Contains("FAILED") ||
+        if (line.Contains("ERROR") || line.Contains("FAILED") || line.Contains("REFUSED") || line.Contains("TIMEOUT") || line.Contains("UNREACHABLE") ||
             line.Contains("EXCEPTION") || line.Contains("ОШИБК") ||
             line.Contains("ОТКАЗ") || line.Contains("DENIED"))
             return "ERROR";
         if (line.Contains("WARNING") || line.Contains("WARN") ||
-            line.Contains("ВНИМАН") || line.Contains("TIMEOUT"))
+            line.Contains("ВНИМАН") || line.Contains("PARTIAL") || line.Contains("UDP OBSERVED") || line.Contains("NOT OBSERVED LATER") || line.Contains("NO MATCHES") || line.Contains("REVIEW"))
             return "WARNING";
-        if (line.Contains("SUCCESS") || line.Contains("PASS") || line.Contains("READY") ||
+        if (line.Contains("CANCELLED") || line.Contains("NOT_STARTED") || line.Contains("NOT CHECKED") || line.Contains("SKIPPED")) return "INFO";
+        if (line.Contains("COMPLETE") || line.Contains("TCP OPEN") || line.Contains("OBSERVED BOTH") || line.Contains("VERIFIED") || line.Contains("СОВПАДАЕТ") || line.Contains("SUCCESS") || line.Contains("PASS") || line.Contains("READY") ||
             line.Contains("CONNECTED") || line.Contains("IMPORTED") ||
             line.Contains("CSV IMPORT") || line.Contains("ГOTOB") ||
             line.Contains("ГОТОВО") || line.Contains("ЗАГРУЖЕН") ||

@@ -28,6 +28,7 @@ public partial class UpdateCenterWindow : Window
     {
         if (_installCancellation != null || _installLaunching) return;
         StatusText.Text = _main.UpdateMessage;
+        StatusText.Foreground=new Observer.ControlCenter.Models.ConsoleEntry(StatusText.Text,Observer.ControlCenter.Models.ConsoleEntry.Classify(StatusText.Text)).Color;
         var release = _main.LatestUpdate;
         InstallButton.Visibility = release?.Installer != null && string.Equals(_main.UpdatesRepository, UpdateInstaller.OfficialRepository, StringComparison.OrdinalIgnoreCase)
             ? Visibility.Visible : Visibility.Collapsed;
@@ -95,6 +96,7 @@ public partial class UpdateCenterWindow : Window
             downloaded = await UpdateInstaller.DownloadAsync(asset, progress, cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
             StatusText.Text = UiText.T("SHA-256 verified. Restarting Observer…", "SHA-256 совпадает. Перезапускаю Observer…");
+            StatusText.Foreground=System.Windows.Media.Brushes.LightGreen;
             CancelInstallButton.IsEnabled = false;
             SelfUpdate.StartHelper(downloaded);
             _installLaunching = true;
@@ -103,6 +105,7 @@ public partial class UpdateCenterWindow : Window
         catch (Exception ex)
         {
             if (!_installLaunching && downloaded != null) UpdateInstaller.TryDelete(Path.GetDirectoryName(downloaded.Path)!);
+            StatusText.Foreground=ex is OperationCanceledException?System.Windows.Media.Brushes.Goldenrod:System.Windows.Media.Brushes.Salmon;
             StatusText.Text = ex is OperationCanceledException
                 ? UiText.T("Download cancelled or timed out.", "Загрузка отменена или превышено время ожидания.")
                 : UiText.T("Update failed: ", "Обновление не выполнено: ") + ex.Message;

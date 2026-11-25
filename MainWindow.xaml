@@ -85,6 +85,7 @@
           <TextBlock Text="{x:Static loc:UiText.WorkspaceHint}" Style="{StaticResource LabelSmall}" Margin="9,0,5,8"/>
           <TextBlock Text="{x:Static loc:UiText.GroupAnalytics}" Style="{StaticResource NavGroupTitle}"/>
           <Button x:Name="NavOverview" Content="{x:Static loc:UiText.X013}" Style="{StaticResource NavigationButton}" Click="Overview_Click" ToolTip="{x:Static loc:UiText.HintOverview}"/>
+          <Button Content="{x:Static loc:UiText.AccessAnalyzerLabel}" Style="{StaticResource NavigationButton}" Click="AccessAnalyzer_Click"/>
           <Button x:Name="NavConnections" Content="{x:Static loc:UiText.X015}" Style="{StaticResource NavigationButton}" Click="Connections_Click" ToolTip="{x:Static loc:UiText.HintConnections}"/>
           <Button x:Name="NavTraffic" Content="{x:Static loc:UiText.X014}" Style="{StaticResource NavigationButton}" Click="Traffic_Click" ToolTip="{x:Static loc:UiText.HintTraffic}"/>
           <Separator Style="{StaticResource GlassSeparator}"/>
