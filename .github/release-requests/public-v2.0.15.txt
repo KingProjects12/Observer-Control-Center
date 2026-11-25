@@ -1,1 +1,3 @@
 Final UI release. Run offline and UI smoke checks before publishing.
+
+Retry with corrected Inno compiler discovery.
