@@ -49,7 +49,7 @@ Assert(UpdatePollingPolicy.RateLimitCooldown == TimeSpan.FromMinutes(30), "rate 
 var blockedAt = DateTimeOffset.Parse("2026-11-25T00:00:00Z");
 Assert(UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(1), blockedAt.AddMinutes(30)), "rate limited checks are skipped");
 Assert(!UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(30), blockedAt.AddMinutes(30)), "checks resume when cooldown ends");
-const string installerName = "Observer-Control-Center-Setup-2.1.0-win-x64.exe";
+const string installerName = "Observer.ControlCenter.exe";
 string prefix = "https://github.com/" + UpdateInstaller.OfficialRepository + "/releases/download/v2.1.0/";
 string WithAssets(string download, bool checksum = true, long size = 12345) =>
     JsonSerializer.Serialize(new { tag_name = "v2.1.0", assets = new[] {
@@ -69,4 +69,25 @@ Assert(UpdateInstaller.ParseChecksum(hex.ToLowerInvariant() + "  " + installerNa
 Assert(UpdateInstaller.HashMatches(hex, digest) && !UpdateInstaller.HashMatches(new string('0', 64), digest), "hash mismatch rejected");
 try { UpdateInstaller.ParseChecksum(hex + " other.exe", installerName); Assert(false, "wrong checksum filename"); }
 catch (InvalidDataException) { Assert(true, "wrong checksum filename rejected"); }
+var testDir = Path.Combine(Path.GetTempPath(), "ObserverSwapTest-" + Guid.NewGuid().ToString("N"));
+Directory.CreateDirectory(testDir);
+try
+{
+    var target = Path.Combine(testDir, "Observer.ControlCenter.exe");
+    var stage = Path.Combine(testDir, "new.exe");
+    var backup = Path.Combine(testDir, "old.bak");
+    File.WriteAllText(target, "old");
+    File.WriteAllText(stage, "new");
+    SelfUpdate.ReplaceWithBackup(stage, target, backup);
+    Assert(File.ReadAllText(target) == "new" && File.ReadAllText(backup) == "old", "EXE replacement preserves previous file");
+    SelfUpdate.RestoreBackup(backup, target);
+    Assert(File.ReadAllText(target) == "old", "rollback restores old file");
+    var setupName = "Observer-Control-Center-Setup-2.1.0-win-x64.exe";
+    var setupOnly = JsonSerializer.Serialize(new { tag_name = "v2.1.0", assets = new[] {
+        new { name = setupName, browser_download_url = prefix + setupName, size = 12345 },
+        new { name = setupName + ".sha256", browser_download_url = prefix + setupName + ".sha256", size = 115 }
+    }});
+    Assert(GitHubReleaseClient.ParseLatest(setupOnly, UpdateInstaller.OfficialRepository, stable)?.Installer == null, "setup-only release cannot be self-installed");
+}
+finally { Directory.Delete(testDir, true); }
 Console.WriteLine($"ALL {passed} UPDATE CHECKS PASSED");

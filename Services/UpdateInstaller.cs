@@ -7,8 +7,9 @@ using System.Text.Json;
 namespace Observer.ControlCenter.Services;
 
 public sealed record InstallerAsset(string Name, Uri DownloadUrl, Uri ChecksumUrl, long Size);
+public sealed record VerifiedUpdate(string Path, string Sha256);
 
-/// <summary>Opt-in installer download from the official repository only. Never launches a process.</summary>
+/// <summary>Opt-in EXE download from the official repository only. Never launches a process.</summary>
 public static class UpdateInstaller
 {
     public const string OfficialRepository = "KingProjects12/Observer-Control-Center";
@@ -21,7 +22,7 @@ public static class UpdateInstaller
         if (!string.Equals(repository, OfficialRepository, StringComparison.OrdinalIgnoreCase)
             || version.Prerelease.Length != 0 || tag != "v" + version
             || !root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array) return null;
-        string name = $"Observer-Control-Center-Setup-{version}-win-x64.exe";
+        string name = "Observer.ControlCenter.exe";
         string prefix = $"https://github.com/{OfficialRepository}/releases/download/{tag}/";
         long size = 0;
         bool hasChecksum = false;
@@ -65,7 +66,7 @@ public static class UpdateInstaller
         {
             if (!AllowedUri(uri)) throw new InvalidDataException("Недопустимый адрес загрузки.");
             using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            request.Headers.UserAgent.ParseAdd("Observer-ControlCenter-Installer/1.0");
+            request.Headers.UserAgent.ParseAdd("Observer-ControlCenter-EXE-Update/2.0");
             var response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
             if ((int)response.StatusCode is 301 or 302 or 303 or 307 or 308)
             {
@@ -81,20 +82,21 @@ public static class UpdateInstaller
         throw new InvalidDataException("Слишком много перенаправлений загрузки.");
     }
 
-    public static async Task<string> DownloadAsync(InstallerAsset asset, IProgress<int>? progress, CancellationToken cancellationToken)
+    public static async Task<VerifiedUpdate> DownloadAsync(InstallerAsset asset, IProgress<int>? progress, CancellationToken cancellationToken)
     {
         // Revalidate even if the caller supplies a constructed InstallerAsset.
         const string prefix = "https://github.com/" + OfficialRepository + "/releases/download/";
         string name = asset.Name;
-        if (!name.StartsWith("Observer-Control-Center-Setup-", StringComparison.Ordinal)
-            || !name.EndsWith("-win-x64.exe", StringComparison.Ordinal)
-            || !ReleaseVersion.TryParse(name["Observer-Control-Center-Setup-".Length..^"-win-x64.exe".Length], out var version)
-            || version.Prerelease.Length != 0
-            || name != $"Observer-Control-Center-Setup-{version}-win-x64.exe"
-            || asset.DownloadUrl.AbsoluteUri != prefix + "v" + version + "/" + name
-            || asset.ChecksumUrl.AbsoluteUri != asset.DownloadUrl.AbsoluteUri + ".sha256"
+        string url = asset.DownloadUrl.AbsoluteUri;
+        string suffix = "/Observer.ControlCenter.exe";
+        if (name != "Observer.ControlCenter.exe" || !url.StartsWith(prefix, StringComparison.Ordinal)
+            || !url.EndsWith(suffix, StringComparison.Ordinal)
+            || !ReleaseVersion.TryParse(url[prefix.Length..^suffix.Length], out var version)
+            || version.Prerelease.Length != 0 || url != prefix + "v" + version + suffix
+            || version.CompareTo(GitHubReleaseClient.CurrentVersion) <= 0
+            || asset.ChecksumUrl.AbsoluteUri != url + ".sha256"
             || asset.Size <= 0 || asset.Size > MaxInstallerBytes)
-            throw new InvalidDataException("Установщик не соответствует официальному релизу.");
+            throw new InvalidDataException("EXE не соответствует новому официальному релизу.");
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromMinutes(15));
         var ct = timeout.Token;
@@ -116,7 +118,7 @@ public static class UpdateInstaller
             Directory.CreateDirectory(folder);
             using var response = await GetAsync(asset.DownloadUrl, ct).ConfigureAwait(false);
             if (response.Content.Headers.ContentLength is long length && length != asset.Size)
-                throw new InvalidDataException("Размер установщика не совпадает с релизом.");
+                throw new InvalidDataException("Размер EXE не совпадает с релизом.");
             using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
             using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             long total = 0;
@@ -126,7 +128,7 @@ public static class UpdateInstaller
                 while ((read = await stream.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false)) > 0)
                 {
                     total += read;
-                    if (total > asset.Size) throw new InvalidDataException("Размер установщика превышает ожидаемый.");
+                    if (total > asset.Size) throw new InvalidDataException("Размер EXE превышает ожидаемый.");
                     await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
                     hash.AppendData(buffer, 0, read);
                     int percent = (int)(total * 100 / asset.Size);
@@ -139,7 +141,7 @@ public static class UpdateInstaller
             // Preserve Windows Internet-zone marking; never bypass SmartScreen.
             if (OperatingSystem.IsWindows())
                 await File.WriteAllTextAsync(destination + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\n", ct).ConfigureAwait(false);
-            return destination;
+            return new VerifiedUpdate(destination, expected);
         }
         catch { TryDelete(folder); throw; }
     }

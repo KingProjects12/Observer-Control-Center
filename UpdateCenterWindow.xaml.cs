@@ -71,8 +71,8 @@ public partial class UpdateCenterWindow : Window
     {
         if (_installCancellation != null || _installLaunching || _main.LatestUpdate is not { Installer: { } asset } release) return;
         if (MessageBox.Show(this,
-            $"Скачать официальный установщик {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} МиБ), проверить SHA-256 и закрыть Observer для установки?\n\n" +
-            "Сохраните важные отчёты. Установщик может быть без цифровой подписи; не отключайте защиту Windows. Для портативной копии будет запущена обычная установка.",
+            $"Обновить Observer до {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} МиБ)?\n\n" +
+            "Будет скачан только EXE, программа закроется, заменит файл и запустится снова. Сохраните важные отчёты. EXE может быть без цифровой подписи; не отключайте защиту Windows.",
             "Обновление Observer", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
         using var cancellation = new CancellationTokenSource();
@@ -82,8 +82,8 @@ public partial class UpdateCenterWindow : Window
         CancelInstallButton.Visibility = InstallProgress.Visibility = Visibility.Visible;
         CancelInstallButton.IsEnabled = true;
         InstallProgress.Value = 0;
-        StatusText.Text = "Получаю контрольную сумму и установщик…";
-        string? installer = null;
+        StatusText.Text = "Получаю контрольную сумму и новый EXE…";
+        VerifiedUpdate? downloaded = null;
         try
         {
             var progress = new Progress<int>(percent =>
@@ -92,18 +92,17 @@ public partial class UpdateCenterWindow : Window
                 InstallProgress.Value = percent;
                 StatusText.Text = percent == 100 ? "Проверяю SHA-256…" : $"Загрузка обновления: {percent}%";
             });
-            installer = await UpdateInstaller.DownloadAsync(asset, progress, cancellation.Token);
+            downloaded = await UpdateInstaller.DownloadAsync(asset, progress, cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
-            StatusText.Text = "SHA-256 совпадает. Запускаю установщик…";
+            StatusText.Text = "SHA-256 совпадает. Перезапускаю Observer…";
             CancelInstallButton.IsEnabled = false;
-            using var process = Process.Start(new ProcessStartInfo(installer) { UseShellExecute = true })
-                ?? throw new InvalidOperationException("Не удалось запустить установщик.");
+            SelfUpdate.StartHelper(downloaded);
             _installLaunching = true;
             Application.Current.Shutdown();
         }
         catch (Exception ex)
         {
-            if (installer != null) UpdateInstaller.TryDelete(Path.GetDirectoryName(installer)!);
+            if (!_installLaunching && downloaded != null) UpdateInstaller.TryDelete(Path.GetDirectoryName(downloaded.Path)!);
             StatusText.Text = ex is OperationCanceledException
                 ? "Загрузка отменена или превышено время ожидания."
                 : "Обновление не выполнено: " + ex.Message;
