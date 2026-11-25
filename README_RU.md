@@ -1,167 +1,154 @@
 <div align="center">
 
-# 🖥️ Observer Control Center
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/observer-hero-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/observer-hero-light.svg">
+  <img alt="Observer — Network Intelligence Platform" src="docs/media/observer-hero-dark.svg" width="100%">
+</picture>
 
-### Мониторинг сети. Аналитика трафика. Удобная диагностика.
+[![Release](https://img.shields.io/github/v/release/KingProjects12/Observer-Control-Center?style=for-the-badge&label=VERSION&color=16864F)](https://github.com/KingProjects12/Observer-Control-Center/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/KingProjects12/Observer-Control-Center/windows-build.yml?branch=main&style=for-the-badge&label=WINDOWS%20BUILD)](https://github.com/KingProjects12/Observer-Control-Center/actions/workflows/windows-build.yml)
+![Windows](https://img.shields.io/badge/PLATFORM-WINDOWS%20X64-243C30?style=for-the-badge)
+![Read only](https://img.shields.io/badge/MODE-READ%20ONLY-16864F?style=for-the-badge)
+![.NET](https://img.shields.io/badge/.NET-10-243C30?style=for-the-badge)
+[![Downloads](https://img.shields.io/github/downloads/KingProjects12/Observer-Control-Center/total?style=for-the-badge&color=16864F)](https://github.com/KingProjects12/Observer-Control-Center/releases)
 
-Современная панель управления сетью для Windows: тёмный **Black Liquid Glass**, наглядные отчёты, мини-островок и обновления через GitHub.
+**Сбор подключений · Анализ VPN · Диагностика TCP · История наблюдений**
 
-**Windows 10/11 x64 · C# · WPF · .NET 10**
+[![Download Observer](https://img.shields.io/badge/DOWNLOAD-OBSERVER-0B8E50?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/KingProjects12/Observer-Control-Center/releases/latest)
 
-[**📦 Скачать Observer**](https://github.com/KingProjects12/Observer-Control-Center/releases/latest) · [**📋 История выпусков**](https://github.com/KingProjects12/Observer-Control-Center/releases) · [**🛠 Сборки GitHub Actions**](https://github.com/KingProjects12/Observer-Control-Center/actions)
+[Portable EXE](https://github.com/KingProjects12/Observer-Control-Center/releases/latest/download/Observer.ControlCenter.exe) · [Документация](docs/WORKSPACE_GUIDE_RU.md) · [История версий](CHANGELOG.md) · [Roadmap](ROADMAP.md)
 
 [English](README.md) · **Русский**
 
 </div>
 
----
+## Сетевая аналитика — локально
 
-## ✨ Что такое Observer?
+Observer Control Center — приложение Windows для уполномоченных сетевых администраторов. Собирает наблюдения с управляемых Keenetic, помогает определить, какие устройства обращаются к офисным сервисам, проверяет доступность наблюдаемых TCP-назначений и готовит данные для согласования сетевых правил.
 
-**Observer Control Center** — настольное приложение для системных администраторов. Оно помогает изучать сетевые подключения, просматривать сведения об устройствах и анализировать уже собранные отчёты о трафике в одном удобном окне.
+**2.1.0 — Access Analyzer:** сбор, очистка, диагностика и сравнение периодов в одном релизе. Windows-сборки и офлайн-тесты прошли. Новый функционал необходимо проверить на разрешённой реальной сети.
 
-> **2.0.15 — публичный тест.** Перенесено ядро v1.9.1: NAT, VPN REMOTE, TOP Traffic, центральный CSV, CSV/XLSX. Требуется проверка на реальном Keenetic.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/observer-demo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/observer-demo-light.svg">
+  <img alt="Концептуальная панель с демонстрационными числами и статусами" src="docs/media/observer-demo-dark.svg" width="100%">
+</picture>
 
-## 🚀 Возможности
+> **Концептуальный макет, не скриншот приложения.** Все числа и состояния демонстрационные, реальных данных объектов нет.
 
-### 🪟 Интерфейс Black Liquid Glass
+## Основные возможности
 
-- Тёмное полупрозрачное окно с графитовыми панелями и бирюзовыми или лавандовыми акцентами.
-- Три режима прозрачности, включая полностью непрозрачный матовый.
-- Мини-островок для компактного отображения состояния и возврата к основному окну.
-- Плавные переходы, изменение размеров окна и тёмная полоса прокрутки.
-- Цветной журнал событий: **зелёный** — успех, **красный** — ошибка, **синий** — система, **жёлтый** — предупреждение.
-- Копирование всего журнала кнопкой **«КОПИРОВАТЬ ВСЁ»** или выделенного текста через `Ctrl+C`.
+| Модуль | Возможности | Статус |
+| :--- | :--- | :--- |
+| Network Discovery | Снимки NAT, до 100 явно заданных IP роутеров | 🟢 Реализовано |
+| VPN REMOTE | Существующий VPN-маршрут, прогресс и цветной журнал | 🟢 Реализовано |
+| Access Analyzer | Очистка, направление, IP / порт / протокол, связи источников | 🟢 Реализовано |
+| TCP Diagnostics | Проверка наблюдаемых частных TCP-назначений, открыто / отказ / тайм-аут | 🟢 Реализовано |
+| Повторный сбор | Проблемные роутеры, индивидуальные данные входа на сессию, дополнение отчёта | 🟢 Реализовано |
+| Connection History | Сравнение двух CSV-периодов по назначениям и источникам | 🟢 Реализовано |
+| TOP Traffic | Четыре периода, рейтинг устройств, CSV/XLSX | 🟢 Реализовано |
+| Самообновление | Проверка EXE, резервная копия, перезапуск | 🟢 Реализовано |
+| UDP | Сохранение наблюдений без проверки через TCP | 🟡 Только наблюдение |
 
-**Важно:** эффект основан на прозрачности окна WPF — это не системное размытие Acrylic.
+Статусы обозначают реализацию функций, а не результаты подключения или совместимость со всеми роутерами.
 
-### 📊 Трафик и сетевые подключения
+## Архитектура
 
-- Импорт отчётов `08_Top_Traffic.csv`.
-- Статистика устройств, суммарный трафик, графики и рейтинг потребления.
-- Поиск по имени устройства, IP-адресу и MAC-адресу.
-- Импорт `01_All_Connections.csv` для просмотра подключений.
-- Открытие папок с локальными отчётами из приложения.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/observer-architecture-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/observer-architecture-light.svg">
+  <img alt="Сбор, нормализация, проверка и анализ данных" src="docs/media/observer-architecture-dark.svg" width="100%">
+</picture>
 
-Показатели отражают содержимое импортированных файлов, а не весь сетевой трафик в реальном времени.
+- **Сбор:** NAT или CSV центрального шлюза; исходные снимки и отчёты остаются локально.
+- **Очистка:** проверка IPv4, направления и портов, исключение повторного импорта без изменения оригиналов.
+- **Проверка:** отдельная разрешённая TCP-проверка наблюдаемых назначений, без прикладных данных.
+- **Анализ:** экспорт доказательств, сравнение периодов и согласование назначения сервисов до изменения правил.
 
-### 🔍 Сбор данных, диагностика и обновления
+<details>
+<summary><strong>Форматы отчётов и история</strong></summary>
 
-- «Подключение / NAT»: логин, пароль, целевая сеть /24, снимки, экспорт CSV и Excel.
-- VPN REMOTE использует существующий разрешённый VPN; TOP Traffic поддерживает четыре периода. Импорт центрального CSV и демо в меню «Инструменты» окна сбора.
-- Сохраняются исходные данные, частичные отчёты, сравнение и флаги трафика. Пароли не сохраняются. x-ndw4 не поддерживается.
+| Файл | Назначение |
+|---|---|
+| `Office_Connections_All_Routers.xlsx` | Общий NAT по роутерам |
+| `07_Office_To_Connections.csv` | Исходные наблюдения в офис |
+| `00_Router_Status.csv` | Охват и ошибки сбора |
+| `Office_Access_Analysis.xlsx` | Полный анализ доступов |
+| `Office_IP_Port.csv` | Уникальные назначения с протоколом |
+| `Office_Source_Rules.csv` | Связи источник → офис |
+| `Import_Audit.csv` | Аудит импорта и очистки |
+| `Office_Changes.csv` / `Office_Source_Changes.csv` | Изменения между периодами |
 
+Папка: `%LOCALAPPDATA%\KeeneticObserver\Results\`. Повторный сбор работает в текущем окне, история основана на сохранённых CSV.
 
-- Проверка доступности **TCP-портов 80 и 443** по вручную указанному IP-адресу, без изменения настроек устройства.
-- Уведомления о новых версиях, опубликованных в GitHub Releases.
-- Самообновление официального EXE с подтверждением, прогрессом, проверкой размера и SHA-256, резервной копией и перезапуском без мастера установки.
-
-Проверка TCP-порта не означает вход в интерфейс роутера или авторизацию в Keenetic API. Начиная с 2.0.10 обновление заменяет EXE без мастера установки; язык приложения выбирается в установщике и сохраняется при обновлении.
-
----
+</details>
 
 ## Быстрый старт
 
-1. Нажмите «Подключение / NAT», укажите IP роутера, логин, пароль и сеть офиса в формате IPv4 /24.
-2. Выберите HTTPS (рекомендуется), либо подтвердите HTTP только в доверенной разрешённой сети. Нажмите «Собрать NAT».
-3. Выберите нужный отчёт и нажмите «Показать в Observer» или «Открыть Excel».
-4. Для уже подключённого корпоративного VPN используйте VPN REMOTE. Для истории объёма трафика — «Собрать трафик» и нужный период.
-5. Второстепенные действия находятся в «Инструментах»; импорт центрального CSV и демо — в инструментах окна сбора.
+1. Скачайте [последний релиз](https://github.com/KingProjects12/Observer-Control-Center/releases/latest) для Windows x64.
+2. Откройте «Подключение / NAT» или VPN REMOTE при уже подключённом разрешённом VPN.
+3. Введите IPv4 роутеров по одному на строку, данные входа и сеть офиса /24. Предпочтителен HTTPS; HTTP — только в доверенной разрешённой сети.
+4. Нажмите «СОБРАТЬ NAT», проверьте статусы, откройте отчёты или «АНАЛИЗ ДОСТУПОВ».
+5. Выберите исходные CSV NAT, запустите анализ, при необходимости TCP-проверку и экспорт. Для сравнения выберите два периода отдельно.
 
-## 📦 Скачать и установить
+[Инструкция по рабочей области](docs/WORKSPACE_GUIDE_RU.md) · [Чек-лист 2.1.0](docs/TEST_2.1.0_RU.md)
 
 <details>
-<summary><strong>Обычная установка Windows</strong></summary>
+<summary><strong>Установка, обновления и безопасность Windows</strong></summary>
 
-1. Откройте [последний выпуск Observer](https://github.com/KingProjects12/Observer-Control-Center/releases/latest).
-2. В разделе **Assets** скачайте `Observer-Control-Center-Setup-<version>-win-x64.exe`.
-3. Запустите установщик и пройдите мастер установки.
-4. Откройте **Observer Control Center** из меню «Пуск» или через ярлык.
+- Установщик: `Observer-Control-Center-Setup-<version>-win-x64.exe`.
+- Portable: `Observer.ControlCenter.exe`.
+- Обе сборки самодостаточны, Windows 10/11 x64. Язык установщика сохраняется при обновлении.
+- «Инструменты → Обновления» — замена официального EXE с проверкой SHA-256, резервной копией и перезапуском.
+- Доверенной Authenticode-подписи пока нет. Не отключайте защиту Windows. SHA-256 подтверждает целостность, но не личность издателя.
 
 </details>
 
+## Дорожная карта
+
+| Этап | Задача | Состояние |
+|---|---|---|
+| 2.0.17 | Очистка и диагностика TCP | Включено в 2.1.0 |
+| 2.0.18 | Повторный сбор и индивидуальная авторизация | Включено в 2.1.0 (IP проверяется вручную) |
+| 2.0.19 | История и сравнение периодов | Включено в 2.1.0 |
+| [2.1.0](https://github.com/KingProjects12/Observer-Control-Center/releases/tag/v2.1.0) | Network Intelligence Platform | Опубликовано |
+
+[Полная дорожная карта](ROADMAP.md) · [История версий](CHANGELOG.md) · [Релизы](https://github.com/KingProjects12/Observer-Control-Center/releases)
+
 <details>
-<summary><strong>Запуск без установки</strong></summary>
+<summary><strong>Сборка из исходников и технические требования</strong></summary>
 
-На [странице выпуска](https://github.com/KingProjects12/Observer-Control-Center/releases/latest) скачайте `Observer.ControlCenter.exe` и запустите файл на Windows x64.
-
-Обе сборки содержат необходимые компоненты .NET — отдельно устанавливать среду выполнения не требуется.
-
-</details>
-
-> **Защита Windows:** текущие сборки не имеют доверенной цифровой подписи. SmartScreen может предупредить о неизвестном издателе. Не отключайте Defender или SmartScreen. Файлы `.sha256` помогают проверить целостность загрузки, но **не подтверждают издателя**.
-
-## 🆕 Что нового в Observer 2.0.12?
-
-- Возвращён сборщик v1.9.1, VPN REMOTE, TOP Traffic, центральный CSV и Excel.
-- Кнопки диагностики и оформления объединены в «Инструменты».
-
-### Изменения 2.0.10
-
-- Английский и русский интерфейс: язык установщика сохраняется для приложения.
-- Обновление EXE без мастера установки, с резервной копией и перезапуском.
-
-### Изменения 2.0.9
-
-- Более тёмный Black Liquid Glass и переработанные панели.
-- Полностью непрозрачный матовый режим.
-- Загрузка установщика прямо из центра обновлений с прогрессом и отменой.
-- Проверка размера и SHA-256 скачанного файла.
-- Корректное отображение номера версии из параметров сборки.
-
-Копирование журнала, мини-островок и импорт CSV из версии 2.0.8 сохранены.
-
-[**Посмотреть изменения версии 2.0.9**](https://github.com/KingProjects12/Observer-Control-Center/releases/tag/v2.0.9)
-
-## 🛠️ Сборка из исходников
-
-**Требования:** Windows 10/11 x64, .NET 10 SDK или Visual Studio с компонентом разработки классических приложений .NET.
+Windows 10/11 x64, .NET 10 SDK или Visual Studio с разработкой классических приложений .NET.
 
 ```powershell
 git clone https://github.com/KingProjects12/Observer-Control-Center.git
 cd Observer-Control-Center
-
 dotnet run --project Tests/Observer.UpdateTests.csproj -c Release
 dotnet run --project LegacyCollectorTests/LegacyCollectorTests.csproj -c Release
 dotnet build Observer.ControlCenter.csproj -c Release
 .\Publish-SingleExe.cmd
 ```
 
-Результат публикации: `dist\Observer.ControlCenter.exe`.
+Результат: `dist\Observer.ControlCenter.exe`. Артефакт CI не равен релизу GitHub. Интерфейс: WPF Black Liquid Glass (прозрачность, не Acrylic), мини-островок, бирюзовый/лавандовый акцент, русский и английский. x-ndw4 не поддерживается.
 
-Официальные сборки GitHub Actions используют репозиторий `KingProjects12/Observer-Control-Center` в качестве источника обновлений. **Артефакт GitHub Actions — не GitHub Release:** простая сборка в CI не создаёт уведомление об обновлении в программе.
+</details>
 
-## 🧭 Планы развития
+<details>
+<summary><strong>Ограничения, конфиденциальность и лицензия</strong></summary>
 
-- [ ] Тестирование перенесённого ядра v1.9.1 на реальном Keenetic.
-- [ ] Расширение существующих отчётов CSV и XLSX.
-- [ ] История наблюдений, управление объектами и сопоставление устройств с соединениями.
-- [ ] Дополнительные проверки производительности и интерфейса на Windows 10/11.
-- [ ] Цифровая подпись выпусков и улучшение процесса обновлений.
+Только разрешённые сети. VPN REMOTE не создаёт туннель. Снимки NAT могут не показать часть LAN/VPN-потоков, отсутствие записи не означает ненужность доступа. Открытый TCP-порт не доказывает назначение сервиса. UDP наблюдается, но не проверяется. Observer не меняет правила и не хранит пароли на диске. Внутренние IP, дампы и отчёты не публикуйте.
 
-## 🔐 Безопасность
+Интерфейс разработан самостоятельно с визуальным вдохновением от [Atoll](https://github.com/Fuwni/dynamic-island-windows); при использовании кода Atoll необходимо сохранять применимые уведомления MIT. Лицензия Observer пока не выбрана, публичность репозитория не означает право распространения.
 
-Observer предназначен для работы с собственными или разрешёнными к администрированию сетями. Не публикуйте пароли маршрутизаторов, внутреннюю адресацию, дампы NAT и отчёты клиентов в открытых задачах GitHub.
-
-Не открывайте управление маршрутизатором напрямую в интернет. Автоматические проверки исходников полезны, но не заменяют ручную проверку кода, зависимостей и истории коммитов.
-
-## 📄 О проекте и лицензии
-
-Интерфейс Observer разработан отдельно, с визуальным вдохновением от проекта [Atoll](https://github.com/Fuwni/dynamic-island-windows). Если в будущем в Observer будет использоваться код Atoll, необходимо соблюсти соответствующие условия MIT и сохранить уведомления об авторских правах.
-
-**Лицензия Observer пока не выбрана.** Публичный репозиторий не означает автоматического разрешения на изменение и распространение программы.
+</details>
 
 ---
 
 <div align="center">
 
-**💙 Observer Control Center**
+**OBSERVER — Network Intelligence Platform**
 
-*Сетевая аналитика без лишней сложности.*
-
-[Релизы](https://github.com/KingProjects12/Observer-Control-Center/releases) · [Сообщить о проблеме](https://github.com/KingProjects12/Observer-Control-Center/issues)
+[Релизы](https://github.com/KingProjects12/Observer-Control-Center/releases) · [Сообщить о проблеме](https://github.com/KingProjects12/Observer-Control-Center/issues) · [English](README.md)
 
 </div>
-
-
-[Рабочая инструкция](docs/WORKSPACE_GUIDE_RU.md) · [English guide](docs/WORKSPACE_GUIDE_EN.md)
