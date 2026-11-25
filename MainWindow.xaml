@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Icon="/Assets/ObserverBrand.png" Title="Observer Control Center — Preview" Width="1450" Height="900"
         MinWidth="1040" MinHeight="675" WindowStartupLocation="CenterScreen"
-        WindowStyle="None" ResizeMode="CanResize" Opacity="0" Background="#07080D"
+        WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True" Opacity="0" Background="Transparent"
         Foreground="{StaticResource TextMain}" FontFamily="Segoe UI" Loaded="Window_Loaded">
  <Window.Resources>
     <Style x:Key="NavGroupTitle" TargetType="TextBlock" BasedOn="{StaticResource LabelSmall}">
@@ -11,7 +11,7 @@
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
  </Window.Resources>
- <Border BorderBrush="#2C4B52" BorderThickness="1" Background="{StaticResource WindowBg}">
+ <Border x:Name="GlassShell" BorderBrush="#71516B74" BorderThickness="1" Background="{StaticResource WindowBg}">
  <Grid>
   <Grid.RowDefinitions>
    <RowDefinition Height="87"/>
@@ -23,9 +23,9 @@
   <Border Grid.Row="0" BorderBrush="#1A303A" BorderThickness="0,0,0,1">
     <Border.Background>
       <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#141920" Offset="0"/>
-        <GradientStop Color="#090C13" Offset="0.65"/>
-        <GradientStop Color="#191522" Offset="1"/>
+        <GradientStop Color="#D31B2835" Offset="0"/>
+        <GradientStop Color="#C60A1019" Offset="0.65"/>
+        <GradientStop Color="#CC1E192C" Offset="1"/>
       </LinearGradientBrush>
     </Border.Background>
     <Grid MouseLeftButtonDown="Header_MouseLeftButtonDown">
@@ -41,7 +41,7 @@
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="OBSERVER" FontSize="27" FontWeight="Bold" Foreground="#F5FCFF"/>
           <TextBlock Text="  //  CONTROL CENTER" Margin="0,8,0,0" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" FontSize="17"/>
-          <TextBlock Text="  v2.0.7 BLACK LIQUID GLASS" Margin="14,12,0,0" Foreground="{StaticResource TextSecondary}" FontSize="10"/>
+          <TextBlock Text="  v2.0.8 REAL GLASS" Margin="14,12,0,0" Foreground="{StaticResource TextSecondary}" FontSize="10"/>
         </StackPanel>
         <TextBlock Text="WHO  →  WHERE  →  WHEN      /      NETWORK ANALYTICS" FontSize="10" Foreground="#92B0C3" Margin="0,4,0,0"/>
       </StackPanel>
@@ -89,6 +89,7 @@
           <Button Content="◉   Проверить адрес" Style="{StaticResource NavigationButton}" Click="RouterCheck_Click"/>
           <Button Content="＋   Загрузить CSV" Style="{StaticResource NavigationButton}" Click="Import_Click"/>
           <Button Content="◌   Сменить акцент" Style="{StaticResource NavigationButton}" Click="Theme_Click"/>
+           <Button x:Name="GlassModeButton" Content="✦   Стекло: ПРОЗРАЧНО" Style="{StaticResource NavigationButton}" Click="Glass_Click" ToolTip="Переключить уровень прозрачности: прозрачно, максимум, матово"/>
           <TextBlock Text="ТЕКУЩАЯ ВЕРСИЯ" Style="{StaticResource NavGroupTitle}"/>
           <TextBlock Text="✓ CSV / таблицы / фильтры" Foreground="#7FC8C7" FontSize="11" Margin="9,0,0,7"/>
           <TextBlock Text="✓ HTTP/HTTPS проверка TCP" Foreground="#7FC8C7" FontSize="11" Margin="9,0,0,7"/>
@@ -194,37 +195,23 @@
       </Grid>
       <Border Grid.Row="3" Style="{StaticResource CardBorder}" Padding="14">
         <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-          <Grid Margin="0,0,0,9"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <TextBlock Text="СОБЫТИЯ / ЖУРНАЛ" FontSize="12" FontWeight="Bold"/>
-            <TextBlock Grid.Column="1" Text="ЛОКАЛЬНЫЙ РЕЖИМ · БЕЗ ФОНОВОГО ОПРОСА" Foreground="{DynamicResource Accent}" FontSize="10"/>
+          <Grid Margin="0,0,0,9">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock Text="СОБЫТИЯ / ЖУРНАЛ" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="Выдели текст и нажми Ctrl+C" Foreground="{StaticResource TextSecondary}" FontSize="10" VerticalAlignment="Center" Margin="0,0,13,0"/>
+              <Button Content="⧉  КОПИРОВАТЬ ВСЁ" Style="{StaticResource FlatButton}" Click="CopyAllLogs_Click" ToolTip="Скопировать все строки журнала с отметками времени" Padding="9,5"/>
+            </StackPanel>
           </Grid>
-          <ListBox Grid.Row="1" x:Name="LogList" Background="#05070C" Foreground="#BBCBD8"
-                   FontFamily="Cascadia Mono,Consolas" FontSize="11" BorderThickness="0"
-                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.ItemContainerStyle>
-              <Style TargetType="ListBoxItem">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Padding" Value="3,3"/>
-                <Setter Property="Focusable" Value="False"/>
-                <Setter Property="Template">
-                  <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                      <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                        <ContentPresenter/>
-                      </Border>
-                    </ControlTemplate>
-                  </Setter.Value>
-                </Setter>
-              </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.ItemTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding Text}" Foreground="{Binding Color}" TextWrapping="NoWrap"/>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+          <RichTextBox Grid.Row="1" x:Name="LogList" Background="#D9070A10" Foreground="#BBCBD8"
+                       FontFamily="Consolas" FontSize="11" BorderThickness="0" Padding="7,4"
+                       IsReadOnly="True" IsDocumentEnabled="False" AcceptsTab="False"
+                       SelectionBrush="#4D458D98" CaretBrush="#43D9DC"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto">
+             <FlowDocument PagePadding="0" FontFamily="Consolas" FontSize="11"
+                           ColumnWidth="999999" TextAlignment="Left"/>
+          </RichTextBox>
         </Grid>
       </Border>
     </Grid>
@@ -243,11 +230,23 @@
       </StackPanel>
     </StackPanel>
   </Border>
-  <Grid Grid.Row="2" Background="#07090F">
+  <Grid Grid.Row="2" Background="#D0080B12">
     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
     <TextBlock x:Name="BottomStatus" Text="READY // Откройте экспорт v1.9.1 или импортируйте CSV" VerticalAlignment="Center"
                Foreground="#74C6CA" FontSize="11" Margin="18,0,0,0"/>
-    <TextBlock Grid.Column="1" Text="OBSERVER 2.0.7 PREVIEW  •  AUTHORIZED NETWORKS ONLY" Foreground="#6D91A5" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
+    <TextBlock Grid.Column="1" Text="OBSERVER 2.0.8 PREVIEW  •  AUTHORIZED NETWORKS ONLY" Foreground="#6D91A5" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
+     <Thumb Grid.ColumnSpan="2" x:Name="CornerResizeGrip" Width="20" Height="20" HorizontalAlignment="Right"
+            VerticalAlignment="Bottom" Margin="0,0,1,1" Cursor="SizeNWSE"
+            DragDelta="CornerResizeGrip_DragDelta" ToolTip="Изменить размер окна">
+       <Thumb.Template>
+         <ControlTemplate TargetType="Thumb">
+           <Grid Background="Transparent">
+             <Path Stroke="#5A9EA9" StrokeThickness="1.6"
+                   Data="M 15,5 L 5,15 M 15,10 L 10,15"/>
+           </Grid>
+         </ControlTemplate>
+       </Thumb.Template>
+     </Thumb>
   </Grid>
  </Grid>
  </Border>
