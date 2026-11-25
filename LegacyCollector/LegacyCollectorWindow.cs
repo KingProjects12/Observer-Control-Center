@@ -43,6 +43,7 @@ internal sealed class LegacyCollectorWindow : Window
         Title = T("Observer · Network collector", "Observer · Сбор данных");
         Width = 810; Height = 880; MinWidth = 600; MinHeight = 600;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        DarkTitleBar.Apply(this);
         Background = new SolidColorBrush(Color.FromRgb(7,9,12)); Foreground = Brushes.White;
         FontFamily = new FontFamily("Segoe UI");
         var root = new StackPanel { Margin = new Thickness(24) };
@@ -74,28 +75,28 @@ internal sealed class LegacyCollectorWindow : Window
         _period = new ComboBox { ItemsSource = new[] { T("3 minutes", "3 минуты"), T("1 hour", "1 час"), T("3 hours", "3 часа"), T("24 hours", "24 часа") }, SelectedIndex = traffic ? 3 : 0 }; section.Children.Add(_period);
         Group("03 / ACTIONS", "03 / ДЕЙСТВИЯ", "Choose a collection or test the existing VPN route. Extra actions are under Tools.", "Выберите сбор или проверку существующего VPN-маршрута. Дополнительные действия — в инструментах.");
         var buttons = new WrapPanel { Margin = new Thickness(0,12,0,4) }; section.Children.Add(buttons);
-        Button Button(string label, RoutedEventHandler handler, bool accent = false)
+        Button Button(string label, RoutedEventHandler handler, bool accent = false, string? hint = null)
         {
-            var b = new Button { Content = label, Style = (Style)FindResource(accent ? "AccentButton" : "FlatButton"), Margin = new Thickness(0,0,8,8) }; b.Click += handler; buttons.Children.Add(b); return b;
+            var b = new Button { Content = label, Style = (Style)FindResource(accent ? "AccentButton" : "FlatButton"), Margin = new Thickness(0,0,8,8), ToolTip=hint }; b.Click += handler; buttons.Children.Add(b); return b;
         }
-        _commands.Add(Button(T("COLLECT NAT", "СОБРАТЬ NAT"), async (_,_) => await Run("nat"), true));
-        _commands.Add(Button(T("TOP TRAFFIC", "ТОП ТРАФИКА"), async (_,_) => await Run("traffic"), true));
-        _commands.Add(Button(T("VPN / CHECK TCP", "VPN / ПРОВЕРИТЬ TCP"), async (_,_) => await Run("probe")));
+        _commands.Add(Button(T("COLLECT NAT", "СОБРАТЬ NAT"), async (_,_) => await Run("nat"), true, T("Read active connections and match office destinations.", "Собрать активные соединения и найти назначения в офис.")));
+        _commands.Add(Button(T("TOP TRAFFIC", "ТОП ТРАФИКА"), async (_,_) => await Run("traffic"), true, T("Read the selected traffic monitor window.", "Собрать трафик за выбранный период.")));
+        _commands.Add(Button(T("VPN / CHECK TCP", "VPN / ПРОВЕРИТЬ TCP"), async (_,_) => await Run("probe"), false, T("Test TCP reachability using the existing route; does not create a VPN.", "Проверить доступность TCP по существующему маршруту; VPN не создаётся.")));
         _commands.Add(Button(T("TOOLS ▾", "ИНСТРУМЕНТЫ ▾"), (sender,_) => {
             var menu = new ContextMenu { PlacementTarget=(UIElement)sender, Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom };
             var importItem = new MenuItem { Header=T("Import central flow CSV", "Импорт CSV центрального шлюза") }; importItem.Click += async (_,_) => await Run("import"); menu.Items.Add(importItem);
             var demoItem = new MenuItem { Header=T("Offline demo test", "Офлайн демо-тест") }; demoItem.Click += async (_,_) => await Run("demo"); menu.Items.Add(demoItem);
             menu.IsOpen=true;
         }));
-        _stop = Button(T("STOP", "СТОП"), (_,_) => _running?.Cancel()); _stop.IsEnabled = false;
+        _stop = Button(T("STOP", "СТОП"), (_,_) => _running?.Cancel()); _stop.IsEnabled = false; _stop.ToolTip=T("Cancel collection and retain available results.","Остановить сбор, сохранить доступные результаты.");
         Group("04 / RESULTS", "04 / РЕЗУЛЬТАТЫ", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
         Label(T("Report view", "Отображение отчёта"));
         _view = new ComboBox { DisplayMemberPath = "Label" }; section.Children.Add(_view);
         _view.SelectionChanged += (_,_) => { if (_show != null) _show.IsEnabled = _running == null && _view.SelectedItem != null; };
         var output = new WrapPanel { Margin = new Thickness(0,10,0,4) }; section.Children.Add(output); buttons = output;
-        _show = Button(T("SHOW IN OBSERVER", "ПОКАЗАТЬ В OBSERVER"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); DialogResult = true; } }); _show.IsEnabled = false;
-        _excel = Button(T("OPEN EXCEL", "ОТКРЫТЬ EXCEL"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false;
-        _reports = Button(T("OPEN REPORTS", "ОТКРЫТЬ ОТЧЁТЫ"), (_,_) => Open(_folder)); _reports.IsEnabled = false;
+        _show = Button(T("SHOW IN OBSERVER", "ПОКАЗАТЬ В OBSERVER"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); DialogResult = true; } }); _show.IsEnabled = false; _show.ToolTip=T("Open the selected CSV in the main table.","Показать выбранный CSV в главной таблице.");
+        _excel = Button(T("OPEN EXCEL", "ОТКРЫТЬ EXCEL"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false; _excel.ToolTip=T("Open the generated Excel workbook.","Открыть сформированный файл Excel.");
+        _reports = Button(T("OPEN REPORTS", "ОТКРЫТЬ ОТЧЁТЫ"), (_,_) => Open(_folder)); _reports.IsEnabled = false; _reports.ToolTip=T("Open the current report folder.","Открыть папку текущего отчёта.");
         Group("05 / ACTIVITY", "05 / ЖУРНАЛ", "Progress and diagnostic details. Copy the log when troubleshooting.", "Прогресс и диагностика. При ошибке скопируйте журнал.");
         _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Turquoise }; section.Children.Add(_status);
         _log = new TextBox { IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = Brushes.Black, Foreground = Brushes.White, Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);

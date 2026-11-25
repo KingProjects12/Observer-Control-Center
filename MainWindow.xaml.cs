@@ -30,7 +30,9 @@ public partial class MainWindow : Window
     private int _glassMode;
     private bool _windowTransitionBusy;
 
-    public MainWindow()
+    public MainWindow() : this(false) { }
+
+    internal MainWindow(bool offlineUiCheck)
     {
         InitializeComponent();
         LogList.Document.Blocks.Clear();
@@ -41,7 +43,8 @@ public partial class MainWindow : Window
         AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
         AddLog(UiText.T("READ-ONLY // Keenetic NAT / VPN / TOP Traffic collector. Credentials are not stored.", "READ-ONLY // Сбор NAT / VPN / TOP Traffic. Пароли не сохраняются."));
         ShowPage("overview");
-        StartUpdateChecks();
+        if (!offlineUiCheck) StartUpdateChecks();
+        PreviewKeyDown += (_, e) => { if (e.Key == Key.F1) { e.Handled = true; Help_Click(this, new RoutedEventArgs()); } };
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)

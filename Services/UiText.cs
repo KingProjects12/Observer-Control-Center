@@ -19,11 +19,32 @@ public static class UiText
             }
             catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException) { }
         }
+        ApplyLanguage(language);
+    }
+    internal static void ApplyLanguage(string? language)
+    {
         IsRussian = ResolveRussian(language);
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(IsRussian ? "ru-RU" : "en-US");
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
     }
     public static string KeeneticConnect => T("◉   Connect / NAT", "◉   Подключение / NAT");
+    public static string WorkspaceHeading => T("Workspace", "Рабочая область");
+    public static string WorkspaceHint => T("Collect · inspect · export", "Сбор · анализ · экспорт");
+    public static string HelpButton => T("?   Guide / F1", "?   Справка / F1");
+    public static string HelpHint => T("Explain every work action", "Описание рабочих кнопок и порядок действий");
+    public static string HintImport => T("Import a local CSV report", "Импорт локального CSV");
+    public static string HintTools => T("Extra diagnostics and appearance options", "Дополнительная диагностика и оформление");
+    public static string HintUpdates => T("Check and install an official update", "Проверить и установить официальное обновление");
+    public static string HintIsland => T("Switch to the compact mini island", "Перейти к компактному мини-островку");
+    public static string HintMinimize => T("Minimize to taskbar", "Свернуть на панель задач");
+    public static string HintMaximize => T("Maximize or restore window", "Развернуть или восстановить окно");
+    public static string HintClose => T("Close Observer", "Закрыть Observer");
+    public static string HintSave => T("Save the automatic update preference", "Сохранить настройку автопроверки");
+    public static string HintCheck => T("Check GitHub Releases for a newer version", "Проверить наличие новой версии на GitHub");
+    public static string HintInstall => T("Download verified EXE and restart", "Скачать проверенный EXE и перезапустить");
+    public static string HintCancel => T("Cancel the active download", "Отменить текущую загрузку");
+    public static string HintRelease => T("Open the official release page", "Открыть официальную страницу релиза");
+    public static string HintSkip => T("Hide notification for this version", "Скрыть уведомление об этой версии");
     public static string GroupAnalytics => T("01 / ANALYTICS", "01 / АНАЛИТИКА");
     public static string GroupCollect => T("02 / COLLECTION", "02 / СБОР ДАННЫХ");
     public static string GroupReports => T("03 / REPORTS", "03 / ОТЧЁТЫ");

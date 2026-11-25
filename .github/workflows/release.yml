@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/release-requests/public-v2.0.13.txt'
+      - '.github/release-requests/public-v2.0.15.txt'
   workflow_dispatch:
     inputs:
       version:
@@ -34,7 +34,7 @@ jobs:
             '${{ github.event.inputs.version }}'
           } elseif ($env:GITHUB_REF -eq 'refs/heads/main') {
             # One-time main-branch release, triggered only when its marker is first merged.
-            'v2.0.13'
+            'v2.0.15'
           } else {
             $env:GITHUB_REF_NAME
           }
@@ -67,6 +67,9 @@ jobs:
           if (!(Test-Path $exe)) { throw "EXE missing" }
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Observer.ControlCenter.exe" | Set-Content -Path "$exe.sha256" -Encoding ascii
+      - name: Offline WPF smoke test (English and Russian)
+        shell: pwsh
+        run: ./tools/Run-UiSmoke.ps1
       - name: Build Windows installer
         shell: pwsh
         run: |

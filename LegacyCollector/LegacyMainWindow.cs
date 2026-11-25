@@ -31,6 +31,7 @@ public partial class MainWindow
         var glass = new MenuItem { Header = GlassModeButton.Content?.ToString() ?? UiText.X022 }; glass.Click += Glass_Click; menu.Items.Add(glass);
         Group("SYSTEM","СИСТЕМА");
         Item("Updates","Обновления",Updates_Click);
+        Item("Guide / F1","Справка / F1",Help_Click);
         menu.IsOpen=true;
     }
 }

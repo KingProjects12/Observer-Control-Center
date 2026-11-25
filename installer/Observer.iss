@@ -1,7 +1,7 @@
 ; Observer Control Center — per-user Windows installer.
 ; Unsigned preview installers may still trigger Microsoft SmartScreen.
 #ifndef MyAppVersion
-  #define MyAppVersion "2.0.7-preview.1"
+  #define MyAppVersion "2.0.15"
 #endif
 
 #define AppName "Observer Control Center"
@@ -25,8 +25,12 @@ SetupIconFile=..\Assets\ObserverApp.ico
 UninstallDisplayIcon={app}\{#AppExe}
 Compression=lzma2
 SolidCompression=yes
-WizardStyle=modern
-WizardSizePercent=105
+WizardStyle=modern dark
+WizardSizePercent=115
+WizardImageFile=..\Assets\ObserverSetupBanner.png
+WizardSmallImageFile=..\Assets\ObserverBrand.png
+WizardImageBackColor=#080A0D
+WizardSmallImageBackColor=#10151A
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -39,6 +43,10 @@ DisableWelcomePage=no
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+
+[CustomMessages]
+english.ObserverWelcome=Welcome to Observer Control Center — network analytics and read-only collection.
+russian.ObserverWelcome=Добро пожаловать в Observer Control Center — сетевая аналитика и сбор только для чтения.
 
 [Registry]
 Root: HKCU; Subkey: "Software\KingProjects12\ObserverControlCenter"; ValueType: string; ValueName: "Language"; ValueData: "{language}"; Flags: uninsdeletevalue
@@ -55,3 +63,9 @@ Name: "{autodesktop}\Observer Control Center"; Filename: "{app}\{#AppExe}"; Work
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,Observer Control Center}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+procedure InitializeWizard;
+begin
+  WizardForm.WelcomeLabel2.Caption := CustomMessage('ObserverWelcome');
+end;

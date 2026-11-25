@@ -20,7 +20,7 @@
 
 **Observer Control Center** — настольное приложение для системных администраторов. Оно помогает изучать сетевые подключения, просматривать сведения об устройствах и анализировать уже собранные отчёты о трафике в одном удобном окне.
 
-> **2.0.13 — публичный тест.** Перенесено ядро v1.9.1: NAT, VPN REMOTE, TOP Traffic, центральный CSV, CSV/XLSX. Требуется проверка на реальном Keenetic.
+> **2.0.15 — публичный тест.** Перенесено ядро v1.9.1: NAT, VPN REMOTE, TOP Traffic, центральный CSV, CSV/XLSX. Требуется проверка на реальном Keenetic.
 
 ## 🚀 Возможности
 
@@ -162,3 +162,6 @@ Observer предназначен для работы с собственным�
 [Релизы](https://github.com/KingProjects12/Observer-Control-Center/releases) · [Сообщить о проблеме](https://github.com/KingProjects12/Observer-Control-Center/issues)
 
 </div>
+
+
+[Рабочая инструкция](docs/WORKSPACE_GUIDE_RU.md) · [English guide](docs/WORKSPACE_GUIDE_EN.md)

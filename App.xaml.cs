@@ -9,6 +9,13 @@ public partial class App : Application
     {
         UiText.Initialize();
         base.OnStartup(e);
+        if (e.Args.Length == 2 && e.Args[0] == "--ui-smoke")
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            try { UiSmoke.Run(); File.WriteAllText(e.Args[1], "PASS: EN and RU UI construction, navigation and control states"); Shutdown(0); }
+            catch (Exception ex) { File.WriteAllText(e.Args[1], ex.ToString()); Shutdown(1); }
+            return;
+        }
         if (e.Args.Length > 0 && e.Args[0] == SelfUpdate.HelperArgument)
         {
             try { SelfUpdate.RunHelper(e.Args); }

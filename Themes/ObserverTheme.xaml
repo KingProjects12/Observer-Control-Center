@@ -283,6 +283,19 @@
     </Style.Triggers>
   </Style>
 
+  <Style TargetType="ToolTip">
+    <Setter Property="Foreground" Value="{StaticResource TextMain}"/>
+    <Setter Property="Background" Value="#10171C"/>
+    <Setter Property="BorderBrush" Value="#34515D"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Padding" Value="10,7"/>
+    <Setter Property="MaxWidth" Value="380"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToolTip">
+      <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+        <ContentPresenter/>
+      </Border>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
   <Style TargetType="Button" BasedOn="{StaticResource FlatButton}"/>
   <Style TargetType="TextBox" BasedOn="{StaticResource TextInput}"/>
   <Style x:Key="GlassSeparator" TargetType="Separator">

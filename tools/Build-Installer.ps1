@@ -26,13 +26,20 @@ function Find-Iscc {
     return $null
 }
 $iscc = Find-Iscc
+if ($iscc) {
+    $compilerVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($iscc)
+    if ([version]::new($compilerVersion.FileMajorPart,$compilerVersion.FileMinorPart) -lt [version]"6.6") { $iscc = $null }
+}
 if (!$iscc -and $InstallInno) {
     Write-Host '[INSTALL] Fetching Inno Setup using Chocolatey on the GitHub Windows runner.'
-    & choco install innosetup -y --no-progress --limit-output
+    & choco upgrade innosetup -y --no-progress --limit-output
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup installation failed: $LASTEXITCODE" }
     $iscc = Find-Iscc
 }
-if (!$iscc) { throw 'Inno Setup 6+ not found; install it from jrsoftware.org or enable -InstallInno on CI.' }
+if (!$iscc) { throw 'Inno Setup 6.6+ required for dark setup; install it from jrsoftware.org or enable -InstallInno on CI.' }
+$compilerVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($iscc)
+if ([version]::new($compilerVersion.FileMajorPart,$compilerVersion.FileMinorPart) -lt [version]'6.6') { throw 'Inno Setup 6.6+ required.' }
+& "$PSScriptRoot\Generate-InstallerArt.ps1"
 Write-Host "[BUILD] Inno Setup compiler: $iscc"
 & $iscc "/Q" "/DMyAppVersion=$Version" 'installer\Observer.iss'
 if ($LASTEXITCODE -ne 0) { throw "ISCC exited with code $LASTEXITCODE" }

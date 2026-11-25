@@ -50,11 +50,11 @@
         <Border BorderBrush="#206C6F" Background="#113C41" CornerRadius="11" Padding="12,7" Margin="0,0,12,0">
           <TextBlock Text="{x:Static loc:UiText.X005}" FontSize="10" FontWeight="SemiBold" Foreground="#70E5D7"/>
         </Border>
-        <Button x:Name="BtnUpdates" Content="{x:Static loc:UiText.X006}" Style="{StaticResource FlatButton}" Click="Updates_Click" Margin="0,0,8,0"/>
-        <Button x:Name="BtnIsland" Content="{x:Static loc:UiText.X007}" Style="{StaticResource FlatButton}" Click="Island_Click" Margin="0,0,8,0"/>
-        <Button Content="—" Width="43" Style="{StaticResource FlatButton}" Click="Minimize_Click" Margin="0,0,5,0"/>
-        <Button Content="▢" Width="43" Style="{StaticResource FlatButton}" Click="Maximize_Click" Margin="0,0,5,0"/>
-        <Button Content="×" Width="43" Style="{StaticResource FlatButton}" Click="Exit_Click"/>
+        <Button x:Name="BtnUpdates" Content="{x:Static loc:UiText.X006}" Style="{StaticResource FlatButton}" Click="Updates_Click" ToolTip="{x:Static loc:UiText.HintUpdates}" Margin="0,0,8,0"/>
+        <Button x:Name="BtnIsland" Content="{x:Static loc:UiText.X007}" Style="{StaticResource FlatButton}" Click="Island_Click" ToolTip="{x:Static loc:UiText.HintIsland}" Margin="0,0,8,0"/>
+        <Button Content="—" Width="43" Style="{StaticResource FlatButton}" ToolTip="{x:Static loc:UiText.HintMinimize}" Click="Minimize_Click" Margin="0,0,5,0"/>
+        <Button Content="▢" Width="43" Style="{StaticResource FlatButton}" ToolTip="{x:Static loc:UiText.HintMaximize}" Click="Maximize_Click" Margin="0,0,5,0"/>
+        <Button Content="×" Width="43" Style="{StaticResource FlatButton}" ToolTip="{x:Static loc:UiText.HintClose}" Click="Exit_Click"/>
       </StackPanel>
     </Grid>
   </Border>
@@ -63,7 +63,7 @@
   <Grid x:Name="WorkspacePanel" Grid.Row="1" Margin="13,13,13,10">
     <Grid.RenderTransform><TranslateTransform Y="0"/></Grid.RenderTransform>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="234"/>
+      <ColumnDefinition Width="246"/>
       <ColumnDefinition Width="13"/>
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
@@ -81,6 +81,8 @@
         </StackPanel>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
          <StackPanel Margin="0,0,4,0">
+          <TextBlock Text="{x:Static loc:UiText.WorkspaceHeading}" FontSize="15" FontWeight="SemiBold" Margin="9,2,0,3"/>
+          <TextBlock Text="{x:Static loc:UiText.WorkspaceHint}" Style="{StaticResource LabelSmall}" Margin="9,0,5,8"/>
           <TextBlock Text="{x:Static loc:UiText.GroupAnalytics}" Style="{StaticResource NavGroupTitle}"/>
           <Button x:Name="NavOverview" Content="{x:Static loc:UiText.X013}" Style="{StaticResource NavigationButton}" Click="Overview_Click" ToolTip="{x:Static loc:UiText.HintOverview}"/>
           <Button x:Name="NavConnections" Content="{x:Static loc:UiText.X015}" Style="{StaticResource NavigationButton}" Click="Connections_Click" ToolTip="{x:Static loc:UiText.HintConnections}"/>
@@ -93,10 +95,11 @@
           <Separator Style="{StaticResource GlassSeparator}"/>
           <TextBlock Text="{x:Static loc:UiText.GroupReports}" Style="{StaticResource NavGroupTitle}"/>
           <Button x:Name="NavReports" Content="{x:Static loc:UiText.X016}" Style="{StaticResource NavigationButton}" Click="Reports_Click" ToolTip="{x:Static loc:UiText.HintReports}"/>
-          <Button Content="{x:Static loc:UiText.X020}" Style="{StaticResource NavigationButton}" Click="Import_Click"/>
+          <Button Content="{x:Static loc:UiText.X020}" Style="{StaticResource NavigationButton}" Click="Import_Click" ToolTip="{x:Static loc:UiText.HintImport}"/>
           <Separator Style="{StaticResource GlassSeparator}"/>
           <TextBlock Text="{x:Static loc:UiText.GroupSystem}" Style="{StaticResource NavGroupTitle}"/>
-          <Button Content="{x:Static loc:UiText.LegacyTools}" Style="{StaticResource NavigationButton}" Click="LegacyTools_Click"/>
+          <Button Content="{x:Static loc:UiText.LegacyTools}" Style="{StaticResource NavigationButton}" Click="LegacyTools_Click" ToolTip="{x:Static loc:UiText.HintTools}"/>
+          <Button x:Name="NavHelp" Content="{x:Static loc:UiText.HelpButton}" Style="{StaticResource NavigationButton}" Click="Help_Click" ToolTip="{x:Static loc:UiText.HelpHint}"/>
           <Button x:Name="GlassModeButton" Visibility="Collapsed" Content="{x:Static loc:UiText.X022}" Style="{StaticResource NavigationButton}" Click="Glass_Click"/>
          </StackPanel>
         </ScrollViewer>
@@ -125,7 +128,7 @@
             <TextBlock Text="{x:Static loc:UiText.X030}" Style="{StaticResource LabelSmall}" Margin="0,0,0,4"/>
             <TextBox x:Name="RouterIP" Text="" Style="{StaticResource TextInput}" ToolTip="{x:Static loc:UiText.X031}"/>
           </StackPanel>
-          <Button Grid.Column="2" Content="{x:Static loc:UiText.LegacyConnect}" Style="{StaticResource AccentButton}" Margin="6,17,0,1" Click="LegacyCollect_Click"/>
+          <Button Grid.Column="2" Content="{x:Static loc:UiText.LegacyConnect}" Style="{StaticResource AccentButton}" Margin="6,17,0,1" Click="LegacyCollect_Click" ToolTip="{x:Static loc:UiText.HintNat}"/>
         </Grid>
       </Border>
       <Grid Grid.Row="1" Margin="0,0,0,10">

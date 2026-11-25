@@ -46,6 +46,9 @@ jobs:
             "-p:ObserverUpdateRepo=$env:GITHUB_REPOSITORY" -o dist
           if ($LASTEXITCODE -ne 0) { throw "publish failed" }
           if (!(Test-Path 'dist/Observer.ControlCenter.exe')) { throw "Missing preview EXE" }
+      - name: Offline WPF smoke test (English and Russian)
+        shell: pwsh
+        run: ./tools/Run-UiSmoke.ps1
       - name: Build Windows installer (per-user, no administrator rights)
         shell: pwsh
         run: |

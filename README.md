@@ -78,3 +78,6 @@ Use only on networks you own or administer with permission. Do not publish route
 The interface is independently developed with visual inspiration from [Atoll](https://github.com/Fuwni/dynamic-island-windows). If Atoll code is incorporated, its MIT notices must be retained. Observer's license has not yet been selected; a public repository does not itself grant redistribution rights.
 
 [Report an issue](https://github.com/KingProjects12/Observer-Control-Center/issues) · [Русская документация](README_RU.md)
+
+
+[Workspace guide](docs/WORKSPACE_GUIDE_EN.md) · [Русская инструкция](docs/WORKSPACE_GUIDE_RU.md)

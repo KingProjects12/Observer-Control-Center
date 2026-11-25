@@ -39,7 +39,7 @@
     <TextBox x:Name="RepoBox" Margin="0,7,0,9" ToolTip="{x:Static loc:UiText.X062}"/>
     <DockPanel LastChildFill="False">
      <CheckBox DockPanel.Dock="Left" x:Name="AutoCheckBox" Content="{x:Static loc:UiText.X063}" VerticalAlignment="Center" Foreground="#E4F2F6"/>
-     <Button DockPanel.Dock="Right" Content="{x:Static loc:UiText.X064}" HorizontalAlignment="Right" x:Name="SaveButton" Click="Save_Click"/>
+     <Button DockPanel.Dock="Right" Content="{x:Static loc:UiText.X064}" HorizontalAlignment="Right" x:Name="SaveButton" ToolTip="{x:Static loc:UiText.HintSave}" Click="Save_Click"/>
     </DockPanel>
    </StackPanel>
   </Border>
@@ -50,13 +50,14 @@
     <TextBlock Text="{x:Static loc:UiText.X066}" Foreground="#9CB5C8" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
    </StackPanel>
   </Border>
-  <WrapPanel Grid.Row="3" Margin="0,0,0,9">
-   <Button x:Name="CheckButton" Content="{x:Static loc:UiText.X067}" Click="Check_Click"/>
-   <Button x:Name="InstallButton" Content="{x:Static loc:UiText.X068}" Click="Install_Click" Visibility="Collapsed" Style="{StaticResource AccentButton}" Margin="0,0,9,6"/>
-   <Button x:Name="CancelInstallButton" Content="{x:Static loc:UiText.X069}" Click="CancelInstall_Click" Visibility="Collapsed"/>
-   <Button x:Name="OpenButton" Content="{x:Static loc:UiText.X070}" Click="Open_Click"/>
-   <Button x:Name="DismissButton" Content="{x:Static loc:UiText.X071}" Click="Dismiss_Click" Visibility="Collapsed"/>
-  </WrapPanel>
+  <StackPanel Grid.Row="3" Margin="0,0,0,9"><WrapPanel>
+   <Button x:Name="CheckButton" ToolTip="{x:Static loc:UiText.HintCheck}" Content="{x:Static loc:UiText.X067}" Click="Check_Click"/>
+   <Button x:Name="InstallButton" ToolTip="{x:Static loc:UiText.HintInstall}" Content="{x:Static loc:UiText.X068}" Click="Install_Click" Visibility="Collapsed" Style="{StaticResource AccentButton}" Margin="0,0,9,6"/>
+   <Button x:Name="CancelInstallButton" ToolTip="{x:Static loc:UiText.HintCancel}" Content="{x:Static loc:UiText.X069}" Click="CancelInstall_Click" Visibility="Collapsed"/>
+  </WrapPanel><WrapPanel Margin="0,3,0,0">
+   <Button x:Name="OpenButton" ToolTip="{x:Static loc:UiText.HintRelease}" Content="{x:Static loc:UiText.X070}" Click="Open_Click"/>
+   <Button x:Name="DismissButton" ToolTip="{x:Static loc:UiText.HintSkip}" Content="{x:Static loc:UiText.X071}" Click="Dismiss_Click" Visibility="Collapsed"/>
+  </WrapPanel></StackPanel>
   <Border Grid.Row="4" Background="#090B0E" CornerRadius="12" BorderThickness="1" BorderBrush="#253940" Padding="15">
    <DockPanel>
     <TextBlock DockPanel.Dock="Top" Text="{x:Static loc:UiText.X072}" Foreground="#48D9E5" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
