@@ -37,8 +37,11 @@ SetupLogging=yes
 DisableWelcomePage=no
 
 [Languages]
-Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+
+[Registry]
+Root: HKCU; Subkey: "Software\KingProjects12\ObserverControlCenter"; ValueType: string; ValueName: "Language"; ValueData: "{language}"; Flags: uninsdeletevalue
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked

@@ -1,140 +1,71 @@
 <div align="center">
 
-# 🖥️ Observer Control Center
+# Observer Control Center
 
-### Мониторинг сети. Аналитика трафика. Удобная диагностика.
+### Network monitoring · Traffic analytics · Diagnostics
 
-Современная панель управления сетью для Windows: тёмный **Black Liquid Glass**, наглядные отчёты, мини-островок и обновления через GitHub.
+A Windows network administration console with Black Liquid Glass, local traffic reports, a mini island and GitHub updates.
 
 **Windows 10/11 x64 · C# · WPF · .NET 10**
 
-[**📦 Скачать Observer**](https://github.com/KingProjects12/Observer-Control-Center/releases/latest) · [**📋 История выпусков**](https://github.com/KingProjects12/Observer-Control-Center/releases) · [**🛠 Сборки GitHub Actions**](https://github.com/KingProjects12/Observer-Control-Center/actions)
+**English** · [Русский](README_RU.md)
+
+[Download](https://github.com/KingProjects12/Observer-Control-Center/releases/latest) · [Releases](https://github.com/KingProjects12/Observer-Control-Center/releases) · [Builds](https://github.com/KingProjects12/Observer-Control-Center/actions)
 
 </div>
 
----
+## Overview
 
-## ✨ Что такое Observer?
+Observer is a desktop console for authorized network administrators. It imports existing CSV reports and helps explore devices, connections and traffic in one place.
 
-**Observer Control Center** — настольное приложение для системных администраторов. Оно помогает изучать сетевые подключения, просматривать сведения об устройствах и анализировать уже собранные отчёты о трафике в одном удобном окне.
+**Latest public release: 2.0.9. Version 2.0.10-preview.2 is under testing.** Direct Keenetic NAT and TOP TRAFFIC API collection is not yet included; the collector remains in v1.9.1. This is a public test project, not a production monitoring system.
 
-> **Текущая версия — 2.0.9, публичный тестовый выпуск.**
-> Приложение умеет импортировать и анализировать готовые CSV-отчёты, но **пока не собирает NAT-соединения и TOP TRAFFIC напрямую с Keenetic**. Проверенный сборщик остаётся в Observer v1.9.1; перенос его функций запланирован.
+## Features
 
-## 🚀 Возможности
+- Black Liquid Glass: three density modes, near-black panels, cyan or lavender accents, fully opaque matte mode. WPF transparency, not Acrylic blur.
+- Animated mini island, resizable main window, dark scrollbars.
+- Colored event log; select and copy text with Ctrl+C or copy all displayed lines.
+- Import `08_Top_Traffic.csv` and `01_All_Connections.csv`; device ranking, totals, charts and filters for names, IP and MAC addresses.
+- Local report folders and read-only TCP checks on ports 80 and 443 of an explicitly supplied address. No router configuration changes or API authentication.
+- GitHub release notifications. The 2.0.10 preview adds verified EXE replacement, backup and restart without a setup wizard; 2.0.9 still launches setup.
+- English and Russian interface in 2.0.10-preview.2. Installer language is saved per user and retained by self-update. Standalone launch defaults to English when no language has been set.
 
-### 🪟 Интерфейс Black Liquid Glass
+## Installation
 
-- Тёмное полупрозрачное окно с графитовыми панелями и бирюзовыми или лавандовыми акцентами.
-- Три режима прозрачности, включая полностью непрозрачный матовый.
-- Мини-островок для компактного отображения состояния и возврата к основному окну.
-- Плавные переходы, изменение размеров окна и тёмная полоса прокрутки.
-- Цветной журнал событий: **зелёный** — успех, **красный** — ошибка, **синий** — система, **жёлтый** — предупреждение.
-- Копирование всего журнала кнопкой **«КОПИРОВАТЬ ВСЁ»** или выделенного текста через `Ctrl+C`.
+1. Open [the latest release](https://github.com/KingProjects12/Observer-Control-Center/releases/latest).
+2. Under Assets, download `Observer-Control-Center-Setup-<version>-win-x64.exe` and run setup.
+3. In the bilingual preview, choose English or Russian in the installer; Observer uses that choice.
+4. Start Observer from the Start menu or shortcut.
 
-**Важно:** эффект основан на прозрачности окна WPF — это не системное размытие Acrylic.
+For portable launch, download `Observer.ControlCenter.exe`. Both distributions are self-contained. Preview builds are available from [GitHub Actions](https://github.com/KingProjects12/Observer-Control-Center/actions).
 
-### 📊 Трафик и сетевые подключения
+**Windows security:** binaries are not yet signed with a trusted Authenticode certificate. SmartScreen may warn. Do not disable Windows protection. SHA-256 verifies integrity, not publisher identity.
 
-- Импорт отчётов `08_Top_Traffic.csv`.
-- Статистика устройств, суммарный трафик, графики и рейтинг потребления.
-- Поиск по имени устройства, IP-адресу и MAC-адресу.
-- Импорт `01_All_Connections.csv` для просмотра подключений.
-- Открытие папок с локальными отчётами из приложения.
+## Build from source
 
-Показатели отражают содержимое импортированных файлов, а не весь сетевой трафик в реальном времени.
-
-### 🔍 Диагностика и обновления
-
-- Проверка доступности **TCP-портов 80 и 443** по вручную указанному IP-адресу, без изменения настроек устройства.
-- Уведомления о новых версиях, опубликованных в GitHub Releases.
-- Загрузка официального установщика из центра обновлений с подтверждением пользователя, отображением прогресса и возможностью отмены.
-- Проверка размера и контрольной суммы SHA-256 скачанного установщика перед запуском обычного мастера установки.
-
-Проверка TCP-порта не означает вход в интерфейс роутера или авторизацию в Keenetic API. Переносимая EXE-версия не заменяется автоматически.
-
----
-
-## 📦 Скачать и установить
-
-<details>
-<summary><strong>Обычная установка Windows</strong></summary>
-
-1. Откройте [последний выпуск Observer](https://github.com/KingProjects12/Observer-Control-Center/releases/latest).
-2. В разделе **Assets** скачайте `Observer-Control-Center-Setup-<version>-win-x64.exe`.
-3. Запустите установщик и пройдите мастер установки.
-4. Откройте **Observer Control Center** из меню «Пуск» или через ярлык.
-
-</details>
-
-<details>
-<summary><strong>Запуск без установки</strong></summary>
-
-На [странице выпуска](https://github.com/KingProjects12/Observer-Control-Center/releases/latest) скачайте `Observer.ControlCenter.exe` и запустите файл на Windows x64.
-
-Обе сборки содержат необходимые компоненты .NET — отдельно устанавливать среду выполнения не требуется.
-
-</details>
-
-> **Защита Windows:** текущие сборки не имеют доверенной цифровой подписи. SmartScreen может предупредить о неизвестном издателе. Не отключайте Defender или SmartScreen. Файлы `.sha256` помогают проверить целостность загрузки, но **не подтверждают издателя**.
-
-## 🆕 Что нового в Observer 2.0.9?
-
-- Более тёмный Black Liquid Glass и переработанные панели.
-- Полностью непрозрачный матовый режим.
-- Загрузка установщика прямо из центра обновлений с прогрессом и отменой.
-- Проверка размера и SHA-256 скачанного файла.
-- Корректное отображение номера версии из параметров сборки.
-
-Копирование журнала, мини-островок и импорт CSV из версии 2.0.8 сохранены.
-
-[**Посмотреть изменения версии 2.0.9**](https://github.com/KingProjects12/Observer-Control-Center/releases/tag/v2.0.9)
-
-## 🛠️ Сборка из исходников
-
-**Требования:** Windows 10/11 x64, .NET 10 SDK или Visual Studio с компонентом разработки классических приложений .NET.
+Requirements: Windows 10/11 x64, .NET 10 SDK or Visual Studio with .NET desktop development.
 
 ```powershell
 git clone https://github.com/KingProjects12/Observer-Control-Center.git
 cd Observer-Control-Center
-
 dotnet run --project Tests/Observer.UpdateTests.csproj -c Release
 dotnet build Observer.ControlCenter.csproj -c Release
 .\Publish-SingleExe.cmd
 ```
 
-Результат публикации: `dist\Observer.ControlCenter.exe`.
+Output: `dist\Observer.ControlCenter.exe`. Official builds lock the GitHub update repository. An Actions artifact is not a GitHub Release.
 
-Официальные сборки GitHub Actions используют репозиторий `KingProjects12/Observer-Control-Center` в качестве источника обновлений. **Артефакт GitHub Actions — не GitHub Release:** простая сборка в CI не создаёт уведомление об обновлении в программе.
+## Roadmap
 
-## 🧭 Планы развития
+- Port authorized Keenetic NAT / TOP TRAFFIC collection from v1.9.1.
+- Network Analytics CSV and XLSX reports, site registry and observation history.
+- Windows 10/11 UI, performance, language and self-update testing.
+- Trusted code signing.
 
-- [ ] Перенос авторизации Keenetic и сбора NAT / TOP TRAFFIC из Observer v1.9.1.
-- [ ] Полноценные отчёты Network Analytics в CSV и XLSX.
-- [ ] История наблюдений, управление объектами и сопоставление устройств с соединениями.
-- [ ] Дополнительные проверки производительности и интерфейса на Windows 10/11.
-- [ ] Цифровая подпись выпусков и улучшение процесса обновлений.
+## Security and license
 
-## 🔐 Безопасность
+Use only on networks you own or administer with permission. Do not publish router credentials, internal addresses, raw NAT dumps or customer reports. Do not expose router administration to the internet. Automated source checks do not replace manual review.
 
-Observer предназначен для работы с собственными или разрешёнными к администрированию сетями. Не публикуйте пароли маршрутизаторов, внутреннюю адресацию, дампы NAT и отчёты клиентов в открытых задачах GitHub.
+The interface is independently developed with visual inspiration from [Atoll](https://github.com/Fuwni/dynamic-island-windows). If Atoll code is incorporated, its MIT notices must be retained. Observer's license has not yet been selected; a public repository does not itself grant redistribution rights.
 
-Не открывайте управление маршрутизатором напрямую в интернет. Автоматические проверки исходников полезны, но не заменяют ручную проверку кода, зависимостей и истории коммитов.
-
-## 📄 О проекте и лицензии
-
-Интерфейс Observer разработан отдельно, с визуальным вдохновением от проекта [Atoll](https://github.com/Fuwni/dynamic-island-windows). Если в будущем в Observer будет использоваться код Atoll, необходимо соблюсти соответствующие условия MIT и сохранить уведомления об авторских правах.
-
-**Лицензия Observer пока не выбрана.** Публичный репозиторий не означает автоматического разрешения на изменение и распространение программы.
-
----
-
-<div align="center">
-
-**💙 Observer Control Center**
-
-*Сетевая аналитика без лишней сложности.*
-
-[Релизы](https://github.com/KingProjects12/Observer-Control-Center/releases) · [Сообщить о проблеме](https://github.com/KingProjects12/Observer-Control-Center/issues)
-
-</div>
+[Report an issue](https://github.com/KingProjects12/Observer-Control-Center/issues) · [Русская документация](README_RU.md)
