@@ -6,7 +6,7 @@ internal sealed class BatchRouterStatus
 {
     public string Router="", Status="", OfficeRows="", AllRows="", ReportFolder="";
 }
-internal sealed record BatchNatResult(string Folder,string Excel,int OfficeCount,int Complete,int Partial,int Failed,int Skipped);
+internal sealed record BatchNatResult(string Folder,string Excel,int OfficeCount,int Complete,int Partial,int Failed,int Skipped,List<Entry> Rows,BatchRouterStatus[] Statuses,string Target);
 
 internal static class BatchNatCollector
 {
@@ -30,8 +30,9 @@ internal static class BatchNatCollector
     // Engine's target is read-only during this operation; each run has its own HTTP session and report folder.
     internal static BatchNatResult Run(string[] routers,string user,string secret,bool https,bool vpn,int samples,int interval,
         string root,CancellationToken token,Action<string> log,
-        Func<string,CancellationToken,Action<string>,CollectionResult>? collect=null)
+        Func<string,CancellationToken,Action<string>,CollectionResult>? collect=null,BatchNatResult? prior=null)
     {
+        if(prior!=null && prior.Target!=Engine.TargetSubnet)throw new ArgumentException("Retry target differs from previous batch.");
         collect ??= (addr,ct,report)=>Engine.Run(false,addr,user,secret,https,samples,interval,ct,report,vpn);
         var statuses=new BatchRouterStatus[routers.Length];
         var rows=new List<Entry>?[routers.Length];
@@ -55,14 +56,31 @@ internal static class BatchNatCollector
                 status.ReportFolder=result.Folder;
                 log("["+addr+"] "+status.Status+" | OFFICE "+status.OfficeRows);
             }
-            catch(OperationCanceledException) { status.Status="CANCELLED"; log("["+addr+"] CANCELLED"); }
-            catch(Exception ex) { status.Status=token.IsCancellationRequested?"CANCELLED":"FAILED: "+ex.GetType().Name; log("["+addr+"] "+status.Status); }
+            catch(Exception ex) { string kind=Engine.Classify(ex,token);status.Status=kind=="STOPPED"?"CANCELLED":"FAILED: "+kind; log("["+addr+"] "+status.Status); }
         });
         var merged=rows.Where(x=>x!=null).SelectMany(x=>x!).ToList();
+        if(prior!=null)
+        {
+            // Keep earlier observations including partial results; update status only for attempted routers.
+            merged=prior.Rows.Concat(merged).ToList();
+            var updated=prior.Statuses.ToDictionary(s=>s.Router,StringComparer.OrdinalIgnoreCase);
+            foreach(var s in statuses)
+            {
+                if(s.Status=="NOT_STARTED"&&updated.ContainsKey(s.Router))continue;
+                if(updated.TryGetValue(s.Router,out var old))
+                {
+                    s.OfficeRows=merged.Count(e=>e.Router==s.Router).ToString(CultureInfo.InvariantCulture);
+                    s.AllRows=(int.Parse(old.AllRows,CultureInfo.InvariantCulture)+int.Parse(s.AllRows,CultureInfo.InvariantCulture)).ToString(CultureInfo.InvariantCulture);
+                    if(string.IsNullOrEmpty(s.ReportFolder))s.ReportFolder=old.ReportFolder;
+                }
+                updated[s.Router]=s;
+            }
+            statuses=updated.Values.ToArray();
+        }
         // Preserve the original per-router repeat indicators; never combine identical local IPs across sites.
         string folder=Path.Combine(root,"Batch_NAT_"+DateTime.UtcNow.ToString("yyyyMMdd_HHmmss",CultureInfo.InvariantCulture)+"_"+Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(folder);
         string excel=Engine.SaveBatchOfficeReport(folder,merged,statuses);
-        return new BatchNatResult(folder,excel,merged.Count,statuses.Count(s=>s.Status=="COMPLETE"),statuses.Count(s=>s.Status=="PARTIAL"),statuses.Count(s=>s.Status.StartsWith("FAILED")),statuses.Count(s=>s.Status is "NOT_STARTED" or "CANCELLED"));
+        return new BatchNatResult(folder,excel,merged.Count,statuses.Count(s=>s.Status=="COMPLETE"),statuses.Count(s=>s.Status=="PARTIAL"),statuses.Count(s=>s.Status.StartsWith("FAILED")),statuses.Count(s=>s.Status is "NOT_STARTED" or "CANCELLED"),merged,statuses,Engine.TargetSubnet);
     }
 }

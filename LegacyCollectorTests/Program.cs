@@ -32,6 +32,20 @@ try
     using var cancel=new CancellationTokenSource();cancel.Cancel();
     var cancelled=BatchNatCollector.Run(routers,"","",true,false,1,1,root,cancel.Token,_=>{},(_,_,_)=>throw new Exception("Cancelled batch must not connect"));
     if(cancelled.Skipped!=3 || cancelled.OfficeCount!=0) throw new Exception("Batch cancellation mismatch");
+    var timed=BatchNatCollector.Run(routers,"","",true,false,1,1,root,CancellationToken.None,_=>{},(_,_,_)=>throw new TaskCanceledException("Simulated timeout"));
+    if(timed.Failed!=3 || timed.Skipped!=0 || timed.Statuses.Any(s=>s.Status!="FAILED: TIMEOUT")) throw new Exception("Timeout classified as cancellation");
+    var retry=BatchNatCollector.Run(new[]{"192.0.2.3"},"","",true,false,1,1,root,CancellationToken.None,_=>{},(_,_,_)=>new CollectionResult(),batch);
+    if(retry.Complete!=2||retry.Partial!=1||retry.OfficeCount!=2||retry.Failed!=0)throw new Exception("Retry merge mismatch");
+    string input=Path.Combine(root,"earlier.csv"),later=Path.Combine(root,"later.csv");
+    string head="Timestamp;Sample;Router;SourceIP;SourcePort;DestinationIP;DestinationPort;Protocol\n";
+    string row="2026-01-01 12:00:00;1;192.0.2.1;192.0.2.9;50001;198.51.100.23;443;tcp\n";
+    File.WriteAllText(input,head+row+row+"2026-01-01 12:00:00;1;192.0.2.1;198.51.100.23;443;192.0.2.9;50001;TCP\n"+"2026-01-01 12:00:00;1;192.0.2.1;192.0.2.9;50001;198.51.100.23;0;TCP\n");
+    File.WriteAllText(later,head+row+"2026-01-02 12:00:00;1;192.0.2.2;192.0.2.9;50002;198.51.100.23;443;TCP\n"+"2026-01-02 12:00:00;1;192.0.2.2;192.0.2.9;50003;198.51.100.23;443;UDP\n");
+    var analysis=AccessAnalyzer.Analyze(new[]{input,later},"198.51.100.0/24",CancellationToken.None);
+    if(analysis.Endpoints.Count!=2||analysis.Sources.Count!=3||analysis.Endpoints.Single(e=>e.Protocol=="TCP").Observations!="2"||analysis.Audit[0].ReverseOrOutside!="1"||analysis.Audit[0].Invalid!="1")throw new Exception("Access cleanup mismatch");
+    AccessAnalyzer.Compare(analysis,AccessAnalyzer.Analyze(new[]{input},"198.51.100.0/24",CancellationToken.None),AccessAnalyzer.Analyze(new[]{later},"198.51.100.0/24",CancellationToken.None));
+    if(analysis.Changes.Count!=2||analysis.Changes.Count(e=>e.Change=="NEW OBSERVATION")!=1)throw new Exception("Comparison mismatch");
+    if(!File.Exists(Engine.SaveAccessReport(Path.Combine(root,"analysis"),analysis)))throw new Exception("Access export failed");
 }
 finally { if(Directory.Exists(root)) Directory.Delete(root,true); }
 Console.WriteLine("PASS: legacy NAT, auth, VPN, partial reports, central flow, TOP traffic, XLSX, DEMO and multi-router office batch");

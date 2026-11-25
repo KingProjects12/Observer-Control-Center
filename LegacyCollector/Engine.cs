@@ -722,7 +722,7 @@ namespace KeeneticObserver
             CollectorException known = e as CollectorException;
             if (known != null) return known.Status;
             if (e is UnauthorizedAccessException) return "AUTH FAILED";
-            if (e is TimeoutException || e is TaskCanceledException) return token.IsCancellationRequested ? "STOPPED" : "TIMEOUT";
+            if (e is TimeoutException || e is OperationCanceledException) return token.IsCancellationRequested ? "STOPPED" : "TIMEOUT";
             Exception current = e;
             while (current != null)
             {
@@ -874,6 +874,43 @@ namespace KeeneticObserver
             return "";
         }
         private static string Hex(byte[] value) { return BitConverter.ToString(value).Replace("-", "").ToLowerInvariant(); }
+
+        internal static string SaveAccessReport(string folder,AccessAnalysis a)
+        {
+            Directory.CreateDirectory(folder);
+            string[] endpointCols={"IP","Port","Protocol","Observations","Sources","Routers","FirstSeen","LastSeen","TcpStatus","CheckedAt","CheckDetail","ServiceHint","Review"};
+            string[] sourceCols={"Router","SourceIP","SourceName","SourceMAC","DestinationIP","DestinationPort","Protocol","Observations","FirstSeen","LastSeen"};
+            string[] auditCols={"File","Result","Rows","Accepted","Duplicate","ReverseOrOutside","Invalid","Unsupported"};
+            string[] deltaCols={"IP","Port","Protocol","Earlier","Later","Change"};
+            string[] sourceDeltaCols={"Router","SourceIP","DestinationIP","DestinationPort","Protocol","Earlier","Later","Change"};
+            SaveCsv(Path.Combine(folder,"Office_IP_Port.csv"),endpointCols,a.Endpoints.Cast<object>());
+            SaveCsv(Path.Combine(folder,"Office_Source_Rules.csv"),sourceCols,a.Sources.Cast<object>());
+            SaveCsv(Path.Combine(folder,"Import_Audit.csv"),auditCols,a.Audit.Cast<object>());
+            var sheets=new List<Sheet>{
+                new Sheet("IP port protocol",endpointCols,a.Endpoints.Cast<object>().ToList()),
+                new Sheet("Source rules",sourceCols,a.Sources.Cast<object>().ToList()),
+                new Sheet("Import audit",auditCols,a.Audit.Cast<object>().ToList()),
+                new Sheet("Read me",new[]{"Topic","Purpose"},new List<object>{
+                    new Note("Target",a.Target),
+                    new Note("Direction","Original destination in office /24 and original source outside it; translated addresses are not independent flows."),
+                    new Note("Coverage","Observed NAT only; check original router status files, sampling time and VPN/LAN coverage."),
+                    new Note("TCP","A connection from this PC confirms reachability at check time only, not service identity or business need."),
+                    new Note("UDP","Observation only; TCP connect is never used to validate UDP."),
+                    new Note("Review","No automatic firewall changes or automatic allow/deny decisions. Port hints are not service identification."),
+                    new Note("Comparison","Not observed later does not mean disconnected or safe to block. Compare equivalent coverage and time windows.")
+                })
+            };
+            if(a.Changes.Count>0||a.SourceChanges.Count>0)
+            {
+                SaveCsv(Path.Combine(folder,"Office_Changes.csv"),deltaCols,a.Changes.Cast<object>());
+                SaveCsv(Path.Combine(folder,"Office_Source_Changes.csv"),sourceDeltaCols,a.SourceChanges.Cast<object>());
+                sheets.Add(new Sheet("Endpoint changes",deltaCols,a.Changes.Cast<object>().ToList()));
+                sheets.Add(new Sheet("Source changes",sourceDeltaCols,a.SourceChanges.Cast<object>().ToList()));
+            }
+            string excel=Path.Combine(folder,"Office_Access_Analysis.xlsx");
+            try{SaveXlsx(excel,sheets,CancellationToken.None);return excel;}
+            catch(Exception ex) when(ex is IOException or InvalidDataException or UnauthorizedAccessException){try{File.Delete(excel);}catch{}return "";}
+        }
 
         internal static string SaveBatchOfficeReport(string folder,List<Entry> rows,IEnumerable<BatchRouterStatus> statuses)
         {
@@ -1108,6 +1145,12 @@ namespace KeeneticObserver
                                     if (record.TargetMatch == "YES") style = 4;
                                     if (record.Repeat == "YES" && (sheet.Columns[col] == "Repeat" || record.TargetMatch != "YES")) style = 5;
                                     if (sheet.Columns[col] == "TargetMatch" && record.TargetMatch == "NO") style = 6;
+                                }
+                                if(row!=0 && sheet.Columns[col] is "Status" or "TcpStatus" or "Change" or "Result")
+                                {
+                                    if(value is "TCP OPEN" or "COMPLETE" or "IMPORTED" or "OBSERVED BOTH")style=4;
+                                    else if(value.Contains("FAILED")||value.Contains("ERROR")||value.Contains("REFUSED")||value.Contains("TIMEOUT"))style=5;
+                                    else if(value.Contains("PARTIAL")||value.Contains("NOT OBSERVED")||value.Contains("NOT CHECKED")||value.Contains("UDP OBSERVED"))style=6;
                                 }
                                 if (row != 0 && sheet.Name == "Summary") style = 7;
                                 writer.Write("<c r=\"" + ExcelColumn(col + 1) + (row + 1) + "\" s=\"" + style + "\" t=\"inlineStr\"><is><t xml:space=\"preserve\">" + Xml(SafeExcelCell(value)) + "</t></is></c>");
