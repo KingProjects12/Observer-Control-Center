@@ -46,12 +46,12 @@
    <StackPanel>
     <TextBlock x:Name="StatusText" Text="Проверка обновлений" Foreground="#63E3D4" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
     <ProgressBar x:Name="InstallProgress" Height="7" Minimum="0" Maximum="100" Margin="0,8,0,0" Visibility="Collapsed"/>
-    <TextBlock Text="Обновления проверяются только при запущенной программе. Установка начинается только по твоему подтверждению." Foreground="#9CB5C8" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
+    <TextBlock Text="Обновления проверяются только при запущенной программе. EXE заменяется только по твоему подтверждению." Foreground="#9CB5C8" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
    </StackPanel>
   </Border>
   <WrapPanel Grid.Row="3" Margin="0,0,0,9">
    <Button x:Name="CheckButton" Content="↻  ПРОВЕРИТЬ СЕЙЧАС" Click="Check_Click"/>
-   <Button x:Name="InstallButton" Content="СКАЧАТЬ И УСТАНОВИТЬ" Click="Install_Click" Visibility="Collapsed" Background="#17616A"/>
+   <Button x:Name="InstallButton" Content="ОБНОВИТЬ И ПЕРЕЗАПУСТИТЬ" Click="Install_Click" Visibility="Collapsed" Background="#17616A"/>
    <Button x:Name="CancelInstallButton" Content="ОТМЕНА" Click="CancelInstall_Click" Visibility="Collapsed"/>
    <Button x:Name="OpenButton" Content="ОТКРЫТЬ GITHUB RELEASES" Click="Open_Click"/>
    <Button x:Name="DismissButton" Content="НЕ НАПОМИНАТЬ ОБ ЭТОЙ ВЕРСИИ" Click="Dismiss_Click" Visibility="Collapsed"/>
@@ -63,6 +63,6 @@
    </DockPanel>
   </Border>
   <TextBlock Grid.Row="5" Margin="0,13,0,0" FontSize="10" Foreground="#7E9FB4" TextWrapping="Wrap"
-   Text="Проверяется SHA-256. Установщик может быть без цифровой подписи. Для портативной версии кнопка запускает обычную установку, а не заменяет текущий EXE."/>
+   Text="Проверяется SHA-256. Новый EXE заменяет текущий файл без мастера установки. При ошибке запуска сохраняется возможность возврата к старой версии. Цифровая подпись пока отсутствует."/>
  </Grid>
 </Window>
