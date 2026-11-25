@@ -12,5 +12,6 @@
    <Compile Include="../Services/UpdateSettingsStore.cs" Link="UpdateSettingsStore.cs" />
    <Compile Include="../Services/GitHubReleaseClient.cs" Link="GitHubReleaseClient.cs" />
    <Compile Include="../Services/UpdatePollingPolicy.cs" Link="UpdatePollingPolicy.cs" />
+   <Compile Include="../Services/UpdateInstaller.cs" Link="UpdateInstaller.cs" />
  </ItemGroup>
 </Project>

@@ -49,4 +49,24 @@ Assert(UpdatePollingPolicy.RateLimitCooldown == TimeSpan.FromMinutes(30), "rate 
 var blockedAt = DateTimeOffset.Parse("2026-11-25T00:00:00Z");
 Assert(UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(1), blockedAt.AddMinutes(30)), "rate limited checks are skipped");
 Assert(!UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(30), blockedAt.AddMinutes(30)), "checks resume when cooldown ends");
+const string installerName = "Observer-Control-Center-Setup-2.1.0-win-x64.exe";
+string prefix = "https://github.com/" + UpdateInstaller.OfficialRepository + "/releases/download/v2.1.0/";
+string WithAssets(string download, bool checksum = true, long size = 12345) =>
+    JsonSerializer.Serialize(new { tag_name = "v2.1.0", assets = new[] {
+        new { name = installerName, browser_download_url = download, size },
+        new { name = installerName + ".sha256", browser_download_url = checksum ? prefix + installerName + ".sha256" : "https://example.com/hash", size = 115L }
+    }});
+var official = GitHubReleaseClient.ParseLatest(WithAssets(prefix + installerName), UpdateInstaller.OfficialRepository, stable);
+Assert(official?.Installer?.Name == installerName && official.Installer.Size == 12345, "official installer and checksum offered");
+Assert(GitHubReleaseClient.ParseLatest(WithAssets(prefix + installerName), "owner/custom", stable)?.Installer == null, "custom repository cannot launch installer");
+Assert(GitHubReleaseClient.ParseLatest(WithAssets("https://example.com/" + installerName), UpdateInstaller.OfficialRepository, stable)?.Installer == null, "untrusted asset URL rejected");
+Assert(GitHubReleaseClient.ParseLatest(WithAssets(prefix + installerName, false), UpdateInstaller.OfficialRepository, stable)?.Installer == null, "missing official checksum blocks installation");
+Assert(GitHubReleaseClient.ParseLatest(WithAssets(prefix + installerName, size: UpdateInstaller.MaxInstallerBytes + 1), UpdateInstaller.OfficialRepository, stable)?.Installer == null, "oversized asset rejected");
+byte[] bytes = System.Text.Encoding.UTF8.GetBytes("test");
+byte[] digest = System.Security.Cryptography.SHA256.HashData(bytes);
+string hex = Convert.ToHexString(digest);
+Assert(UpdateInstaller.ParseChecksum(hex.ToLowerInvariant() + "  " + installerName + "\r\n", installerName) == hex, "valid checksum parsed");
+Assert(UpdateInstaller.HashMatches(hex, digest) && !UpdateInstaller.HashMatches(new string('0', 64), digest), "hash mismatch rejected");
+try { UpdateInstaller.ParseChecksum(hex + " other.exe", installerName); Assert(false, "wrong checksum filename"); }
+catch (InvalidDataException) { Assert(true, "wrong checksum filename rejected"); }
 Console.WriteLine($"ALL {passed} UPDATE CHECKS PASSED");

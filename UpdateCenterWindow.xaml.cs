@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Diagnostics;
 using Observer.ControlCenter.Services;
 
 namespace Observer.ControlCenter;
@@ -6,6 +7,8 @@ namespace Observer.ControlCenter;
 public partial class UpdateCenterWindow : Window
 {
     private readonly MainWindow _main;
+    private CancellationTokenSource? _installCancellation;
+    private bool _installLaunching;
 
     public UpdateCenterWindow(MainWindow main)
     {
@@ -21,10 +24,14 @@ public partial class UpdateCenterWindow : Window
         RefreshInfo();
     }
 
-    private void RefreshInfo()
+    internal void RefreshInfo()
     {
+        if (_installCancellation != null || _installLaunching) return;
         StatusText.Text = _main.UpdateMessage;
         var release = _main.LatestUpdate;
+        InstallButton.Visibility = release?.Installer != null && string.Equals(_main.UpdatesRepository, UpdateInstaller.OfficialRepository, StringComparison.OrdinalIgnoreCase)
+            ? Visibility.Visible : Visibility.Collapsed;
+        InstallButton.IsEnabled = CheckButton.IsEnabled;
         DismissButton.Visibility = release != null ? Visibility.Visible : Visibility.Collapsed;
         ReleaseNotes.Text = release == null ? "Новая версия не обнаружена или проверка ещё не выполнена."
             : $"{release.Tag}  •  {(release.PublishedAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "Дата неизвестна")}\n\n"
@@ -54,9 +61,75 @@ public partial class UpdateCenterWindow : Window
             return;
         }
         CheckButton.IsEnabled = false;
+        InstallButton.IsEnabled = false;
         StatusText.Text = "Проверяю GitHub Releases…";
         try { await _main.CheckUpdatesAsync(manual: true); }
         finally { CheckButton.IsEnabled = true; RefreshInfo(); }
+    }
+
+    private async void Install_Click(object sender, RoutedEventArgs e)
+    {
+        if (_installCancellation != null || _installLaunching || _main.LatestUpdate is not { Installer: { } asset } release) return;
+        if (MessageBox.Show(this,
+            $"Скачать официальный установщик {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} МиБ), проверить SHA-256 и закрыть Observer для установки?\n\n" +
+            "Сохраните важные отчёты. Установщик может быть без цифровой подписи; не отключайте защиту Windows. Для портативной копии будет запущена обычная установка.",
+            "Обновление Observer", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+
+        using var cancellation = new CancellationTokenSource();
+        _installCancellation = cancellation;
+        CheckButton.IsEnabled = InstallButton.IsEnabled = SaveButton.IsEnabled = OpenButton.IsEnabled = DismissButton.IsEnabled = false;
+        AutoCheckBox.IsEnabled = RepoBox.IsEnabled = false;
+        CancelInstallButton.Visibility = InstallProgress.Visibility = Visibility.Visible;
+        CancelInstallButton.IsEnabled = true;
+        InstallProgress.Value = 0;
+        StatusText.Text = "Получаю контрольную сумму и установщик…";
+        string? installer = null;
+        try
+        {
+            var progress = new Progress<int>(percent =>
+            {
+                if (_installCancellation != cancellation || _installLaunching) return;
+                InstallProgress.Value = percent;
+                StatusText.Text = percent == 100 ? "Проверяю SHA-256…" : $"Загрузка обновления: {percent}%";
+            });
+            installer = await UpdateInstaller.DownloadAsync(asset, progress, cancellation.Token);
+            cancellation.Token.ThrowIfCancellationRequested();
+            StatusText.Text = "SHA-256 совпадает. Запускаю установщик…";
+            CancelInstallButton.IsEnabled = false;
+            using var process = Process.Start(new ProcessStartInfo(installer) { UseShellExecute = true })
+                ?? throw new InvalidOperationException("Не удалось запустить установщик.");
+            _installLaunching = true;
+            Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            if (installer != null) UpdateInstaller.TryDelete(Path.GetDirectoryName(installer)!);
+            StatusText.Text = ex is OperationCanceledException
+                ? "Загрузка отменена или превышено время ожидания."
+                : "Обновление не выполнено: " + ex.Message;
+        }
+        finally
+        {
+            _installCancellation = null;
+            if (!_installLaunching)
+            {
+                CheckButton.IsEnabled = InstallButton.IsEnabled = SaveButton.IsEnabled = OpenButton.IsEnabled = DismissButton.IsEnabled = true;
+                AutoCheckBox.IsEnabled = RepoBox.IsEnabled = true;
+                CancelInstallButton.Visibility = InstallProgress.Visibility = Visibility.Collapsed;
+            }
+        }
+    }
+
+    private void CancelInstall_Click(object sender, RoutedEventArgs e) => _installCancellation?.Cancel();
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        if (_installCancellation != null && !_installLaunching)
+        {
+            _installCancellation.Cancel();
+            e.Cancel = true;
+        }
+        base.OnClosing(e);
     }
 
     private void Open_Click(object sender, RoutedEventArgs e)

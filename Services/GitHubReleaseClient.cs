@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Observer.ControlCenter.Services;
 
-public sealed record GitHubRelease(string Tag, ReleaseVersion Version, string Notes, string ReleaseUrl, DateTimeOffset? PublishedAt);
+public sealed record GitHubRelease(string Tag, ReleaseVersion Version, string Notes, string ReleaseUrl, DateTimeOffset? PublishedAt, InstallerAsset? Installer = null);
 
 /// <summary>Read-only public GitHub Releases check. No GitHub tokens, cookies, or router credentials.</summary>
 public static class GitHubReleaseClient
@@ -58,7 +58,7 @@ public static class GitHubReleaseClient
         if (root.TryGetProperty("published_at", out var pub) && pub.ValueKind == JsonValueKind.String
             && DateTimeOffset.TryParse(pub.GetString(), out var parsedDate)) date = parsedDate;
         // Derive the link from a validated repository instead of trusting a supplied URL.
-        return new GitHubRelease(tag, latest, notes, ReleasesPage(repository), date);
+        return new GitHubRelease(tag, latest, notes, ReleasesPage(repository), date, UpdateInstaller.FindAsset(root, repository, tag, latest));
     }
 
     public static async Task<GitHubRelease?> CheckAsync(string repository, CancellationToken ct = default)
