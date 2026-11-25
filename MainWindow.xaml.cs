@@ -205,7 +205,7 @@ public partial class MainWindow : Window
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
         if (fileDialog.ShowDialog(this) != true) return;
-        if (Path.GetFileName(fileDialog.FileName).StartsWith("01_All_Connections", StringComparison.OrdinalIgnoreCase))
+        if (Path.GetFileName(fileDialog.FileName).StartsWith("01_All_Connections", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(fileDialog.FileName).StartsWith("02_Target_", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(fileDialog.FileName).StartsWith("05_Office_Related", StringComparison.OrdinalIgnoreCase))
         {
             LoadConnections(fileDialog.FileName);
             ShowPage("connections");
@@ -226,6 +226,19 @@ public partial class MainWindow : Window
             Arguments = $"\"{folder}\"", UseShellExecute = true
         });
         AddLog(UiText.T("REPORTS  //  opened local data folder", "REPORTS  //  открыта папка с локальными данными"));
+    }
+
+    private void KeeneticCollect_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new KeeneticCollectorWindow(RouterIP.Text.Trim()) { Owner = this };
+        if (dialog.ShowDialog() != true || dialog.Result is not { } result) return;
+        LoadConnections(result.TargetPath);
+        _reportPath = result.AllPath;
+        ShowPage("connections");
+        TableHint.Text = UiText.IsRussian ? $"Целевых: {result.TargetCount}; всего: {result.AllCount}; связанных: {result.RelatedCount}; пропущено: {result.Skipped}" : $"Target: {result.TargetCount}; all: {result.AllCount}; related: {result.RelatedCount}; skipped: {result.Skipped}";
+        AddLog("NAT // " + TableHint.Text);
+        if (result.HostnamesUnavailable) AddLog(UiText.T("NAT WARNING // Client names may be unavailable.", "NAT WARNING // Имена клиентов могут отсутствовать."));
+        if (result.TargetCount == 0) AddLog(UiText.T("NAT WARNING // No matching original destinations observed; this does not prove absence of VPN traffic.", "NAT WARNING // Целевых назначений не найдено; это не доказывает отсутствие VPN-трафика."));
     }
 
     private async void RouterCheck_Click(object sender, RoutedEventArgs e)

@@ -23,6 +23,7 @@ public static class UiText
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(IsRussian ? "ru-RU" : "en-US");
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
     }
+    public static string KeeneticConnect => T("◉   Keenetic · NAT", "◉   Keenetic · NAT");
     public static string T(string english, string russian) => IsRussian ? russian : english;
     public static string SelectNotes(string notes, bool russian)
     {
@@ -56,7 +57,7 @@ public static class UiText
     public static string X024 => T("CURRENT VERSION", "ТЕКУЩАЯ ВЕРСИЯ");
     public static string X025 => T("✓ CSV / tables / filters", "✓ CSV / таблицы / фильтры");
     public static string X026 => T("✓ HTTP/HTTPS TCP check", "✓ HTTP/HTTPS проверка TCP");
-    public static string X027 => T("○ NAT / TOP Traffic API: planned", "○ NAT / TOP Traffic API: позже");
+    public static string X027 => T("✓ NAT API / ○ TOP Traffic: planned", "✓ NAT API / ○ TOP Traffic: позже");
     public static string X028 => T("NETWORK OVERVIEW", "ОБЗОР СЕТИ");
     public static string X029 => T("Load a report from Keenetic Observer v1.9.1", "Загрузите отчёт от Keenetic Observer v1.9.1");
     public static string X030 => T("Device IP", "IP устройства");

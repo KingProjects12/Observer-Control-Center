@@ -15,5 +15,6 @@
    <Compile Include="../Services/UpdateInstaller.cs" Link="UpdateInstaller.cs" />
    <Compile Include="../Services/SelfUpdate.cs" Link="SelfUpdate.cs" />
    <Compile Include="../Services/UiText.cs" Link="UiText.cs" />
+   <Compile Include="../Services/KeeneticNatCollector.cs" Link="KeeneticNatCollector.cs" />
  </ItemGroup>
 </Project>

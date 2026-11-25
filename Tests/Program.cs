@@ -94,4 +94,12 @@ Assert(UiText.ResolveRussian("russian") && UiText.ResolveRussian("ru-RU"), "Russ
 Assert(!UiText.ResolveRussian("english") && !UiText.ResolveRussian(null), "English default and installer choice");
 Assert(UiText.SelectNotes("<!-- observer:en -->English<!-- observer:ru -->Русский", false) == "English", "English release notes");
 Assert(UiText.SelectNotes("<!-- observer:en -->English<!-- observer:ru -->Русский", true) == "Русский", "Russian release notes");
-Console.WriteLine($"ALL {passed} UPDATE CHECKS PASSED");
+var network = KeeneticNatCollector.ParseTarget("203.0.113.0/24");
+Assert(KeeneticNatCollector.Matches("203.0.113.50", network) && !KeeneticNatCollector.Matches("203.0.114.50", network), "exact office subnet match");
+var parsedNat = KeeneticNatCollector.Parse("""{"nat":[{"src":"192.0.2.10","dst":"203.0.113.50","sport":42000,"dport":443,"proto":"tcp"},{"src":"192.0.2.10","dst":"198.51.100.2","dst-out":"203.0.113.51"},{"src":"203.0.113.4","dst":"192.0.2.12"}]}""", "", "192.0.2.1", "test", 1, network);
+Assert(parsedNat.Rows.Count == 3 && parsedNat.Rows.Count(r => r.TargetMatch == "YES") == 1, "original destination filter");
+Assert(parsedNat.Rows[1].OfficeDirection == "NAT_REFERENCE_REVIEW" && parsedNat.Rows[2].OfficeDirection == "FROM_OFFICE", "translated and reverse flow distinguished");
+Assert(KeeneticNatCollector.Parse("""{"nat":[]}""", "", "192.0.2.1", "test", 1, network).Rows.Count == 0, "recognized empty NAT");
+try { KeeneticNatCollector.Parse("""{"error":"not supported"}""", "", "", "", 1, network); Assert(false, "unknown NAT format rejected"); }
+catch (InvalidDataException) { Assert(true, "unknown NAT format rejected"); }
+Console.WriteLine($"ALL {passed} UPDATE AND NAT CHECKS PASSED");
