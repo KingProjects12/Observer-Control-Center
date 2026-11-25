@@ -12,9 +12,9 @@ public static class SelfUpdate
 
     public static void StartHelper(VerifiedUpdate update)
     {
-        string target = Environment.ProcessPath ?? throw new InvalidOperationException("Не найден текущий EXE.");
+        string target = Environment.ProcessPath ?? throw new InvalidOperationException(UiText.T("Current EXE not found.", "Не найден текущий EXE."));
         if (!string.Equals(Path.GetFileName(target), ExeName, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Для автообновления нужен исходный файл Observer.ControlCenter.exe.");
+            throw new InvalidOperationException(UiText.T("Self-update requires the original filename Observer.ControlCenter.exe.", "Для автообновления нужен исходный файл Observer.ControlCenter.exe."));
         string folder = Path.GetDirectoryName(update.Path)!;
         string helperFolder = Path.Combine(folder, "helper");
         Directory.CreateDirectory(helperFolder);
@@ -25,7 +25,7 @@ public static class SelfUpdate
         foreach (string value in new[] { HelperArgument, current.Id.ToString(CultureInfo.InvariantCulture),
             current.StartTime.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture), target, update.Path, update.Sha256 })
             info.ArgumentList.Add(value);
-        using var process = Process.Start(info) ?? throw new InvalidOperationException("Не удалось запустить помощник обновления.");
+        using var process = Process.Start(info) ?? throw new InvalidOperationException(UiText.T("Could not start the update helper.", "Не удалось запустить помощник обновления."));
     }
 
     public static void RunHelper(string[] args)
@@ -33,7 +33,7 @@ public static class SelfUpdate
         if (args.Length != 6 || args[0] != HelperArgument
             || !int.TryParse(args[1], NumberStyles.None, CultureInfo.InvariantCulture, out int pid)
             || !long.TryParse(args[2], NumberStyles.None, CultureInfo.InvariantCulture, out long ticks))
-            throw new InvalidDataException("Некорректные параметры обновления.");
+            throw new InvalidDataException(UiText.T("Invalid update parameters.", "Некорректные параметры обновления."));
         string target = Path.GetFullPath(args[3]);
         string payload = Path.GetFullPath(args[4]);
         string hash = args[5];
@@ -47,7 +47,7 @@ public static class SelfUpdate
             || string.Equals(target, payload, StringComparison.OrdinalIgnoreCase)
             || string.Equals(target, ownPath, StringComparison.OrdinalIgnoreCase)
             || hash.Length != 64 || !hash.All(Uri.IsHexDigit))
-            throw new InvalidDataException("Некорректный путь обновления.");
+            throw new InvalidDataException(UiText.T("Invalid update path.", "Некорректный путь обновления."));
         Process? parent = null;
         try { parent = Process.GetProcessById(pid); }
         catch (ArgumentException) { }
@@ -55,7 +55,7 @@ public static class SelfUpdate
         {
             if (parent != null && !parent.HasExited && parent.StartTime.ToUniversalTime().Ticks == ticks
                 && !parent.WaitForExit(30000))
-                throw new IOException("Observer не закрылся. Старый EXE не изменён.");
+                throw new IOException(UiText.T("Observer did not close. The old EXE was not changed.", "Observer не закрылся. Старый EXE не изменён."));
         }
 
         string stage = target + "." + Guid.NewGuid().ToString("N") + ".new";
@@ -63,13 +63,13 @@ public static class SelfUpdate
         bool replaced = false;
         try
         {
-            if (!File.Exists(target)) throw new FileNotFoundException("Старый EXE не найден.", target);
+            if (!File.Exists(target)) throw new FileNotFoundException(UiText.T("Old EXE not found.", "Старый EXE не найден."), target);
             File.Copy(payload, stage, false);
             using (var stream = File.OpenRead(stage))
             {
                 if (stream.Length <= 0 || stream.Length > UpdateInstaller.MaxInstallerBytes
                     || !UpdateInstaller.HashMatches(hash, SHA256.HashData(stream)))
-                    throw new InvalidDataException("Повторная проверка SHA-256 не пройдена.");
+                    throw new InvalidDataException(UiText.T("Second SHA-256 verification failed.", "Повторная проверка SHA-256 не пройдена."));
             }
             // Preserve Internet-zone metadata on the replacement. Do not disable Windows security.
             if (OperatingSystem.IsWindows())
@@ -90,9 +90,9 @@ public static class SelfUpdate
             }
             catch (Exception recovery)
             {
-                throw new IOException($"Ошибка обновления: {ex.Message}\nОшибка восстановления: {recovery.Message}\nРезервная копия: {backup}", recovery);
+                throw new IOException((UiText.IsRussian ? $"Ошибка обновления: {ex.Message}\nОшибка восстановления: {recovery.Message}\nРезервная копия: {backup}" : $"Update error: {ex.Message}\nRecovery error: {recovery.Message}\nBackup: {backup}"), recovery);
             }
-            throw new IOException("Обновление отменено, прежний файл сохранён: " + ex.Message, ex);
+            throw new IOException(UiText.T("Update cancelled; previous file preserved: ", "Обновление отменено, прежний файл сохранён: ") + ex.Message, ex);
         }
         finally
         {
@@ -108,6 +108,6 @@ public static class SelfUpdate
     {
         using var process = Process.Start(new ProcessStartInfo(target)
         { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(target)! })
-            ?? throw new InvalidOperationException("Не удалось запустить Observer.");
+            ?? throw new InvalidOperationException(UiText.T("Could not start Observer.", "Не удалось запустить Observer."));
     }
 }

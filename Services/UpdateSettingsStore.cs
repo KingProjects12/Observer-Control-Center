@@ -43,7 +43,7 @@ public static class UpdateSettingsStore
     public static void Save(UpdateSettings settings)
     {
         if (settings.Repository.Length > 0 && !GitHubReleaseClient.IsValidRepository(settings.Repository))
-            throw new ArgumentException("Формат репозитория: owner/repo.");
+            throw new ArgumentException(UiText.T("Repository format: owner/repo.", "Формат репозитория: owner/repo."));
         settings.Repository = ResolveRepository(settings.Repository, EmbeddedRepository);
         var folder = Path.GetDirectoryName(PathOnDisk)!;
         Directory.CreateDirectory(folder);

@@ -1,7 +1,8 @@
 <Window x:Class="Observer.ControlCenter.UpdateCenterWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Icon="/Assets/ObserverBrand.png" Title="Observer · Обновления" Width="690" Height="610" MinWidth="620" MinHeight="540"
+ xmlns:loc="clr-namespace:Observer.ControlCenter.Services"
+ Icon="/Assets/ObserverBrand.png" Title="{x:Static loc:UiText.X059}" Width="690" Height="610" MinWidth="620" MinHeight="540"
  WindowStartupLocation="CenterOwner" Background="#070809" Foreground="#EAF4FA"
  ResizeMode="CanResize" WindowStyle="SingleBorderWindow" FontFamily="Segoe UI">
  <Window.Resources>
@@ -29,40 +30,40 @@
    <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
   </Grid.RowDefinitions>
   <StackPanel Grid.Row="0" Margin="0,0,0,18">
-   <TextBlock Text="OBSERVER   //   RELEASE CENTER" Foreground="#45DFE7" FontWeight="Bold" FontSize="19"/>
+   <TextBlock Text="{x:Static loc:UiText.X060}" Foreground="#45DFE7" FontWeight="Bold" FontSize="19"/>
    <TextBlock x:Name="InstalledVersion" Foreground="#91B2C7" Margin="0,5,0,0"/>
   </StackPanel>
   <Border Grid.Row="1" Padding="16" Background="#101215" CornerRadius="13" BorderBrush="#2B4950" BorderThickness="1" Margin="0,0,0,14">
    <StackPanel>
-    <TextBlock Text="ИСТОЧНИК ОБНОВЛЕНИЙ · GitHub Releases" FontSize="11" Foreground="#93BFD0"/>
-    <TextBox x:Name="RepoBox" Margin="0,7,0,9" ToolTip="owner/repo, например example/observer"/>
+    <TextBlock Text="{x:Static loc:UiText.X061}" FontSize="11" Foreground="#93BFD0"/>
+    <TextBox x:Name="RepoBox" Margin="0,7,0,9" ToolTip="{x:Static loc:UiText.X062}"/>
     <DockPanel LastChildFill="False">
-     <CheckBox DockPanel.Dock="Left" x:Name="AutoCheckBox" Content="Проверять при запуске и каждую минуту (тестовый режим)" VerticalAlignment="Center" Foreground="#E4F2F6"/>
-     <Button DockPanel.Dock="Right" Content="СОХРАНИТЬ" HorizontalAlignment="Right" x:Name="SaveButton" Click="Save_Click"/>
+     <CheckBox DockPanel.Dock="Left" x:Name="AutoCheckBox" Content="{x:Static loc:UiText.X063}" VerticalAlignment="Center" Foreground="#E4F2F6"/>
+     <Button DockPanel.Dock="Right" Content="{x:Static loc:UiText.X064}" HorizontalAlignment="Right" x:Name="SaveButton" Click="Save_Click"/>
     </DockPanel>
    </StackPanel>
   </Border>
   <Border Grid.Row="2" Background="#0B0D10" BorderBrush="#256A79" BorderThickness="1" CornerRadius="12" Padding="15" Margin="0,0,0,12">
    <StackPanel>
-    <TextBlock x:Name="StatusText" Text="Проверка обновлений" Foreground="#63E3D4" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+    <TextBlock x:Name="StatusText" Text="{x:Static loc:UiText.X065}" Foreground="#63E3D4" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
     <ProgressBar x:Name="InstallProgress" Height="7" Minimum="0" Maximum="100" Margin="0,8,0,0" Visibility="Collapsed"/>
-    <TextBlock Text="Обновления проверяются только при запущенной программе. EXE заменяется только по твоему подтверждению." Foreground="#9CB5C8" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
+    <TextBlock Text="{x:Static loc:UiText.X066}" Foreground="#9CB5C8" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
    </StackPanel>
   </Border>
   <WrapPanel Grid.Row="3" Margin="0,0,0,9">
-   <Button x:Name="CheckButton" Content="↻  ПРОВЕРИТЬ СЕЙЧАС" Click="Check_Click"/>
-   <Button x:Name="InstallButton" Content="ОБНОВИТЬ И ПЕРЕЗАПУСТИТЬ" Click="Install_Click" Visibility="Collapsed" Background="#17616A"/>
-   <Button x:Name="CancelInstallButton" Content="ОТМЕНА" Click="CancelInstall_Click" Visibility="Collapsed"/>
-   <Button x:Name="OpenButton" Content="ОТКРЫТЬ GITHUB RELEASES" Click="Open_Click"/>
-   <Button x:Name="DismissButton" Content="НЕ НАПОМИНАТЬ ОБ ЭТОЙ ВЕРСИИ" Click="Dismiss_Click" Visibility="Collapsed"/>
+   <Button x:Name="CheckButton" Content="{x:Static loc:UiText.X067}" Click="Check_Click"/>
+   <Button x:Name="InstallButton" Content="{x:Static loc:UiText.X068}" Click="Install_Click" Visibility="Collapsed" Background="#17616A"/>
+   <Button x:Name="CancelInstallButton" Content="{x:Static loc:UiText.X069}" Click="CancelInstall_Click" Visibility="Collapsed"/>
+   <Button x:Name="OpenButton" Content="{x:Static loc:UiText.X070}" Click="Open_Click"/>
+   <Button x:Name="DismissButton" Content="{x:Static loc:UiText.X071}" Click="Dismiss_Click" Visibility="Collapsed"/>
   </WrapPanel>
   <Border Grid.Row="4" Background="#090B0E" CornerRadius="12" BorderThickness="1" BorderBrush="#253940" Padding="15">
    <DockPanel>
-    <TextBlock DockPanel.Dock="Top" Text="ЧТО НОВОГО" Foreground="#48D9E5" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
-    <ScrollViewer VerticalScrollBarVisibility="Auto"><TextBlock x:Name="ReleaseNotes" Text="Список изменений появится после проверки." TextWrapping="Wrap" FontSize="12" Foreground="#C3D9E8"/></ScrollViewer>
+    <TextBlock DockPanel.Dock="Top" Text="{x:Static loc:UiText.X072}" Foreground="#48D9E5" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><TextBlock x:Name="ReleaseNotes" Text="{x:Static loc:UiText.X073}" TextWrapping="Wrap" FontSize="12" Foreground="#C3D9E8"/></ScrollViewer>
    </DockPanel>
   </Border>
   <TextBlock Grid.Row="5" Margin="0,13,0,0" FontSize="10" Foreground="#7E9FB4" TextWrapping="Wrap"
-   Text="Проверяется SHA-256. Новый EXE заменяет текущий файл без мастера установки. При ошибке запуска сохраняется возможность возврата к старой версии. Цифровая подпись пока отсутствует."/>
+   Text="{x:Static loc:UiText.X074}"/>
  </Grid>
 </Window>

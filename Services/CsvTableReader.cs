@@ -11,7 +11,7 @@ public static class CsvTableReader
     public static DataTable ReadTable(string file)
     {
         if (new FileInfo(file).Length > 30_000_000)
-            throw new InvalidDataException("Этот файл превышает лимит предпросмотра 30 МБ.");
+            throw new InvalidDataException(UiText.T("This file exceeds the 30 MB preview limit.", "Этот файл превышает лимит предпросмотра 30 МБ."));
         var contents = File.ReadAllText(file, Encoding.UTF8);
         char sep = DetectDelimiter(contents);
         var records = Parse(contents, sep);
@@ -42,7 +42,7 @@ public static class CsvTableReader
         var table = ReadTable(file);
         string[] required = ["Rank", "Name", "IP", "MAC", "Download", "Upload", "Total", "TotalBytes"];
         if (required.Any(r => !table.Columns.Contains(r)))
-            throw new InvalidDataException("Это не TOP TRAFFIC CSV: отсутствуют необходимые столбцы.");
+            throw new InvalidDataException(UiText.T("Not a TOP TRAFFIC CSV: required columns are missing.", "Это не TOP TRAFFIC CSV: отсутствуют необходимые столбцы."));
 
         var devices = new List<TrafficDevice>();
         foreach (DataRow row in table.Rows)
@@ -97,7 +97,7 @@ public static class CsvTableReader
             }
             else field.Append(c);
         }
-        if (quoted) throw new InvalidDataException("В CSV обнаружена незакрытая кавычка.");
+        if (quoted) throw new InvalidDataException(UiText.T("Unclosed quotation mark in CSV.", "В CSV обнаружена незакрытая кавычка."));
         if (row.Count > 0 || field.Length > 0)
         {
             row.Add(field.ToString());

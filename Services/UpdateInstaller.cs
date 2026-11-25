@@ -48,7 +48,7 @@ public static class UpdateInstaller
     {
         var parts = text.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 2 || parts[0].Length != 64 || !parts[0].All(Uri.IsHexDigit)
-            || parts[1] != expectedName) throw new InvalidDataException("Некорректный файл SHA-256.");
+            || parts[1] != expectedName) throw new InvalidDataException(UiText.T("Invalid SHA-256 file.", "Некорректный файл SHA-256."));
         return parts[0].ToUpperInvariant();
     }
 
@@ -64,7 +64,7 @@ public static class UpdateInstaller
     {
         for (int i = 0; i < 6; i++)
         {
-            if (!AllowedUri(uri)) throw new InvalidDataException("Недопустимый адрес загрузки.");
+            if (!AllowedUri(uri)) throw new InvalidDataException(UiText.T("Invalid download address.", "Недопустимый адрес загрузки."));
             using var request = new HttpRequestMessage(HttpMethod.Get, uri);
             request.Headers.UserAgent.ParseAdd("Observer-ControlCenter-EXE-Update/2.0");
             var response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
@@ -72,14 +72,14 @@ public static class UpdateInstaller
             {
                 var location = response.Headers.Location;
                 response.Dispose();
-                if (location == null) throw new InvalidDataException("GitHub не указал адрес загрузки.");
+                if (location == null) throw new InvalidDataException(UiText.T("GitHub did not provide a download address.", "GitHub не указал адрес загрузки."));
                 uri = location.IsAbsoluteUri ? location : new Uri(uri, location);
                 continue;
             }
             try { response.EnsureSuccessStatusCode(); return response; }
             catch { response.Dispose(); throw; }
         }
-        throw new InvalidDataException("Слишком много перенаправлений загрузки.");
+        throw new InvalidDataException(UiText.T("Too many download redirects.", "Слишком много перенаправлений загрузки."));
     }
 
     public static async Task<VerifiedUpdate> DownloadAsync(InstallerAsset asset, IProgress<int>? progress, CancellationToken cancellationToken)
@@ -96,7 +96,7 @@ public static class UpdateInstaller
             || version.CompareTo(GitHubReleaseClient.CurrentVersion) <= 0
             || asset.ChecksumUrl.AbsoluteUri != url + ".sha256"
             || asset.Size <= 0 || asset.Size > MaxInstallerBytes)
-            throw new InvalidDataException("EXE не соответствует новому официальному релизу.");
+            throw new InvalidDataException(UiText.T("EXE does not match a newer official release.", "EXE не соответствует новому официальному релизу."));
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromMinutes(15));
         var ct = timeout.Token;
@@ -111,14 +111,14 @@ public static class UpdateInstaller
             int read;
             while ((read = await checksumStream.ReadAsync(buffer.AsMemory(0, 1025), ct).ConfigureAwait(false)) > 0)
             {
-                if (checksumBuffer.Length + read > 1024) throw new InvalidDataException("Файл SHA-256 слишком большой.");
+                if (checksumBuffer.Length + read > 1024) throw new InvalidDataException(UiText.T("SHA-256 file is too large.", "Файл SHA-256 слишком большой."));
                 checksumBuffer.Write(buffer, 0, read);
             }
             string expected = ParseChecksum(System.Text.Encoding.ASCII.GetString(checksumBuffer.ToArray()), name);
             Directory.CreateDirectory(folder);
             using var response = await GetAsync(asset.DownloadUrl, ct).ConfigureAwait(false);
             if (response.Content.Headers.ContentLength is long length && length != asset.Size)
-                throw new InvalidDataException("Размер EXE не совпадает с релизом.");
+                throw new InvalidDataException(UiText.T("EXE size does not match the release.", "Размер EXE не совпадает с релизом."));
             using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
             using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             long total = 0;
@@ -128,7 +128,7 @@ public static class UpdateInstaller
                 while ((read = await stream.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false)) > 0)
                 {
                     total += read;
-                    if (total > asset.Size) throw new InvalidDataException("Размер EXE превышает ожидаемый.");
+                    if (total > asset.Size) throw new InvalidDataException(UiText.T("EXE exceeds the expected size.", "Размер EXE превышает ожидаемый."));
                     await output.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
                     hash.AppendData(buffer, 0, read);
                     int percent = (int)(total * 100 / asset.Size);
@@ -136,7 +136,7 @@ public static class UpdateInstaller
                 }
             }
             if (total != asset.Size || !HashMatches(expected, hash.GetHashAndReset()))
-                throw new InvalidDataException("Проверка размера или SHA-256 не пройдена. Установка отменена.");
+                throw new InvalidDataException(UiText.T("Size or SHA-256 verification failed. Update cancelled.", "Проверка размера или SHA-256 не пройдена. Установка отменена."));
             ct.ThrowIfCancellationRequested();
             // Preserve Windows Internet-zone marking; never bypass SmartScreen.
             if (OperatingSystem.IsWindows())

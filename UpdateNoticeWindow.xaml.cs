@@ -1,3 +1,4 @@
+using Observer.ControlCenter.Services;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -15,7 +16,7 @@ public partial class UpdateNoticeWindow : Window
     public UpdateNoticeWindow(string version, Action openDetails)
     {
         InitializeComponent();
-        VersionText.Text = $"Доступна новая версия {version}";
+        VersionText.Text = (UiText.IsRussian ? $"Доступна новая версия {version}" : $"New version available: {version}");
         _openDetails = openDetails;
         Loaded += async (_, _) =>
         {
