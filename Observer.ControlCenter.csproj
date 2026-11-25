@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Observer.ControlCenter</AssemblyName>
     <RootNamespace>Observer.ControlCenter</RootNamespace>
-    <Version>2.0.6-preview.1</Version>
+    <Version>2.0.8-preview.1</Version>
     <ObserverUpdateRepo Condition="'$(ObserverUpdateRepo)' == ''"></ObserverUpdateRepo>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\ObserverApp.ico</ApplicationIcon>
@@ -21,10 +21,11 @@
     </AssemblyAttribute>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\ObserverEye.png" />
+    <Resource Include="Assets\ObserverBrand.png" />
   </ItemGroup>
   <!-- Generate the Windows shell/taskbar icon before the WPF build. No external tooling. -->
   <Target Name="GenerateObserverAppIcon" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\Generate-AppIcon.ps1&quot; -Source &quot;$(MSBuildProjectDirectory)\Assets\ObserverEye.png&quot; -Target &quot;$(MSBuildProjectDirectory)\Assets\ObserverApp.ico&quot;" />
+    <Exec Command="powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\Generate-BrandIcon.ps1&quot; -Target &quot;$(MSBuildProjectDirectory)\Assets\ObserverBrand.png&quot;" />
+    <Exec Command="powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\Generate-AppIcon.ps1&quot; -Source &quot;$(MSBuildProjectDirectory)\Assets\ObserverBrand.png&quot; -Target &quot;$(MSBuildProjectDirectory)\Assets\ObserverApp.ico&quot;" />
   </Target>
 </Project>

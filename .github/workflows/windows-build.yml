@@ -42,9 +42,28 @@ jobs:
             "-p:ObserverUpdateRepo=$env:GITHUB_REPOSITORY" -o dist
           if ($LASTEXITCODE -ne 0) { throw "publish failed" }
           if (!(Test-Path 'dist/Observer.ControlCenter.exe')) { throw "Missing preview EXE" }
+      - name: Build Windows installer (per-user, no administrator rights)
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content 'Observer.ControlCenter.csproj' -Raw
+          $v = $project.Project.PropertyGroup.Version
+          ./tools/Build-Installer.ps1 -Version $v -InstallInno
+      - name: Validate installer and portable download hashes
+        shell: pwsh
+        run: |
+          $files = @('dist/Observer.ControlCenter.exe') + @(Get-ChildItem 'dist/Observer-Control-Center-Setup-*.exe' | Select-Object -ExpandProperty FullName)
+          if ($files.Count -ne 2) { throw 'Expected one portable EXE and one installer EXE' }
+          foreach ($file in $files) {
+            $hash = (Get-FileHash $file -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $([IO.Path]::GetFileName($file))" | Set-Content -Path "$file.sha256" -Encoding ascii
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: Observer-preview-win-x64
-          path: dist/Observer.ControlCenter.exe
+          path: |
+            dist/Observer.ControlCenter.exe
+            dist/Observer.ControlCenter.exe.sha256
+            dist/Observer-Control-Center-Setup-*.exe
+            dist/Observer-Control-Center-Setup-*.exe.sha256
           if-no-files-found: error
           retention-days: 30

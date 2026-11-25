@@ -10,6 +10,7 @@ public partial class UpdateCenterWindow : Window
     public UpdateCenterWindow(MainWindow main)
     {
         InitializeComponent();
+        DarkTitleBar.Apply(this);
         _main = main;
         RepoBox.Text = main.UpdatesRepository;
         bool official = GitHubReleaseClient.IsValidRepository(UpdateSettingsStore.EmbeddedRepository);

@@ -1,8 +1,12 @@
-name: Publish Observer Windows EXE to GitHub Releases
+name: Publish Observer installer and portable EXE to GitHub Releases
 on:
   push:
     tags:
       - 'v[0-9]*'
+    branches:
+      - main
+    paths:
+      - '.github/release-requests/first-public-test-v2.0.8.txt'
   workflow_dispatch:
     inputs:
       version:
@@ -28,6 +32,9 @@ jobs:
         run: |
           $tag = if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
             '${{ github.event.inputs.version }}'
+          } elseif ($env:GITHUB_REF -eq 'refs/heads/main') {
+            # One-time main-branch release, triggered only when its marker is first merged.
+            'v2.0.8'
           } else {
             $env:GITHUB_REF_NAME
           }
@@ -56,6 +63,14 @@ jobs:
           if (!(Test-Path $exe)) { throw "EXE missing" }
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  Observer.ControlCenter.exe" | Set-Content -Path "$exe.sha256" -Encoding ascii
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          ./tools/Build-Installer.ps1 -Version '${{ steps.meta.outputs.version }}' -InstallInno
+          $installer = Get-ChildItem 'dist/Observer-Control-Center-Setup-*.exe'
+          if ($installer.Count -ne 1) { throw 'Exactly one installer expected' }
+          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($installer.Name)" | Set-Content -Path "$($installer.FullName).sha256" -Encoding ascii
       - name: Create public release
         shell: pwsh
         env:
@@ -69,6 +84,15 @@ jobs:
           }
           $flags = @()
           if ($tag.Contains('-')) { $flags += '--prerelease' }
+          $installer = Get-ChildItem 'dist/Observer-Control-Center-Setup-*.exe' | Select-Object -First 1
+          if (!$installer) { throw 'Installer for release not found' }
+          $notesFile = 'docs/RELEASE_v2.0.8_PUBLIC_TEST.md'
+          $releaseNotes = if ($tag -eq 'v2.0.8' -and (Test-Path $notesFile)) {
+            @('--notes-file', $notesFile)
+          } else {
+            @('--generate-notes')
+          }
           gh release create $tag "dist/Observer.ControlCenter.exe" "dist/Observer.ControlCenter.exe.sha256" `
-            --target $env:GITHUB_SHA --title "Observer $tag" --generate-notes @flags
+            $installer.FullName "$($installer.FullName).sha256" `
+            --target $env:GITHUB_SHA --title "Observer $tag" @releaseNotes @flags
           if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }

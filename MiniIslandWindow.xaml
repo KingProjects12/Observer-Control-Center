@@ -10,9 +10,9 @@
     <Border.RenderTransform><TranslateTransform x:Name="IslandOffset" Y="-14"/></Border.RenderTransform>
     <Border.Background>
       <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#F0162939" Offset="0"/>
-        <GradientStop Color="#FB0C1625" Offset="0.58"/>
-        <GradientStop Color="#EF251B3A" Offset="1"/>
+        <GradientStop Color="#F00B1118" Offset="0"/>
+        <GradientStop Color="#FC070A10" Offset="0.58"/>
+        <GradientStop Color="#EC14101E" Offset="1"/>
       </LinearGradientBrush>
     </Border.Background>
     <Border.Effect>
@@ -27,8 +27,8 @@
       </Grid.ColumnDefinitions>
       <Grid Width="46" Height="46" HorizontalAlignment="Left" VerticalAlignment="Center">
         <Border Width="43" Height="43" CornerRadius="15" BorderThickness="1"
-                BorderBrush="#36639AA4" Background="#071A29">
-          <Image Source="/Assets/ObserverEye.png" Margin="2" Stretch="UniformToFill"/>
+                BorderBrush="#36639AA4" Background="#080C12">
+          <Image Source="/Assets/ObserverBrand.png" Margin="2" Stretch="UniformToFill"/>
         </Border>
       </Grid>
       <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="1,0,0,0">
@@ -51,7 +51,7 @@
                      Foreground="#77DBD4" FontSize="10" VerticalAlignment="Center"/>
         </StackPanel>
       </StackPanel>
-      <Border Grid.Column="2" Background="#28223840" BorderBrush="#365B6378"
+      <Border Grid.Column="2" Background="#2B1A222D" BorderBrush="#365B6378"
               CornerRadius="11" BorderThickness="1" Padding="11,8" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal">
           <TextBlock x:Name="CountText" Text="ОТКРЫТЬ" Foreground="#DBCCFA"

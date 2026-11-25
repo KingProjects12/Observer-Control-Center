@@ -5,8 +5,8 @@
         Width="392" Height="154" ResizeMode="NoResize" WindowStyle="None"
         AllowsTransparency="True" Background="Transparent" Topmost="True"
         ShowInTaskbar="False" ShowActivated="False">
-  <Border Margin="8" CornerRadius="14" Background="#101E2B"
-          BorderBrush="#436777" BorderThickness="1" Padding="17">
+  <Border Margin="8" CornerRadius="14" Background="#0B0E15"
+          BorderBrush="#3D5A64" BorderThickness="1" Padding="17">
     <Border.Effect>
       <DropShadowEffect Color="#000000" BlurRadius="16" ShadowDepth="4" Opacity="0.65"/>
     </Border.Effect>
@@ -27,11 +27,11 @@
                  Foreground="#F0F8FD" FontSize="15" FontWeight="SemiBold"
                  VerticalAlignment="Center" TextWrapping="Wrap"/>
       <StackPanel Grid.Row="2" Orientation="Horizontal">
-        <Button Content="ПОСМОТРЕТЬ ИЗМЕНЕНИЯ" Padding="12,7" Background="#164E58"
-                Foreground="#E5F8F6" BorderBrush="#2D8991" BorderThickness="1"
+        <Button Content="ПОСМОТРЕТЬ ИЗМЕНЕНИЯ" Padding="12,7" Background="#153E46"
+                Foreground="#E5F8F6" BorderBrush="#267E85" BorderThickness="1"
                 Cursor="Hand" Click="Open_Click"/>
         <Button Content="ПОЗЖЕ" Padding="12,7" Margin="8,0,0,0"
-                Foreground="#BDCDD8" Background="#192734" BorderBrush="#304555"
+                Foreground="#BDCDD8" Background="#111822" BorderBrush="#263D48"
                 BorderThickness="1" Cursor="Hand" Click="Close_Click"/>
       </StackPanel>
     </Grid>

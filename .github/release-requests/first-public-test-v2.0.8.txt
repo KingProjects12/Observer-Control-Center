@@ -1,0 +1,6 @@
+Release request: v2.0.8
+Requested via user conversation on 2026-11-25.
+This is a ONE-TIME public test release to exercise Observer's stable GitHub Releases updater.
+The release workflow is restricted to this exact path on pushes to main.
+Do not modify this marker for normal commits or feature work.
+The application remains a network analytics UI preview; live Keenetic collectors not yet migrated.
