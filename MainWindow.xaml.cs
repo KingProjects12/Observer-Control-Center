@@ -36,7 +36,9 @@ public partial class MainWindow : Window
         LogList.Document.Blocks.Clear();
         TrafficGrid.ItemsSource = _devices;
         TopBars.ItemsSource = _bars;
-        AddLog("OBSERVER 2.0.8 PREVIEW  //  REAL GLASS / selectable log console / GitHub release notices");
+        HeaderVersionText.Text = $"  v{GitHubReleaseClient.AppVersionText} BLACK GLASS";
+        FooterVersionText.Text = $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY";
+        AddLog($"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates");
         AddLog("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials");
         ShowPage("overview");
         StartUpdateChecks();
@@ -277,16 +279,16 @@ public partial class MainWindow : Window
 
     private void Glass_Click(object sender, RoutedEventArgs e)
     {
-        // A layered WPF window makes all semi-transparent elements genuinely show the
-        // desktop/windows behind them. Opaque mode is useful for high-contrast work.
+        // Keep the black backing nearly opaque to suppress wallpaper detail.
+        // Translucent internal layers retain the glass appearance; matte mode is fully opaque.
         _glassMode = (_glassMode + 1) % 3;
         (byte alpha, string label) = _glassMode switch
         {
-            1 => ((byte)110, "МАКСИМУМ"),
-            2 => ((byte)245, "МАТОВО"),
-            _ => ((byte)168, "ПРОЗРАЧНО")
+            1 => ((byte)249, "МАКСИМУМ"),
+            2 => ((byte)255, "МАТОВО"),
+            _ => ((byte)253, "ПРОЗРАЧНО")
         };
-        GlassShell.Background = new SolidColorBrush(Color.FromArgb(alpha, 7, 10, 16));
+        GlassShell.Background = new SolidColorBrush(Color.FromArgb(alpha, 5, 6, 8));
         GlassModeButton.Content = "✦   Стекло: " + label;
         AddLog("SYSTEM  //  прозрачность основного окна: " + label);
     }

@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/release-requests/first-public-test-v2.0.8.txt'
+      - '.github/release-requests/public-v2.0.9.txt'
   workflow_dispatch:
     inputs:
       version:
@@ -34,7 +34,7 @@ jobs:
             '${{ github.event.inputs.version }}'
           } elseif ($env:GITHUB_REF -eq 'refs/heads/main') {
             # One-time main-branch release, triggered only when its marker is first merged.
-            'v2.0.8'
+            'v2.0.9'
           } else {
             $env:GITHUB_REF_NAME
           }
@@ -86,8 +86,8 @@ jobs:
           if ($tag.Contains('-')) { $flags += '--prerelease' }
           $installer = Get-ChildItem 'dist/Observer-Control-Center-Setup-*.exe' | Select-Object -First 1
           if (!$installer) { throw 'Installer for release not found' }
-          $notesFile = 'docs/RELEASE_v2.0.8_PUBLIC_TEST.md'
-          $releaseNotes = if ($tag -eq 'v2.0.8' -and (Test-Path $notesFile)) {
+          $notesFile = "docs/RELEASE_${tag}_PUBLIC_TEST.md"
+          $releaseNotes = if ((Test-Path $notesFile)) {
             @('--notes-file', $notesFile)
           } else {
             @('--generate-notes')

@@ -23,9 +23,9 @@
   <Border Grid.Row="0" BorderBrush="#1A303A" BorderThickness="0,0,0,1">
     <Border.Background>
       <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#D31B2835" Offset="0"/>
-        <GradientStop Color="#C60A1019" Offset="0.65"/>
-        <GradientStop Color="#CC1E192C" Offset="1"/>
+        <GradientStop Color="#F510141A" Offset="0"/>
+        <GradientStop Color="#F707090D" Offset="0.65"/>
+        <GradientStop Color="#F5101015" Offset="1"/>
       </LinearGradientBrush>
     </Border.Background>
     <Grid MouseLeftButtonDown="Header_MouseLeftButtonDown">
@@ -41,7 +41,7 @@
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="OBSERVER" FontSize="27" FontWeight="Bold" Foreground="#F5FCFF"/>
           <TextBlock Text="  //  CONTROL CENTER" Margin="0,8,0,0" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" FontSize="17"/>
-          <TextBlock Text="  v2.0.8 REAL GLASS" Margin="14,12,0,0" Foreground="{StaticResource TextSecondary}" FontSize="10"/>
+          <TextBlock x:Name="HeaderVersionText" Text="  BLACK GLASS" Margin="14,12,0,0" Foreground="{StaticResource TextSecondary}" FontSize="10"/>
         </StackPanel>
         <TextBlock Text="WHO  →  WHERE  →  WHEN      /      NETWORK ANALYTICS" FontSize="10" Foreground="#92B0C3" Margin="0,4,0,0"/>
       </StackPanel>
@@ -69,7 +69,7 @@
     <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="12">
       <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Bottom" Margin="5,15,5,3">
-           <Border CornerRadius="10" Background="#0C2634" BorderBrush="#215769" BorderThickness="1" Padding="10">
+           <Border CornerRadius="10" Background="#10191F" BorderBrush="#215769" BorderThickness="1" Padding="10">
              <StackPanel>
                <TextBlock Text="ПРОЕКТ / 01" FontSize="10" Foreground="{DynamicResource Accent}" FontWeight="Bold"/>
                <TextBlock Text="Network Analytics" FontSize="12" FontWeight="SemiBold" Margin="0,6,0,0"/>
@@ -203,7 +203,7 @@
               <Button Content="⧉  КОПИРОВАТЬ ВСЁ" Style="{StaticResource FlatButton}" Click="CopyAllLogs_Click" ToolTip="Скопировать все строки журнала с отметками времени" Padding="9,5"/>
             </StackPanel>
           </Grid>
-          <RichTextBox Grid.Row="1" x:Name="LogList" Background="#D9070A10" Foreground="#BBCBD8"
+          <RichTextBox Grid.Row="1" x:Name="LogList" Background="#F506080B" Foreground="#BBCBD8"
                        FontFamily="Consolas" FontSize="11" BorderThickness="0" Padding="7,4"
                        IsReadOnly="True" IsDocumentEnabled="False" AcceptsTab="False"
                        SelectionBrush="#4D458D98" CaretBrush="#43D9DC"
@@ -219,7 +219,7 @@
   <!-- Non-blocking in-app update notification; app must be running. -->
   <Border x:Name="UpdateToast" Grid.Row="1" Panel.ZIndex="15" Visibility="Collapsed"
           Width="390" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,20,0"
-          Padding="17" CornerRadius="14" BorderThickness="1" BorderBrush="#48A6AF" Background="#BD102E3F">
+          Padding="17" CornerRadius="14" BorderThickness="1" BorderBrush="#48A6AF" Background="#F5102026">
     <Border.Effect><DropShadowEffect Color="#000000" BlurRadius="18" ShadowDepth="7" Opacity="0.6"/></Border.Effect>
     <StackPanel>
       <TextBlock Text="●  НОВАЯ ВЕРСИЯ OBSERVER" FontWeight="Bold" Foreground="#5FE7DD" FontSize="12"/>
@@ -230,11 +230,11 @@
       </StackPanel>
     </StackPanel>
   </Border>
-  <Grid Grid.Row="2" Background="#D0080B12">
+  <Grid Grid.Row="2" Background="#F708090C">
     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
     <TextBlock x:Name="BottomStatus" Text="READY // Откройте экспорт v1.9.1 или импортируйте CSV" VerticalAlignment="Center"
                Foreground="#74C6CA" FontSize="11" Margin="18,0,0,0"/>
-    <TextBlock Grid.Column="1" Text="OBSERVER 2.0.8 PREVIEW  •  AUTHORIZED NETWORKS ONLY" Foreground="#6D91A5" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
+    <TextBlock Grid.Column="1" x:Name="FooterVersionText" Text="OBSERVER  •  AUTHORIZED NETWORKS ONLY" Foreground="#6D91A5" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
      <Thumb Grid.ColumnSpan="2" x:Name="CornerResizeGrip" Width="20" Height="20" HorizontalAlignment="Right"
             VerticalAlignment="Bottom" Margin="0,0,1,1" Cursor="SizeNWSE"
             DragDelta="CornerResizeGrip_DragDelta" ToolTip="Изменить размер окна">

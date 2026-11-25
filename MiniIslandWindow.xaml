@@ -10,9 +10,9 @@
     <Border.RenderTransform><TranslateTransform x:Name="IslandOffset" Y="-14"/></Border.RenderTransform>
     <Border.Background>
       <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#F00B1118" Offset="0"/>
-        <GradientStop Color="#FC070A10" Offset="0.58"/>
-        <GradientStop Color="#EC14101E" Offset="1"/>
+        <GradientStop Color="#FC0B0D10" Offset="0"/>
+        <GradientStop Color="#FE060709" Offset="0.58"/>
+        <GradientStop Color="#FC101014" Offset="1"/>
       </LinearGradientBrush>
     </Border.Background>
     <Border.Effect>

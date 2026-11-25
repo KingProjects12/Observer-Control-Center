@@ -138,10 +138,11 @@ public partial class MainWindow
     private void RefreshUpdateBanner()
     {
         if (BtnUpdates == null) return;
+        _updateCenter?.RefreshInfo();
         bool show = _latestRelease != null && _latestRelease.Tag != _updateSettings.DismissedTag;
         if (!show) UpdateToast.Visibility = Visibility.Collapsed;
         BtnUpdates.Content = show ? $"●  НОВАЯ {_latestRelease!.Tag}" : "↻  ОБНОВЛЕНИЯ";
-        BtnUpdates.ToolTip = show ? "Открыть сведения о новой версии и перейти на GitHub Releases"
+        BtnUpdates.ToolTip = show ? "Открыть сведения о новой версии и установить обновление"
             : "Проверить и настроить обновления GitHub";
         if (_island != null)
         {
