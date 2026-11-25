@@ -5,14 +5,14 @@
         Icon="/Assets/ObserverBrand.png" Title="{x:Static loc:UiText.X001}" Width="1450" Height="900"
         MinWidth="1040" MinHeight="675" WindowStartupLocation="CenterScreen"
         WindowStyle="None" ResizeMode="CanResize" AllowsTransparency="True" Opacity="0" Background="Transparent"
-        Foreground="{StaticResource TextMain}" FontFamily="Segoe UI" Loaded="Window_Loaded">
+        Foreground="{DynamicResource TextMain}" FontFamily="Segoe UI" Loaded="Window_Loaded">
  <Window.Resources>
     <Style x:Key="NavGroupTitle" TargetType="TextBlock" BasedOn="{StaticResource LabelSmall}">
       <Setter Property="Margin" Value="9,13,0,7"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
  </Window.Resources>
- <Border x:Name="GlassShell" BorderBrush="#71516B74" BorderThickness="1" Background="{StaticResource WindowBg}">
+ <Border x:Name="GlassShell" BorderBrush="{DynamicResource Tone_71516B74}" BorderThickness="1" Background="{DynamicResource WindowBg}">
  <Grid>
   <Grid.RowDefinitions>
    <RowDefinition Height="87"/>
@@ -21,33 +21,26 @@
   </Grid.RowDefinitions>
 
   <!-- Custom chrome / header -->
-  <Border Grid.Row="0" BorderBrush="#1A303A" BorderThickness="0,0,0,1">
-    <Border.Background>
-      <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#F510141A" Offset="0"/>
-        <GradientStop Color="#F707090D" Offset="0.65"/>
-        <GradientStop Color="#F5101015" Offset="1"/>
-      </LinearGradientBrush>
-    </Border.Background>
+  <Border Grid.Row="0" BorderBrush="{DynamicResource Tone_1A303A}" BorderThickness="0,0,0,1" Background="{DynamicResource HeaderGradient}">
     <Grid MouseLeftButtonDown="Header_MouseLeftButtonDown">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
-      <Border Width="56" Height="56" CornerRadius="17" BorderBrush="#257D8C" BorderThickness="1" Margin="20,0,16,0" Background="#080C12">
+      <Border Width="56" Height="56" CornerRadius="17" BorderBrush="{DynamicResource Tone_257D8C}" BorderThickness="1" Margin="20,0,16,0" Background="{DynamicResource Tone_080C12}">
         <Grid><Image Source="/Assets/ObserverBrand.png" Margin="4" Stretch="UniformToFill"/></Grid>
       </Border>
       <StackPanel Grid.Column="1" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal">
-          <TextBlock Text="OBSERVER" FontSize="27" FontWeight="Bold" Foreground="#F5FCFF"/>
+          <TextBlock Text="OBSERVER" FontSize="27" FontWeight="Bold" Foreground="{DynamicResource Tone_F5FCFF}"/>
           <TextBlock Text="{x:Static loc:UiText.X002}" Margin="0,8,0,0" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" FontSize="17"/>
-          <TextBlock x:Name="HeaderVersionText" Text="{x:Static loc:UiText.X003}" Margin="14,12,0,0" Foreground="{StaticResource TextSecondary}" FontSize="10"/>
+          <TextBlock x:Name="HeaderVersionText" Text="{x:Static loc:UiText.X003}" Margin="14,12,0,0" Foreground="{DynamicResource TextSecondary}" FontSize="10"/>
         </StackPanel>
-        <TextBlock Text="{x:Static loc:UiText.X004}" FontSize="10" Foreground="#92B0C3" Margin="0,4,0,0"/>
+        <TextBlock Text="{x:Static loc:UiText.X004}" FontSize="10" Foreground="{DynamicResource Tone_92B0C3}" Margin="0,4,0,0"/>
       </StackPanel>
       <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0,14,0" VerticalAlignment="Center">
-        <Border BorderBrush="#206C6F" Background="#113C41" CornerRadius="11" Padding="12,7" Margin="0,0,12,0">
+        <Border BorderBrush="{DynamicResource Tone_206C6F}" Background="{DynamicResource Tone_113C41}" CornerRadius="11" Padding="12,7" Margin="0,0,12,0">
           <TextBlock Text="{x:Static loc:UiText.X005}" FontSize="10" FontWeight="SemiBold" Foreground="#70E5D7"/>
         </Border>
         <Button x:Name="BtnUpdates" Content="{x:Static loc:UiText.X006}" Style="{StaticResource FlatButton}" Click="Updates_Click" ToolTip="{x:Static loc:UiText.HintUpdates}" Margin="0,0,8,0"/>
@@ -69,15 +62,25 @@
     </Grid.ColumnDefinitions>
     <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="12">
       <DockPanel LastChildFill="True">
-        <StackPanel DockPanel.Dock="Bottom" Margin="5,15,5,3">
-           <Border CornerRadius="10" Background="#10191F" BorderBrush="#215769" BorderThickness="1" Padding="10">
+        <StackPanel DockPanel.Dock="Bottom" Margin="5,12,5,3">
+           <TextBlock Text="{x:Static loc:UiText.ThemeHeading}" Style="{StaticResource LabelSmall}" Margin="3,0,0,7"/>
+           <Grid Margin="0,0,0,12">
+             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+             <Button x:Name="ThemeClassicButton" Style="{StaticResource ThemeChoiceButton}" Click="ClassicTheme_Click" ToolTip="Black Liquid Glass">
+               <StackPanel><Border Width="65" Height="24" Background="#080A0D" CornerRadius="5"><Path Data="M0,19 Q16,1 32,12 Q48,23 65,4" Stroke="#92A5B5" StrokeThickness="2" Stretch="Uniform"/></Border><TextBlock Text="Liquid Glass" HorizontalAlignment="Center" Margin="0,4,0,0"/></StackPanel>
+             </Button>
+             <Button x:Name="ThemeSignalButton" Grid.Column="2" Style="{StaticResource ThemeChoiceButton}" Click="SignalTheme_Click" ToolTip="Signal">
+               <StackPanel><Border Width="65" Height="24" Background="#121B2B" CornerRadius="5"><Grid><Path Data="M0,19 Q16,1 32,12 Q48,23 65,4" Stroke="#69DFFF" StrokeThickness="2" Stretch="Uniform"/><Path Data="M0,4 Q16,22 32,12 Q48,2 65,19" Stroke="#B3A0FF" StrokeThickness="2" Stretch="Uniform"/></Grid></Border><TextBlock Text="Signal" HorizontalAlignment="Center" Margin="0,4,0,0"/></StackPanel>
+             </Button>
+           </Grid>
+           <Border CornerRadius="10" Background="{DynamicResource Tone_10191F}" BorderBrush="{DynamicResource Tone_215769}" BorderThickness="1" Padding="10">
              <StackPanel>
                <TextBlock Text="{x:Static loc:UiText.X008}" FontSize="10" Foreground="{DynamicResource Accent}" FontWeight="Bold"/>
                <TextBlock Text="{x:Static loc:UiText.X009}" FontSize="12" FontWeight="SemiBold" Margin="0,6,0,0"/>
                <TextBlock Text="{x:Static loc:UiText.X010}" Style="{StaticResource LabelSmall}" Margin="0,4,0,0"/>
              </StackPanel>
            </Border>
-           <TextBlock Margin="5,12,0,0" FontSize="10" Foreground="#7192A6" Text="{x:Static loc:UiText.X011}"/>
+           <TextBlock Margin="5,12,0,0" FontSize="10" Foreground="{DynamicResource Tone_7192A6}" Text="{x:Static loc:UiText.X011}"/>
         </StackPanel>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
          <StackPanel Margin="0,0,4,0">
@@ -115,6 +118,32 @@
         <RowDefinition Height="142"/>
       </Grid.RowDefinitions>
       <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="13" Margin="0,0,0,10">
+        <StackPanel>
+        <Border x:Name="SignalBanner" Visibility="{DynamicResource SignalOnly}" Background="{DynamicResource SignalHeroGradient}" CornerRadius="12" BorderBrush="#40536C" BorderThickness="1" Padding="17,9" Margin="0,0,0,12">
+          <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="155"/></Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="KINGPROJECTS / NETWORK TOOLS" Foreground="#A0AEC3" FontSize="10" FontWeight="SemiBold"/>
+              <TextBlock Text="OBSERVER" FontSize="26" FontWeight="Bold" Foreground="#F0F5FF"/>
+              <TextBlock Text="CONTROL CENTER" Foreground="#B3A0FF" FontSize="14" FontWeight="SemiBold"/>
+              <TextBlock Text="Turn connections into evidence." Foreground="#E2EAF7" FontSize="11" Margin="0,3,0,0"/>
+            </StackPanel>
+            <Viewbox Grid.Column="1" Height="82" HorizontalAlignment="Right" Margin="0,0,8,0">
+              <Canvas Width="150" Height="100">
+                <Ellipse Canvas.Left="34" Canvas.Top="9" Width="82" Height="82" Stroke="#40536C" StrokeDashArray="3 4"/>
+                <Ellipse Canvas.Left="47" Canvas.Top="22" Width="56" Height="56" Stroke="#40536C"/>
+                <Path Data="M75,50 L20,19 M75,50 L127,15 M75,50 L141,52 M75,50 L116,87 M75,50 L22,86 M75,50 L8,51" Stroke="#40536C" StrokeThickness="1.4"/>
+                <Ellipse Canvas.Left="14" Canvas.Top="13" Width="12" Height="12" Fill="#121B2B" Stroke="#69DFFF" StrokeThickness="2"/>
+                <Ellipse Canvas.Left="121" Canvas.Top="9" Width="12" Height="12" Fill="#121B2B" Stroke="#B3A0FF" StrokeThickness="2"/>
+                <Ellipse Canvas.Left="135" Canvas.Top="46" Width="12" Height="12" Fill="#121B2B" Stroke="#69DFFF" StrokeThickness="2"/>
+                <Ellipse Canvas.Left="110" Canvas.Top="81" Width="12" Height="12" Fill="#121B2B" Stroke="#B3A0FF" StrokeThickness="2"/>
+                <Ellipse Canvas.Left="16" Canvas.Top="80" Width="12" Height="12" Fill="#121B2B" Stroke="#69DFFF" StrokeThickness="2"/>
+                <Ellipse Canvas.Left="2" Canvas.Top="45" Width="12" Height="12" Fill="#121B2B" Stroke="#B3A0FF" StrokeThickness="2"/>
+                <Ellipse Canvas.Left="54" Canvas.Top="29" Width="42" Height="42" Fill="#121B2B" Stroke="#69DFFF" StrokeThickness="2"/>
+                <Path Data="M59,50 L67,50 L71,42 L77,58 L82,50 L91,50" Stroke="#69DFFF" StrokeThickness="2" StrokeLineJoin="Round"/>
+              </Canvas>
+            </Viewbox>
+          </Grid>
+        </Border>
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -122,7 +151,7 @@
             <ColumnDefinition Width="170"/>
           </Grid.ColumnDefinitions>
           <StackPanel VerticalAlignment="Center">
-            <TextBlock x:Name="PageTitle" Text="{x:Static loc:UiText.X028}" Foreground="{StaticResource TextMain}" FontSize="17" FontWeight="Bold"/>
+            <TextBlock x:Name="PageTitle" Text="{x:Static loc:UiText.X028}" Foreground="{DynamicResource TextMain}" FontSize="17" FontWeight="Bold"/>
             <TextBlock x:Name="PageSubtitle" Text="{x:Static loc:UiText.X029}" Style="{StaticResource LabelSmall}" Margin="0,6,0,0"/>
           </StackPanel>
           <StackPanel Grid.Column="1" Margin="6,0,8,0">
@@ -131,21 +160,22 @@
           </StackPanel>
           <Button Grid.Column="2" Content="{x:Static loc:UiText.LegacyConnect}" Style="{StaticResource AccentButton}" Margin="6,17,0,1" Click="LegacyCollect_Click" ToolTip="{x:Static loc:UiText.HintNat}"/>
         </Grid>
+        </StackPanel>
       </Border>
       <Grid Grid.Row="1" Margin="0,0,0,10">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Border Grid.Column="0" Style="{StaticResource HoverCardBorder}" Padding="15,11">
+        <Border Grid.Column="0" Style="{StaticResource HoverCardBorder}" Background="{DynamicResource Kpi0Gradient}" Padding="15,11">
           <StackPanel><TextBlock Text="{x:Static loc:UiText.X033}" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiDevices" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="2" Style="{StaticResource HoverCardBorder}" Padding="15,11">
+        <Border Grid.Column="2" Style="{StaticResource HoverCardBorder}" Background="{DynamicResource Kpi2Gradient}" Padding="15,11">
           <StackPanel><TextBlock Text="{x:Static loc:UiText.X034}" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiTraffic" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="4" Style="{StaticResource HoverCardBorder}" Padding="15,11">
+        <Border Grid.Column="4" Style="{StaticResource HoverCardBorder}" Background="{DynamicResource Kpi4Gradient}" Padding="15,11">
           <StackPanel><TextBlock Text="{x:Static loc:UiText.X035}" Style="{StaticResource LabelSmall}"/><TextBlock x:Name="KpiActive" Text="—" Style="{StaticResource KpiNumber}"/></StackPanel>
         </Border>
-        <Border Grid.Column="6" Style="{StaticResource HoverCardBorder}" Padding="15,11">
+        <Border Grid.Column="6" Style="{StaticResource HoverCardBorder}" Background="{DynamicResource Kpi6Gradient}" Padding="15,11">
           <StackPanel><TextBlock Text="{x:Static loc:UiText.X036}" Style="{StaticResource LabelSmall}"/><TextBlock Text="CSV" Foreground="{DynamicResource Accent}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
         </Border>
       </Grid>
@@ -188,17 +218,17 @@
                 <ItemsControl.ItemTemplate><DataTemplate>
                   <StackPanel Margin="0,0,0,11">
                     <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                      <TextBlock Text="{Binding Name}" Foreground="#D3E8EE" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Tone_D3E8EE}" FontSize="11" TextTrimming="CharacterEllipsis"/>
                       <TextBlock Grid.Column="1" Text="{Binding Value}" Foreground="{DynamicResource Accent}" FontSize="10"/>
                     </Grid>
-                    <Border Height="7" CornerRadius="4" Background="#1F3345" Margin="0,5,0,0" HorizontalAlignment="Stretch">
+                    <Border Height="7" CornerRadius="4" Background="{DynamicResource Tone_1F3345}" Margin="0,5,0,0" HorizontalAlignment="Stretch">
                       <Border Background="{DynamicResource Accent}" Width="{Binding Width}" HorizontalAlignment="Left" CornerRadius="4"/>
                     </Border>
                   </StackPanel>
                 </DataTemplate></ItemsControl.ItemTemplate>
               </ItemsControl>
             </ScrollViewer>
-            <TextBlock Grid.Row="2" Text="{x:Static loc:UiText.X047}" Foreground="#8AA7B9" FontSize="10" TextWrapping="Wrap" Margin="0,12,0,0"/>
+            <TextBlock Grid.Row="2" Text="{x:Static loc:UiText.X047}" Foreground="{DynamicResource Tone_8AA7B9}" FontSize="10" TextWrapping="Wrap" Margin="0,12,0,0"/>
           </Grid>
         </Border>
       </Grid>
@@ -208,14 +238,14 @@
             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
             <TextBlock Text="{x:Static loc:UiText.X048}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-              <TextBlock Text="{x:Static loc:UiText.X049}" Foreground="{StaticResource TextSecondary}" FontSize="10" VerticalAlignment="Center" Margin="0,0,13,0"/>
+              <TextBlock Text="{x:Static loc:UiText.X049}" Foreground="{DynamicResource TextSecondary}" FontSize="10" VerticalAlignment="Center" Margin="0,0,13,0"/>
               <Button Content="{x:Static loc:UiText.X050}" Style="{StaticResource FlatButton}" Click="CopyAllLogs_Click" ToolTip="{x:Static loc:UiText.X051}" Padding="9,5"/>
             </StackPanel>
           </Grid>
-          <RichTextBox Grid.Row="1" x:Name="LogList" Background="#F506080B" Foreground="#BBCBD8"
+          <RichTextBox Grid.Row="1" x:Name="LogList" Background="{DynamicResource Tone_F506080B}" Foreground="{DynamicResource Tone_BBCBD8}"
                        FontFamily="Consolas" FontSize="11" BorderThickness="0" Padding="7,4"
                        IsReadOnly="True" IsDocumentEnabled="False" AcceptsTab="False"
-                       SelectionBrush="#4D458D98" CaretBrush="#43D9DC"
+                       SelectionBrush="{DynamicResource Tone_4D458D98}" CaretBrush="{DynamicResource Tone_43D9DC}"
                        ScrollViewer.VerticalScrollBarVisibility="Auto"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto">
              <FlowDocument PagePadding="0" FontFamily="Consolas" FontSize="11"
@@ -228,10 +258,10 @@
   <!-- Non-blocking in-app update notification; app must be running. -->
   <Border x:Name="UpdateToast" Grid.Row="1" Panel.ZIndex="15" Visibility="Collapsed"
           Width="390" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,20,0"
-          Padding="17" CornerRadius="14" BorderThickness="1" BorderBrush="#48A6AF" Background="#F5102026">
+          Padding="17" CornerRadius="14" BorderThickness="1" BorderBrush="{DynamicResource Tone_48A6AF}" Background="{DynamicResource Tone_F5102026}">
     <Border.Effect><DropShadowEffect Color="#000000" BlurRadius="18" ShadowDepth="7" Opacity="0.6"/></Border.Effect>
     <StackPanel>
-      <TextBlock Text="{x:Static loc:UiText.X052}" FontWeight="Bold" Foreground="#5FE7DD" FontSize="12"/>
+      <TextBlock Text="{x:Static loc:UiText.X052}" FontWeight="Bold" Foreground="{DynamicResource Tone_5FE7DD}" FontSize="12"/>
       <TextBlock x:Name="UpdateToastText" Text="{x:Static loc:UiText.X053}" Foreground="White" FontSize="13" Margin="0,8,0,12" TextWrapping="Wrap"/>
       <StackPanel Orientation="Horizontal">
         <Button Content="{x:Static loc:UiText.X054}" Style="{StaticResource AccentButton}" Click="Updates_Click" Margin="0,0,9,0"/>
@@ -239,18 +269,18 @@
       </StackPanel>
     </StackPanel>
   </Border>
-  <Grid Grid.Row="2" Background="#F708090C">
+  <Grid Grid.Row="2" Background="{DynamicResource Tone_F708090C}">
     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
     <TextBlock x:Name="BottomStatus" Text="{x:Static loc:UiText.X056}" VerticalAlignment="Center"
-               Foreground="#74C6CA" FontSize="11" Margin="18,0,0,0"/>
-    <TextBlock Grid.Column="1" x:Name="FooterVersionText" Text="{x:Static loc:UiText.X057}" Foreground="#6D91A5" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
+               Foreground="{DynamicResource Tone_74C6CA}" FontSize="11" Margin="18,0,0,0"/>
+    <TextBlock Grid.Column="1" x:Name="FooterVersionText" Text="{x:Static loc:UiText.X057}" Foreground="{DynamicResource Tone_6D91A5}" FontSize="10" Margin="0,0,18,0" VerticalAlignment="Center"/>
      <Thumb Grid.ColumnSpan="2" x:Name="CornerResizeGrip" Width="20" Height="20" HorizontalAlignment="Right"
             VerticalAlignment="Bottom" Margin="0,0,1,1" Cursor="SizeNWSE"
             DragDelta="CornerResizeGrip_DragDelta" ToolTip="{x:Static loc:UiText.X058}">
        <Thumb.Template>
          <ControlTemplate TargetType="Thumb">
            <Grid Background="Transparent">
-             <Path Stroke="#5A9EA9" StrokeThickness="1.6"
+             <Path Stroke="{DynamicResource Tone_5A9EA9}" StrokeThickness="1.6"
                    Data="M 15,5 L 5,15 M 15,10 L 10,15"/>
            </Grid>
          </ControlTemplate>

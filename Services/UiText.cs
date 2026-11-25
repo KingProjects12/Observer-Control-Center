@@ -28,6 +28,7 @@ public static class UiText
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
     }
     public static string KeeneticConnect => T("◉   Connect / NAT", "◉   Подключение / NAT");
+    public static string ThemeHeading => T("Appearance theme", "Тема оформления");
     public static string WorkspaceHeading => T("Workspace", "Рабочая область");
     public static string WorkspaceHint => T("Collect · inspect · export", "Сбор · анализ · экспорт");
     public static string HelpButton => T("?   Guide / F1", "?   Справка / F1");

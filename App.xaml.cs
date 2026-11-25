@@ -8,6 +8,7 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         UiText.Initialize();
+        AppearanceTheme.Initialize();
         base.OnStartup(e);
         if (e.Args.Length == 2 && e.Args[0] == "--ui-smoke")
         {

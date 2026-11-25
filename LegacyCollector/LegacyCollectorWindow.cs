@@ -58,11 +58,11 @@ internal sealed class LegacyCollectorWindow : Window
         Width = 810; Height = 880; MinWidth = 600; MinHeight = 600;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         DarkTitleBar.Apply(this);
-        Background = new SolidColorBrush(Color.FromRgb(7,9,12)); Foreground = Brushes.White;
+        Background = (Brush)FindResource("DialogBg"); Foreground = (Brush)FindResource("DialogText");
         FontFamily = new FontFamily("Segoe UI");
         var root = new StackPanel { Margin = new Thickness(24) };
         Content = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-        root.Children.Add(new TextBlock { Text = T("NETWORK COLLECTION / READ-ONLY", "СБОР СЕТЕВЫХ ДАННЫХ / ТОЛЬКО ЧТЕНИЕ"), FontSize = 19, FontWeight = FontWeights.Bold, Foreground = Brushes.Turquoise, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0,0,0,12) });
+        root.Children.Add(new TextBlock { Text = T("NETWORK COLLECTION / READ-ONLY", "СБОР СЕТЕВЫХ ДАННЫХ / ТОЛЬКО ЧТЕНИЕ"), FontSize = 19, FontWeight = FontWeights.Bold, Foreground = (Brush)FindResource("DialogAccent"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0,0,0,12) });
         StackPanel section = root;
         void Group(string en, string ru, string hintEn, string hintRu)
         {
@@ -79,10 +79,10 @@ internal sealed class LegacyCollectorWindow : Window
         Label(T("NAT accepts multiple routers with the same login and password. Up to three collect in parallel; one combined office report.", "NAT принимает несколько роутеров с общими логином и паролем. До трёх одновременно; один общий отчёт по офису."));
         _user = Field(T("Username", "Логин"), "");
         Label(T("Password (not saved)", "Пароль (не сохраняется)"));
-        _password = new PasswordBox { Background = new SolidColorBrush(Color.FromRgb(12,15,18)), Foreground = Brushes.White, Padding = new Thickness(10), BorderBrush = Brushes.DarkSlateGray };
+        _password = new PasswordBox { Background = (Brush)FindResource("DialogField"), Foreground = (Brush)FindResource("DialogText"), Padding = new Thickness(10), BorderBrush = (Brush)FindResource("DialogFieldStroke") };
         section.Children.Add(_password);
-        _https = new CheckBox { Content = "HTTPS", IsChecked = true, Foreground = Brushes.White, Margin = new Thickness(0,10,0,4) }; section.Children.Add(_https);
-        _vpn = new CheckBox { Content = T("VPN REMOTE — existing authorized VPN route", "VPN REMOTE — существующий разрешённый VPN-маршрут"), IsChecked = vpn, Foreground = Brushes.White, Margin = new Thickness(0,4,0,6) }; section.Children.Add(_vpn);
+        _https = new CheckBox { Content = "HTTPS", IsChecked = true, Foreground = (Brush)FindResource("DialogText"), Margin = new Thickness(0,10,0,4) }; section.Children.Add(_https);
+        _vpn = new CheckBox { Content = T("VPN REMOTE — existing authorized VPN route", "VPN REMOTE — существующий разрешённый VPN-маршрут"), IsChecked = vpn, Foreground = (Brush)FindResource("DialogText"), Margin = new Thickness(0,4,0,6) }; section.Children.Add(_vpn);
         Group("02 / COLLECTION SETTINGS", "02 / ПАРАМЕТРЫ СБОРА", "NAT finds destinations; TOP Traffic measures volume for a selected window.", "NAT показывает назначения; TOP Traffic — объём за выбранный период.");
         _target = Field(T("Office destination /24 (saved locally)", "Сеть назначения офиса /24 (сохраняется локально)"), LoadTarget());
         _samples = Field(T("NAT snapshots (1–12)", "Снимки NAT (1–12)"), "3");
@@ -107,7 +107,7 @@ internal sealed class LegacyCollectorWindow : Window
         _commands.Add(Button(T("ROUTER LOGIN", "ЛОГИН РОУТЕРА"), (_,_)=>EditLogin()));
         _retry=Button(T("RETRY INCOMPLETE", "ПОВТОРИТЬ ПРОБЛЕМНЫЕ"), async (_,_)=>await Run("retry"));_retry.IsEnabled=false;
         _stop = Button(T("STOP", "СТОП"), (_,_) => _running?.Cancel()); _stop.IsEnabled = false; _stop.ToolTip=T("Cancel collection and retain available results.","Остановить сбор, сохранить доступные результаты.");
-        _batchSummary=new TextBlock{TextWrapping=TextWrapping.Wrap,Foreground=Brushes.Turquoise,Margin=new Thickness(0,8,0,4)};section.Children.Add(_batchSummary);
+        _batchSummary=new TextBlock{TextWrapping=TextWrapping.Wrap,Foreground = (Brush)FindResource("DialogAccent"),Margin=new Thickness(0,8,0,4)};section.Children.Add(_batchSummary);
         _batchProgress=new ProgressBar{Minimum=0,Maximum=1,Height=9,Margin=new Thickness(0,3,0,8)};section.Children.Add(_batchProgress);
         _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=210,MinHeight=75};
         foreach(string key in new[]{"Router","Status","Samples","Office"}){var c=new DataGridTextColumn{Header=key,Binding=new Binding(key),Width=new DataGridLength(1,DataGridLengthUnitType.Star)};if(key=="Status"){var st=new Style(typeof(TextBlock));st.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(key){Converter=new StatusBrushConverter()}));c.ElementStyle=st;}_batchGrid.Columns.Add(c);}section.Children.Add(_batchGrid);
@@ -121,8 +121,8 @@ internal sealed class LegacyCollectorWindow : Window
         _reports = Button(T("OPEN REPORTS", "ОТКРЫТЬ ОТЧЁТЫ"), (_,_) => Open(_folder)); _reports.IsEnabled = false; _reports.ToolTip=T("Open the current report folder.","Открыть папку текущего отчёта.");
         _access=Button(T("ANALYZE ACCESS", "АНАЛИЗ ДОСТУПОВ"),(_,_)=>{var csv=_folder==null?null:Path.Combine(_folder,"07_Office_To_Connections.csv");new AccessAnalyzerWindow(csv,_target.Text){Owner=this}.ShowDialog();});_access.IsEnabled=false;
         Group("05 / ACTIVITY", "05 / ЖУРНАЛ", "Progress and diagnostic details. Copy the log when troubleshooting.", "Прогресс и диагностика. При ошибке скопируйте журнал.");
-        _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Turquoise }; section.Children.Add(_status);
-        _log = new RichTextBox { IsReadOnly = true, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = Brushes.Black, Foreground = Brushes.White, Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);
+        _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("DialogAccent") }; section.Children.Add(_status);
+        _log = new RichTextBox { IsReadOnly = true, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = (Brush)FindResource("DialogLog"), Foreground = (Brush)FindResource("DialogText"), Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);
         var copyLog = new Button { Content=T("COPY LOG","КОПИРОВАТЬ ЖУРНАЛ"), Style=(Style)FindResource("FlatButton"), HorizontalAlignment=HorizontalAlignment.Right, Margin=new Thickness(0,8,0,0) };
         copyLog.Click += (_,_) => { if(_logText.Length==0)return; try { Clipboard.SetText(_logText.ToString()); } catch(System.Runtime.InteropServices.COMException) { _status.Text=T("Clipboard unavailable.","Буфер обмена недоступен."); } }; section.Children.Add(copyLog);
         Label(T("Read-only. The existing VPN must already be connected. NAT and TOP Traffic do not prove all VPN/LAN flows. Raw reports are confidential.", "Только чтение. VPN должен уже существовать и быть подключён. NAT и TOP Traffic не показывают гарантированно все VPN/LAN-потоки. Сырые отчёты конфиденциальны."));

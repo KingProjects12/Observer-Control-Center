@@ -6,16 +6,10 @@
   ShowInTaskbar="False" ShowActivated="False" Topmost="True" Opacity="0"
   ResizeMode="NoResize" AllowsTransparency="True" Background="Transparent">
   <Border x:Name="IslandSurface" Margin="8" CornerRadius="23" BorderThickness="1"
-          BorderBrush="#7184AAC0" Cursor="Hand" MouseLeftButtonDown="Island_MouseLeftButtonDown"
-          MouseEnter="IslandSurface_MouseEnter" MouseLeave="IslandSurface_MouseLeave">
+          BorderBrush="{DynamicResource Tone_7184AAC0}" Cursor="Hand" MouseLeftButtonDown="Island_MouseLeftButtonDown"
+          MouseEnter="IslandSurface_MouseEnter" MouseLeave="IslandSurface_MouseLeave" Background="{DynamicResource IslandGradient}">
     <Border.RenderTransform><TranslateTransform x:Name="IslandOffset" Y="-14"/></Border.RenderTransform>
-    <Border.Background>
-      <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#FC0B0D10" Offset="0"/>
-        <GradientStop Color="#FE060709" Offset="0.58"/>
-        <GradientStop Color="#FC101014" Offset="1"/>
-      </LinearGradientBrush>
-    </Border.Background>
+    
     <Border.Effect>
       <DropShadowEffect x:Name="IslandShadow" BlurRadius="19" ShadowDepth="5"
                         Opacity="0.64" Color="#000000"/>
@@ -28,12 +22,12 @@
       </Grid.ColumnDefinitions>
       <Grid Width="46" Height="46" HorizontalAlignment="Left" VerticalAlignment="Center">
         <Border Width="43" Height="43" CornerRadius="15" BorderThickness="1"
-                BorderBrush="#36639AA4" Background="#080C12">
+                BorderBrush="{DynamicResource Tone_36639AA4}" Background="{DynamicResource Tone_080C12}">
           <Image Source="/Assets/ObserverBrand.png" Margin="2" Stretch="UniformToFill"/>
         </Border>
       </Grid>
       <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="1,0,0,0">
-        <TextBlock Text="OBSERVER" Foreground="#F3F9FF" FontWeight="Bold" FontSize="13"/>
+        <TextBlock Text="OBSERVER" Foreground="{DynamicResource Tone_F3F9FF}" FontWeight="Bold" FontSize="13"/>
         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
           <Ellipse Width="6" Height="6" Fill="#46E8BE" VerticalAlignment="Center"
                    Margin="0,0,6,0">
@@ -52,12 +46,12 @@
                      Foreground="#77DBD4" FontSize="10" VerticalAlignment="Center"/>
         </StackPanel>
       </StackPanel>
-      <Border Grid.Column="2" Background="#2B1A222D" BorderBrush="#365B6378"
+      <Border Grid.Column="2" Background="{DynamicResource Tone_2B1A222D}" BorderBrush="{DynamicResource Tone_365B6378}"
               CornerRadius="11" BorderThickness="1" Padding="11,8" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal">
-          <TextBlock x:Name="CountText" Text="{x:Static loc:UiText.X083}" Foreground="#DBCCFA"
+          <TextBlock x:Name="CountText" Text="{x:Static loc:UiText.X083}" Foreground="{DynamicResource Tone_DBCCFA}"
                      VerticalAlignment="Center" FontWeight="SemiBold" FontSize="11"/>
-          <TextBlock Text="  ↗" Foreground="#B592FF" FontSize="12"/>
+          <TextBlock Text="  ↗" Foreground="{DynamicResource Tone_B592FF}" FontSize="12"/>
         </StackPanel>
       </Border>
     </Grid>

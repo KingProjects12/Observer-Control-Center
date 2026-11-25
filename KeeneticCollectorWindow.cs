@@ -21,12 +21,12 @@ public sealed class KeeneticCollectorWindow : Window
         Title = "Observer · Keenetic NAT";
         Width = 620; Height = 660; MinWidth = 520; MinHeight = 550;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        Background = new SolidColorBrush(Color.FromRgb(7, 9, 12));
-        Foreground = Brushes.White; FontFamily = new FontFamily("Segoe UI");
+        Background = (Brush)FindResource("DialogBg");
+        Foreground = (Brush)FindResource("DialogText"); FontFamily = new FontFamily("Segoe UI");
         var root = new StackPanel { Margin = new Thickness(22) };
         var scroll = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         Content = scroll;
-        root.Children.Add(new TextBlock { Text = T("KEENETIC / LIVE NAT", "KEENETIC / ЖИВОЙ NAT"), FontSize = 21, FontWeight = FontWeights.Bold, Foreground = Brushes.Turquoise, Margin = new Thickness(0,0,0,14) });
+        root.Children.Add(new TextBlock { Text = T("KEENETIC / LIVE NAT", "KEENETIC / ЖИВОЙ NAT"), FontSize = 21, FontWeight = FontWeights.Bold, Foreground = (Brush)FindResource("DialogAccent"), Margin = new Thickness(0,0,0,14) });
         TextBox Field(string name, string value)
         {
             root.Children.Add(new TextBlock { Text = name, Margin = new Thickness(0,5,0,4) });
@@ -36,19 +36,19 @@ public sealed class KeeneticCollectorWindow : Window
         _address = Field(T("Router IPv4 (optional :port)", "IPv4 роутера (можно :порт)"), address);
         _username = Field(T("Username", "Логин"), "");
         root.Children.Add(new TextBlock { Text = T("Password (not saved)", "Пароль (не сохраняется)"), Margin = new Thickness(0,5,0,4) });
-        _password = new PasswordBox { Background = new SolidColorBrush(Color.FromRgb(12,15,18)), Foreground = Brushes.White, Padding = new Thickness(10,8,10,8), Margin = new Thickness(0,0,0,5) };
+        _password = new PasswordBox { Background = (Brush)FindResource("DialogField"), Foreground = (Brush)FindResource("DialogText"), Padding = new Thickness(10,8,10,8), Margin = new Thickness(0,0,0,5) };
         root.Children.Add(_password);
         _target = Field(T("Target network (IPv4 CIDR)", "Целевая сеть (IPv4 CIDR)"), "");
         _samples = Field(T("Snapshots (1–12)", "Снимки (1–12)"), "3");
         _interval = Field(T("Interval in seconds (3–60)", "Интервал в секундах (3–60)"), "5");
-        _https = new CheckBox { Content = T("Use HTTPS (recommended)", "Использовать HTTPS (рекомендуется)"), IsChecked = true, Foreground = Brushes.White, Margin = new Thickness(0,7,0,7) };
+        _https = new CheckBox { Content = T("Use HTTPS (recommended)", "Использовать HTTPS (рекомендуется)"), IsChecked = true, Foreground = (Brush)FindResource("DialogText"), Margin = new Thickness(0,7,0,7) };
         root.Children.Add(_https);
         root.Children.Add(new TextBlock { Text = T("Authorized networks only. Read-only GET requests; POST /auth for login only. NAT may miss VPN/LAN flows. No router settings are changed.", "Только разрешённые сети. GET только для чтения, POST /auth только для входа. NAT может не видеть VPN/LAN. Настройки роутера не изменяются."), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0,0,0,10) });
         var buttons = new WrapPanel();
         _collect = new Button { Content = T("CONNECT AND COLLECT NAT", "ПОДКЛЮЧИТЬСЯ И СОБРАТЬ NAT"), Style = (Style)FindResource("AccentButton"), Margin = new Thickness(0,0,8,8) };
         _cancel = new Button { Content = T("CANCEL", "ОТМЕНА"), Style = (Style)FindResource("FlatButton"), IsEnabled = false };
         buttons.Children.Add(_collect); buttons.Children.Add(_cancel); root.Children.Add(buttons);
-        _status = new TextBlock { Text = T("Ready", "Готово к сбору"), TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Turquoise };
+        _status = new TextBlock { Text = T("Ready", "Готово к сбору"), TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("DialogAccent") };
         root.Children.Add(_status);
         _collect.Click += Collect;
         _cancel.Click += (_, _) => _running?.Cancel();

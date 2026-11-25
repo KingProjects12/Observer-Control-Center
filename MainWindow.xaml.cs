@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     private string _page = "overview";
     private string _reportPath = "";
     private bool _purple;
+    private readonly bool _offlineUiCheck;
     private int _glassMode;
     private bool _windowTransitionBusy;
 
@@ -34,11 +35,12 @@ public partial class MainWindow : Window
 
     internal MainWindow(bool offlineUiCheck)
     {
+        _offlineUiCheck=offlineUiCheck;
         InitializeComponent();
         LogList.Document.Blocks.Clear();
         TrafficGrid.ItemsSource = _devices;
         TopBars.ItemsSource = _bars;
-        HeaderVersionText.Text = (UiText.IsRussian ? $"  v{GitHubReleaseClient.AppVersionText} ЧЁРНОЕ СТЕКЛО" : $"  v{GitHubReleaseClient.AppVersionText} BLACK GLASS");
+        RefreshThemeSelection();
         FooterVersionText.Text = (UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY");
         AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
         AddLog(UiText.T("READ-ONLY // Keenetic NAT / VPN / TOP Traffic collector. Credentials are not stored.", "READ-ONLY // Сбор NAT / VPN / TOP Traffic. Пароли не сохраняются."));
@@ -265,10 +267,23 @@ public partial class MainWindow : Window
     private void Theme_Click(object sender, RoutedEventArgs e)
     {
         _purple = !_purple;
-        var accent = (Color)ColorConverter.ConvertFromString(_purple ? "#B392FF" : "#3DE7EA")!;
-        Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
+        AppearanceTheme.Apply(AppearanceTheme.IsSignal,_purple,_glassMode);
         AddLog(UiText.T("THEME  //  accent: ", "THEME  //  акцент: ") + (_purple ? "lavender" : "cyan"));
     }
+
+    private void RefreshThemeSelection()
+    {
+        ThemeClassicButton.Tag=AppearanceTheme.IsSignal?null:"selected";
+        ThemeSignalButton.Tag=AppearanceTheme.IsSignal?"selected":null;
+        HeaderVersionText.Text=$"  v{GitHubReleaseClient.AppVersionText} "+(AppearanceTheme.IsSignal?"SIGNAL":UiText.T("BLACK GLASS","ЧЁРНОЕ СТЕКЛО"));
+    }
+    private void ChangeAppearance(bool signal)
+    {
+        AppearanceTheme.Apply(signal,_purple,_glassMode,persist:!_offlineUiCheck);
+        RefreshThemeSelection();
+    }
+    private void ClassicTheme_Click(object sender,RoutedEventArgs e)=>ChangeAppearance(false);
+    private void SignalTheme_Click(object sender,RoutedEventArgs e)=>ChangeAppearance(true);
 
     private void CopyAllLogs_Click(object sender, RoutedEventArgs e)
     {
@@ -296,7 +311,7 @@ public partial class MainWindow : Window
             2 => ((byte)255, UiText.T("MATTE", "МАТОВО")),
             _ => ((byte)253, UiText.T("TRANSLUCENT", "ПРОЗРАЧНО"))
         };
-        GlassShell.Background = new SolidColorBrush(Color.FromArgb(alpha, 5, 6, 8));
+        AppearanceTheme.Apply(AppearanceTheme.IsSignal,_purple,_glassMode);
         GlassModeButton.Content = UiText.T("✦   Glass: ", "✦   Стекло: ") + label;
         AddLog(UiText.T("SYSTEM  //  main window transparency: ", "SYSTEM  //  прозрачность основного окна: ") + label);
     }

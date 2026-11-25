@@ -25,10 +25,10 @@ internal sealed class AccessAnalyzerWindow : Window
     public AccessAnalyzerWindow(string? initialFile=null,string? target=null)
     {
         Title=T("Observer · Access analyzer","Observer · Анализ сетевых доступов");Width=1150;Height=780;MinWidth=720;MinHeight=520;WindowStartupLocation=WindowStartupLocation.CenterOwner;DarkTitleBar.Apply(this);
-        Background=new SolidColorBrush(Color.FromRgb(7,9,12));Foreground=Brushes.White;
+        Background=(Brush)FindResource("DialogBg");Foreground = (Brush)FindResource("DialogText");
         var root=new DockPanel{Margin=new Thickness(20)};Content=root;
         var top=new StackPanel();DockPanel.SetDock(top,Dock.Top);root.Children.Add(top);
-        top.Children.Add(new TextBlock{Text=T("ACCESS ANALYZER / OBSERVED EVIDENCE","АНАЛИЗ ДОСТУПОВ / НАБЛЮДАЕМЫЕ СВЯЗИ"),FontSize=20,FontWeight=FontWeights.Bold,Foreground=Brushes.Turquoise});
+        top.Children.Add(new TextBlock{Text=T("ACCESS ANALYZER / OBSERVED EVIDENCE","АНАЛИЗ ДОСТУПОВ / НАБЛЮДАЕМЫЕ СВЯЗИ"),FontSize=20,FontWeight=FontWeights.Bold,Foreground = (Brush)FindResource("DialogAccent")});
         top.Children.Add(new TextBlock{Text=T("Import one or several original NAT CSV reports; no router or firewall settings are changed.","Импорт одного или нескольких исходных CSV NAT; настройки роутеров и межсетевого экрана не меняются."),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,5,0,8)});
         var bar=new WrapPanel();top.Children.Add(bar);
         bar.Children.Add(new TextBlock{Text=T("Office /24","Сеть офиса /24"),VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(0,0,8,0)});
@@ -45,7 +45,7 @@ internal sealed class AccessAnalyzerWindow : Window
         _export=Add(T("EXPORT CSV / XLSX","ЭКСПОРТ CSV / XLSX"),async(_,_)=>await Export());
         _open=Add(T("OPEN REPORTS","ОТКРЫТЬ ОТЧЁТЫ"),(_,_)=>{if(_output!=null&&Directory.Exists(_output))Process.Start(new ProcessStartInfo(_output){UseShellExecute=true});});
         _files=new TextBox{IsReadOnly=true,AcceptsReturn=true,MinHeight=45,MaxHeight=85,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,5,0,6)};top.Children.Add(_files);
-        _summary=new TextBlock{Foreground=Brushes.Turquoise,TextWrapping=TextWrapping.Wrap,FontSize=14,Margin=new Thickness(0,3,0,5)};top.Children.Add(_summary);
+        _summary=new TextBlock{Foreground = (Brush)FindResource("DialogAccent"),TextWrapping=TextWrapping.Wrap,FontSize=14,Margin=new Thickness(0,3,0,5)};top.Children.Add(_summary);
         _status=new TextBlock{TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,5)};top.Children.Add(_status);
         var controls=new DockPanel{Margin=new Thickness(0,4,0,6)};top.Children.Add(controls);
         _view=new ComboBox{Width=205,ItemsSource=new[]{T("Office endpoints","IP / порт / протокол"),T("Source rules","Источники → офис"),T("Import audit","Аудит импорта"),T("Endpoint changes","Изменения назначений"),T("Source changes","Изменения источников")},SelectedIndex=0,Margin=new Thickness(0,0,8,0)};DockPanel.SetDock(_view,Dock.Left);controls.Children.Add(_view);

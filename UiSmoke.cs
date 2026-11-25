@@ -20,6 +20,7 @@ internal static class UiSmoke
         {
             UiText.ApplyLanguage(language);
             Require(UiText.IsRussian==(language=="russian"),"language");
+            AppearanceTheme.Apply(false);
             var main=new MainWindow(true);
             var update=new UpdateCenterWindow(main);
             Window[] windows=[main,update,new LegacyCollectorWindow(""),new LegacyCollectorWindow("",vpn:true),new LegacyCollectorWindow("",traffic:true),new WorkspaceGuideWindow(),new AccessAnalyzerWindow(),new MiniIslandWindow(main),new UpdateNoticeWindow("v0.0.0",()=>{})];
@@ -41,6 +42,19 @@ internal static class UiSmoke
                 var progress=update.FindName("InstallProgress") as ProgressBar;
                 Require(progress!=null,"progress exists"); progress!.Visibility=Visibility.Visible; progress.Value=93;
                 Layout(update); Require(progress.Value==93,"progress");
+                var nav=FindButton(main,"NavOverview");
+                var banner=(Border)main.FindName("SignalBanner");
+                Require(banner.Visibility==Visibility.Collapsed && nav.Margin.Bottom==5,"classic theme");
+                var before=((DataGrid)main.FindName("TrafficGrid")).ItemsSource;
+                Click(FindButton(main,"ThemeSignalButton"));
+                foreach(var w in windows)Layout(w);
+                Require(AppearanceTheme.IsSignal && banner.Visibility==Visibility.Visible && nav.Margin.Bottom==9,"signal theme and spacing");
+                Require((FindButton(main,"ThemeSignalButton").Tag as string)=="selected","signal selection");
+                Require(ReferenceEquals(before,((DataGrid)main.FindName("TrafficGrid")).ItemsSource),"theme preserves data binding");
+                Require(((SolidColorBrush)main.FindResource("Accent")).Color==Color.FromRgb(105,223,255),"signal accent");
+                Click(FindButton(main,"ThemeClassicButton"));Layout(main);
+                Require(!AppearanceTheme.IsSignal && banner.Visibility==Visibility.Collapsed && nav.Margin.Bottom==5,"classic restored");
+                Require(((SolidColorBrush)main.FindResource("Accent")).Color==Color.FromRgb(61,231,234),"classic accent restored");
             }
             finally { foreach(var w in windows.Reverse()) w.Close(); }
         }

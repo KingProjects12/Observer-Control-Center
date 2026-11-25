@@ -17,7 +17,7 @@ internal sealed class WorkspaceGuideWindow : Window
     {
         Title=T("Observer · Workspace guide","Observer · Справка");
         Width=810; Height=730; MinWidth=550; MinHeight=450; WindowStartupLocation=WindowStartupLocation.CenterOwner;
-        Background=new SolidColorBrush(Color.FromRgb(7,9,12)); Foreground=Brushes.White; FontFamily=new FontFamily("Segoe UI");
+        Background=(Brush)FindResource("DialogBg"); Foreground = (Brush)FindResource("DialogText"); FontFamily=new FontFamily("Segoe UI");
         DarkTitleBar.Apply(this);
         var root=new StackPanel{Margin=new Thickness(24)};
         Content=new ScrollViewer{Content=root,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};

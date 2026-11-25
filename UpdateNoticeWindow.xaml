@@ -6,8 +6,8 @@
         Width="392" Height="154" ResizeMode="NoResize" WindowStyle="None"
         AllowsTransparency="True" Background="Transparent" Topmost="True"
         ShowInTaskbar="False" ShowActivated="False">
-  <Border Margin="8" CornerRadius="14" Background="#0B0E15"
-          BorderBrush="#3D5A64" BorderThickness="1" Padding="17">
+  <Border Margin="8" CornerRadius="14" Background="{DynamicResource Tone_0B0E15}"
+          BorderBrush="{DynamicResource Tone_3D5A64}" BorderThickness="1" Padding="17">
     <Border.Effect>
       <DropShadowEffect Color="#000000" BlurRadius="16" ShadowDepth="4" Opacity="0.65"/>
     </Border.Effect>
@@ -19,20 +19,20 @@
       </Grid.RowDefinitions>
       <DockPanel Grid.Row="0" LastChildFill="True">
         <Button DockPanel.Dock="Right" Content="×" Width="24" Height="24"
-                FontSize="15" Foreground="#B2C9D7" Background="Transparent"
+                FontSize="15" Foreground="{DynamicResource Tone_B2C9D7}" Background="Transparent"
                 BorderThickness="0" Cursor="Hand" ToolTip="{x:Static loc:UiText.X076}"
                 Click="Close_Click"/>
-        <TextBlock Text="{x:Static loc:UiText.X077}" FontWeight="Bold" FontSize="12" Foreground="#5EE4D8" VerticalAlignment="Center"/>
+        <TextBlock Text="{x:Static loc:UiText.X077}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource Tone_5EE4D8}" VerticalAlignment="Center"/>
       </DockPanel>
       <TextBlock Grid.Row="1" x:Name="VersionText" Text="{x:Static loc:UiText.X078}"
-                 Foreground="#F0F8FD" FontSize="15" FontWeight="SemiBold"
+                 Foreground="{DynamicResource Tone_F0F8FD}" FontSize="15" FontWeight="SemiBold"
                  VerticalAlignment="Center" TextWrapping="Wrap"/>
       <StackPanel Grid.Row="2" Orientation="Horizontal">
-        <Button Content="{x:Static loc:UiText.X079}" Padding="12,7" Background="#153E46"
-                Foreground="#E5F8F6" BorderBrush="#267E85" BorderThickness="1"
+        <Button Content="{x:Static loc:UiText.X079}" Padding="12,7" Background="{DynamicResource Tone_153E46}"
+                Foreground="{DynamicResource Tone_E5F8F6}" BorderBrush="{DynamicResource Tone_267E85}" BorderThickness="1"
                 Cursor="Hand" Click="Open_Click"/>
         <Button Content="{x:Static loc:UiText.X080}" Padding="12,7" Margin="8,0,0,0"
-                Foreground="#BDCDD8" Background="#111822" BorderBrush="#263D48"
+                Foreground="{DynamicResource Tone_BDCDD8}" Background="{DynamicResource Tone_111822}" BorderBrush="{DynamicResource Tone_263D48}"
                 BorderThickness="1" Cursor="Hand" Click="Close_Click"/>
       </StackPanel>
     </Grid>
