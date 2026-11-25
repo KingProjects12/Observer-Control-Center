@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -25,15 +27,16 @@ public partial class MainWindow : Window
     private string _page = "overview";
     private string _reportPath = "";
     private bool _purple;
+    private int _glassMode;
     private bool _windowTransitionBusy;
 
     public MainWindow()
     {
         InitializeComponent();
-        LogList.ItemsSource = _consoleItems;
+        LogList.Document.Blocks.Clear();
         TrafficGrid.ItemsSource = _devices;
         TopBars.ItemsSource = _bars;
-        AddLog("OBSERVER 2.0.7 PREVIEW  //  WPF / .NET 10 / GitHub release notices");
+        AddLog("OBSERVER 2.0.8 PREVIEW  //  REAL GLASS / selectable log console / GitHub release notices");
         AddLog("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials");
         ShowPage("overview");
         StartUpdateChecks();
@@ -51,8 +54,19 @@ public partial class MainWindow : Window
     {
         var entry = new ConsoleEntry($"[{DateTime.Now:HH:mm:ss}] {message}", ConsoleEntry.Classify(message));
         _consoleItems.Add(entry);
-        while (_consoleItems.Count > 300) _consoleItems.RemoveAt(0);
-        LogList.ScrollIntoView(entry);
+        LogList.Document.Blocks.Add(new Paragraph(new Run(entry.Text) { Foreground = entry.Color })
+        {
+            Margin = new Thickness(0, 0, 0, 2)
+        });
+        while (_consoleItems.Count > 300)
+        {
+            _consoleItems.RemoveAt(0);
+            if (LogList.Document.Blocks.FirstBlock is { } first)
+                LogList.Document.Blocks.Remove(first);
+        }
+        // Do not steal the scroll position while the administrator is selecting log text.
+        if (!LogList.IsKeyboardFocusWithin || LogList.Selection.IsEmpty)
+            LogList.ScrollToEnd();
         BottomStatus.Text = message;
     }
 
@@ -244,6 +258,44 @@ public partial class MainWindow : Window
         var accent = (Color)ColorConverter.ConvertFromString(_purple ? "#B392FF" : "#3DE7EA")!;
         Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
         AddLog("THEME  //  акцент: " + (_purple ? "lavender" : "cyan"));
+    }
+
+    private void CopyAllLogs_Click(object sender, RoutedEventArgs e)
+    {
+        if (_consoleItems.Count == 0) return;
+        try
+        {
+            // Copy exactly the displayed lines, including their timestamps and original order.
+            Clipboard.SetText(string.Join(Environment.NewLine, _consoleItems.Select(x => x.Text)));
+            BottomStatus.Text = $"LOG COPY  //  скопировано {_consoleItems.Count} строк; выделение фрагментов работает через Ctrl+C";
+        }
+        catch (System.Runtime.InteropServices.ExternalException ex)
+        {
+            AddLog("COPY ERROR  //  буфер обмена сейчас недоступен: " + ex.Message);
+        }
+    }
+
+    private void Glass_Click(object sender, RoutedEventArgs e)
+    {
+        // A layered WPF window makes all semi-transparent elements genuinely show the
+        // desktop/windows behind them. Opaque mode is useful for high-contrast work.
+        _glassMode = (_glassMode + 1) % 3;
+        (byte alpha, string label) = _glassMode switch
+        {
+            1 => ((byte)110, "МАКСИМУМ"),
+            2 => ((byte)245, "МАТОВО"),
+            _ => ((byte)168, "ПРОЗРАЧНО")
+        };
+        GlassShell.Background = new SolidColorBrush(Color.FromArgb(alpha, 7, 10, 16));
+        GlassModeButton.Content = "✦   Стекло: " + label;
+        AddLog("SYSTEM  //  прозрачность основного окна: " + label);
+    }
+
+    private void CornerResizeGrip_DragDelta(object sender, DragDeltaEventArgs e)
+    {
+        if (WindowState != WindowState.Normal) return;
+        Width = Math.Max(MinWidth, Width + e.HorizontalChange);
+        Height = Math.Max(MinHeight, Height + e.VerticalChange);
     }
 
     // Exactly one visible surface at a time: the full console OR its compact island.
