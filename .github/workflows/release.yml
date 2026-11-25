@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/release-requests/public-v2.0.9.txt'
+      - '.github/release-requests/public-v2.0.11.txt'
   workflow_dispatch:
     inputs:
       version:
@@ -34,7 +34,7 @@ jobs:
             '${{ github.event.inputs.version }}'
           } elseif ($env:GITHUB_REF -eq 'refs/heads/main') {
             # One-time main-branch release, triggered only when its marker is first merged.
-            'v2.0.9'
+            'v2.0.11'
           } else {
             $env:GITHUB_REF_NAME
           }

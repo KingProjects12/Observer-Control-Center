@@ -39,7 +39,7 @@ public partial class MainWindow : Window
         HeaderVersionText.Text = (UiText.IsRussian ? $"  v{GitHubReleaseClient.AppVersionText} ЧЁРНОЕ СТЕКЛО" : $"  v{GitHubReleaseClient.AppVersionText} BLACK GLASS");
         FooterVersionText.Text = (UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY");
         AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
-        AddLog(UiText.T("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials", "READ-ONLY  //  предпросмотр не подключается к Keenetic API и не хранит пароли"));
+        AddLog(UiText.T("READ-ONLY  //  Keenetic NAT read-only collection; credentials are not stored", "READ-ONLY  //  сбор NAT только для чтения; пароли не сохраняются"));
         ShowPage("overview");
         StartUpdateChecks();
     }
@@ -226,6 +226,23 @@ public partial class MainWindow : Window
             Arguments = $"\"{folder}\"", UseShellExecute = true
         });
         AddLog(UiText.T("REPORTS  //  opened local data folder", "REPORTS  //  открыта папка с локальными данными"));
+    }
+
+    private void ToolsMenu_Click(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu { PlacementTarget = (UIElement)sender, Placement = PlacementMode.Bottom };
+        void Add(string label, RoutedEventHandler handler)
+        {
+            var item = new MenuItem { Header = label };
+            item.Click += handler;
+            menu.Items.Add(item);
+        }
+        Add(UiText.X019, RouterCheck_Click);
+        Add(UiText.X020, Import_Click);
+        Add(UiText.X021, Theme_Click);
+        Add(GlassModeButton.Content?.ToString() ?? UiText.X022, Glass_Click);
+        Add(UiText.X017, Updates_Click);
+        menu.IsOpen = true;
     }
 
     private void KeeneticCollect_Click(object sender, RoutedEventArgs e)

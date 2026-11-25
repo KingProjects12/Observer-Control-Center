@@ -88,10 +88,8 @@
           <Button Content="{x:Static loc:UiText.X017}" Style="{StaticResource NavigationButton}" Click="Updates_Click"/>
           <TextBlock Text="{x:Static loc:UiText.X018}" Style="{StaticResource NavGroupTitle}"/>
           <Button Content="{x:Static loc:UiText.KeeneticConnect}" Style="{StaticResource NavigationButton}" Click="KeeneticCollect_Click"/>
-          <Button Content="{x:Static loc:UiText.X019}" Style="{StaticResource NavigationButton}" Click="RouterCheck_Click"/>
-          <Button Content="{x:Static loc:UiText.X020}" Style="{StaticResource NavigationButton}" Click="Import_Click"/>
-          <Button Content="{x:Static loc:UiText.X021}" Style="{StaticResource NavigationButton}" Click="Theme_Click"/>
-           <Button x:Name="GlassModeButton" Content="{x:Static loc:UiText.X022}" Style="{StaticResource NavigationButton}" Click="Glass_Click" ToolTip="{x:Static loc:UiText.X023}"/>
+           <Button x:Name="GlassModeButton" Content="{x:Static loc:UiText.X022}" Style="{StaticResource NavigationButton}" Visibility="Collapsed" Click="Glass_Click" ToolTip="{x:Static loc:UiText.X023}"/>
+          <Button Content="{x:Static loc:UiText.ToolsMenu}" Style="{StaticResource NavigationButton}" Click="ToolsMenu_Click"/>
           <TextBlock Text="{x:Static loc:UiText.X024}" Style="{StaticResource NavGroupTitle}"/>
           <TextBlock Text="{x:Static loc:UiText.X025}" Foreground="#7FC8C7" FontSize="11" Margin="9,0,0,7"/>
           <TextBlock Text="{x:Static loc:UiText.X026}" Foreground="#7FC8C7" FontSize="11" Margin="9,0,0,7"/>

@@ -23,6 +23,7 @@ public static class UiText
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(IsRussian ? "ru-RU" : "en-US");
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
     }
+    public static string ToolsMenu => T("☰   Tools", "☰   Инструменты");
     public static string KeeneticConnect => T("◉   Keenetic · NAT", "◉   Keenetic · NAT");
     public static string T(string english, string russian) => IsRussian ? russian : english;
     public static string SelectNotes(string notes, bool russian)

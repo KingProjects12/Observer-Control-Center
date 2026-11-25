@@ -18,7 +18,7 @@ A Windows network administration console with Black Liquid Glass, local traffic 
 
 Observer is a desktop console for authorized network administrators. It imports existing CSV reports and helps explore devices, connections and traffic in one place.
 
-**Latest public release: 2.0.9. Version 2.0.10-preview.2 is under testing.** Direct Keenetic NAT and TOP TRAFFIC API collection is not yet included; the collector remains in v1.9.1. This is a public test project, not a production monitoring system.
+**Version 2.0.11 — public NAT test.** Read-only Keenetic NAT collection is included. Direct TOP TRAFFIC API, full VPN diagnostics, central-flow import and XLSX export remain in v1.9.1. This is a public test project, not a production monitoring system.
 
 ## Features
 
@@ -27,8 +27,8 @@ Observer is a desktop console for authorized network administrators. It imports 
 - Colored event log; select and copy text with Ctrl+C or copy all displayed lines.
 - Import `08_Top_Traffic.csv` and `01_All_Connections.csv`; device ranking, totals, charts and filters for names, IP and MAC addresses.
 - Local report folders and read-only TCP checks on ports 80 and 443 of an explicitly supplied address. No router configuration changes or API authentication.
-- GitHub release notifications. The 2.0.10 preview adds verified EXE replacement, backup and restart without a setup wizard; 2.0.9 still launches setup.
-- English and Russian interface in 2.0.10-preview.2. Installer language is saved per user and retained by self-update. Standalone launch defaults to English when no language has been set.
+- GitHub release notifications. Versions 2.0.10 and later add verified EXE replacement, backup and restart without a setup wizard; 2.0.9 still launches setup.
+- English and Russian interface. Installer language is saved per user and retained by self-update. Standalone launch defaults to English when no language has been set.
 
 ## Installation
 
