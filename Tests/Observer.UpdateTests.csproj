@@ -14,5 +14,6 @@
    <Compile Include="../Services/UpdatePollingPolicy.cs" Link="UpdatePollingPolicy.cs" />
    <Compile Include="../Services/UpdateInstaller.cs" Link="UpdateInstaller.cs" />
    <Compile Include="../Services/SelfUpdate.cs" Link="SelfUpdate.cs" />
+   <Compile Include="../Services/UiText.cs" Link="UiText.cs" />
  </ItemGroup>
 </Project>

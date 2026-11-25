@@ -90,4 +90,8 @@ try
     Assert(GitHubReleaseClient.ParseLatest(setupOnly, UpdateInstaller.OfficialRepository, stable)?.Installer == null, "setup-only release cannot be self-installed");
 }
 finally { Directory.Delete(testDir, true); }
+Assert(UiText.ResolveRussian("russian") && UiText.ResolveRussian("ru-RU"), "Russian installer choice recognized");
+Assert(!UiText.ResolveRussian("english") && !UiText.ResolveRussian(null), "English default and installer choice");
+Assert(UiText.SelectNotes("<!-- observer:en -->English<!-- observer:ru -->Русский", false) == "English", "English release notes");
+Assert(UiText.SelectNotes("<!-- observer:en -->English<!-- observer:ru -->Русский", true) == "Русский", "Russian release notes");
 Console.WriteLine($"ALL {passed} UPDATE CHECKS PASSED");

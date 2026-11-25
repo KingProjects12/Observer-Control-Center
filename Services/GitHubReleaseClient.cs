@@ -37,13 +37,13 @@ public static class GitHubReleaseClient
 
     public static string ReleasesPage(string repository)
     {
-        if (!IsValidRepository(repository)) throw new ArgumentException("Укажи GitHub репозиторий в формате owner/repo.", nameof(repository));
+        if (!IsValidRepository(repository)) throw new ArgumentException(UiText.T("Enter a GitHub repository as owner/repo.", "Укажи GitHub репозиторий в формате owner/repo."), nameof(repository));
         return $"https://github.com/{repository}/releases/latest";
     }
 
     public static GitHubRelease? ParseLatest(string json, string repository, ReleaseVersion current)
     {
-        if (!IsValidRepository(repository)) throw new ArgumentException("Некорректный GitHub репозиторий.", nameof(repository));
+        if (!IsValidRepository(repository)) throw new ArgumentException(UiText.T("Invalid GitHub repository.", "Некорректный GitHub репозиторий."), nameof(repository));
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         if (root.TryGetProperty("draft", out var draft) && draft.ValueKind == JsonValueKind.True) return null;
@@ -63,7 +63,7 @@ public static class GitHubReleaseClient
 
     public static async Task<GitHubRelease?> CheckAsync(string repository, CancellationToken ct = default)
     {
-        if (!IsValidRepository(repository)) throw new ArgumentException("Укажи GitHub репозиторий в формате owner/repo.", nameof(repository));
+        if (!IsValidRepository(repository)) throw new ArgumentException(UiText.T("Enter a GitHub repository as owner/repo.", "Укажи GitHub репозиторий в формате owner/repo."), nameof(repository));
         string url = $"https://api.github.com/repos/{repository}/releases/latest";
         using var response = await Http.GetAsync(url, HttpCompletionOption.ResponseContentRead, ct);
         response.EnsureSuccessStatusCode();

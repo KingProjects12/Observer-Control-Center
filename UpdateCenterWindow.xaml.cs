@@ -18,9 +18,9 @@ public partial class UpdateCenterWindow : Window
         RepoBox.Text = main.UpdatesRepository;
         bool official = GitHubReleaseClient.IsValidRepository(UpdateSettingsStore.EmbeddedRepository);
         RepoBox.IsReadOnly = official;
-        RepoBox.ToolTip = official ? "Репозиторий официальной сборки зафиксирован при публикации." : "Укажите owner/repo для локального прототипа.";
+        RepoBox.ToolTip = official ? UiText.T("The official build has a fixed repository.", "Репозиторий официальной сборки зафиксирован при публикации.") : UiText.T("Enter owner/repo for a local prototype.", "Укажите owner/repo для локального прототипа.");
         AutoCheckBox.IsChecked = main.UpdatesAutoCheck;
-        InstalledVersion.Text = "Установлено: " + GitHubReleaseClient.AppVersionText;
+        InstalledVersion.Text = UiText.T("Installed: ", "Установлено: ") + GitHubReleaseClient.AppVersionText;
         RefreshInfo();
     }
 
@@ -33,9 +33,9 @@ public partial class UpdateCenterWindow : Window
             ? Visibility.Visible : Visibility.Collapsed;
         InstallButton.IsEnabled = CheckButton.IsEnabled;
         DismissButton.Visibility = release != null ? Visibility.Visible : Visibility.Collapsed;
-        ReleaseNotes.Text = release == null ? "Новая версия не обнаружена или проверка ещё не выполнена."
-            : $"{release.Tag}  •  {(release.PublishedAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? "Дата неизвестна")}\n\n"
-            + (string.IsNullOrWhiteSpace(release.Notes) ? "Автор не добавил описание изменений." : release.Notes);
+        ReleaseNotes.Text = release == null ? UiText.T("No new version found or check has not run yet.", "Новая версия не обнаружена или проверка ещё не выполнена.")
+            : $"{release.Tag}  •  {(release.PublishedAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm") ?? UiText.T("Unknown date", "Дата неизвестна"))}\n\n"
+            + (string.IsNullOrWhiteSpace(release.Notes) ? UiText.T("The author did not provide release notes.", "Автор не добавил описание изменений.") : UiText.SelectNotes(release.Notes, UiText.IsRussian));
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -47,7 +47,7 @@ public partial class UpdateCenterWindow : Window
         }
         catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
         {
-            MessageBox.Show(this, ex.Message, "Настройки обновлений", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, ex.Message, UiText.T("Update settings", "Настройки обновлений"), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -62,7 +62,7 @@ public partial class UpdateCenterWindow : Window
         }
         CheckButton.IsEnabled = false;
         InstallButton.IsEnabled = false;
-        StatusText.Text = "Проверяю GitHub Releases…";
+        StatusText.Text = UiText.T("Checking GitHub Releases…", "Проверяю GitHub Releases…");
         try { await _main.CheckUpdatesAsync(manual: true); }
         finally { CheckButton.IsEnabled = true; RefreshInfo(); }
     }
@@ -71,9 +71,9 @@ public partial class UpdateCenterWindow : Window
     {
         if (_installCancellation != null || _installLaunching || _main.LatestUpdate is not { Installer: { } asset } release) return;
         if (MessageBox.Show(this,
-            $"Обновить Observer до {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} МиБ)?\n\n" +
-            "Будет скачан только EXE, программа закроется, заменит файл и запустится снова. Сохраните важные отчёты. EXE может быть без цифровой подписи; не отключайте защиту Windows.",
-            "Обновление Observer", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            (UiText.IsRussian ? $"Обновить Observer до {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} МиБ)?\n\n" : $"Update Observer to {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} MiB)?\n\n") +
+            UiText.T("Only the EXE will be downloaded. Observer will close, replace the file and restart. Save important reports. The EXE may be unsigned; do not disable Windows security.", "Будет скачан только EXE, программа закроется, заменит файл и запустится снова. Сохраните важные отчёты. EXE может быть без цифровой подписи; не отключайте защиту Windows."),
+            UiText.T("Observer update", "Обновление Observer"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
         using var cancellation = new CancellationTokenSource();
         _installCancellation = cancellation;
@@ -82,7 +82,7 @@ public partial class UpdateCenterWindow : Window
         CancelInstallButton.Visibility = InstallProgress.Visibility = Visibility.Visible;
         CancelInstallButton.IsEnabled = true;
         InstallProgress.Value = 0;
-        StatusText.Text = "Получаю контрольную сумму и новый EXE…";
+        StatusText.Text = UiText.T("Fetching checksum and new EXE…", "Получаю контрольную сумму и новый EXE…");
         VerifiedUpdate? downloaded = null;
         try
         {
@@ -90,11 +90,11 @@ public partial class UpdateCenterWindow : Window
             {
                 if (_installCancellation != cancellation || _installLaunching) return;
                 InstallProgress.Value = percent;
-                StatusText.Text = percent == 100 ? "Проверяю SHA-256…" : $"Загрузка обновления: {percent}%";
+                StatusText.Text = percent == 100 ? UiText.T("Verifying SHA-256…", "Проверяю SHA-256…") : (UiText.IsRussian ? $"Загрузка обновления: {percent}%" : $"Downloading update: {percent}%");
             });
             downloaded = await UpdateInstaller.DownloadAsync(asset, progress, cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
-            StatusText.Text = "SHA-256 совпадает. Перезапускаю Observer…";
+            StatusText.Text = UiText.T("SHA-256 verified. Restarting Observer…", "SHA-256 совпадает. Перезапускаю Observer…");
             CancelInstallButton.IsEnabled = false;
             SelfUpdate.StartHelper(downloaded);
             _installLaunching = true;
@@ -104,8 +104,8 @@ public partial class UpdateCenterWindow : Window
         {
             if (!_installLaunching && downloaded != null) UpdateInstaller.TryDelete(Path.GetDirectoryName(downloaded.Path)!);
             StatusText.Text = ex is OperationCanceledException
-                ? "Загрузка отменена или превышено время ожидания."
-                : "Обновление не выполнено: " + ex.Message;
+                ? UiText.T("Download cancelled or timed out.", "Загрузка отменена или превышено время ожидания.")
+                : UiText.T("Update failed: ", "Обновление не выполнено: ") + ex.Message;
         }
         finally
         {
@@ -144,7 +144,7 @@ public partial class UpdateCenterWindow : Window
 
     private void Dismiss_Click(object sender, RoutedEventArgs e)
     {
-        try { _main.DismissAvailableUpdate(); StatusText.Text = "Уведомление об этой версии скрыто до появления новой."; DismissButton.Visibility = Visibility.Collapsed; }
+        try { _main.DismissAvailableUpdate(); StatusText.Text = UiText.T("This version is dismissed until a new version appears.", "Уведомление об этой версии скрыто до появления новой."); DismissButton.Visibility = Visibility.Collapsed; }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { StatusText.Text = ex.Message; }
     }
 }

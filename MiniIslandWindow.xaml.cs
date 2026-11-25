@@ -1,3 +1,4 @@
+using Observer.ControlCenter.Services;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
@@ -59,22 +60,22 @@ public partial class MiniIslandWindow : Window
     {
         if (_updateVersion != null) return;
         var label = text.TrimStart('●', ' ');
-        StatusText.Text = devices > 0 ? $"{label} · {devices} устройств" : label;
-        CountText.Text = "ОТКРЫТЬ";
+        StatusText.Text = devices > 0 ? (UiText.IsRussian ? $"{label} · {devices} устройств" : $"{label} · {devices} devices") : label;
+        CountText.Text = UiText.T("OPEN", "ОТКРЫТЬ");
     }
 
     public void SetUpdateAvailable(string version)
     {
         _updateVersion = version;
-        StatusText.Text = "ДОСТУПНА НОВАЯ ВЕРСИЯ";
+        StatusText.Text = UiText.T("NEW VERSION AVAILABLE", "ДОСТУПНА НОВАЯ ВЕРСИЯ");
         CountText.Text = version;
     }
 
     public void ClearUpdateNotice()
     {
         _updateVersion = null;
-        StatusText.Text = "Локальный просмотр";
-        CountText.Text = "ОТКРЫТЬ";
+        StatusText.Text = UiText.T("Local preview", "Локальный просмотр");
+        CountText.Text = UiText.T("OPEN", "ОТКРЫТЬ");
     }
 
     private async void Island_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

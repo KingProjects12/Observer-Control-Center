@@ -36,10 +36,10 @@ public partial class MainWindow : Window
         LogList.Document.Blocks.Clear();
         TrafficGrid.ItemsSource = _devices;
         TopBars.ItemsSource = _bars;
-        HeaderVersionText.Text = $"  v{GitHubReleaseClient.AppVersionText} BLACK GLASS";
-        FooterVersionText.Text = $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY";
-        AddLog($"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates");
-        AddLog("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials");
+        HeaderVersionText.Text = (UiText.IsRussian ? $"  v{GitHubReleaseClient.AppVersionText} ЧЁРНОЕ СТЕКЛО" : $"  v{GitHubReleaseClient.AppVersionText} BLACK GLASS");
+        FooterVersionText.Text = (UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY");
+        AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
+        AddLog(UiText.T("READ-ONLY  //  this preview does not connect to Keenetic API or store credentials", "READ-ONLY  //  предпросмотр не подключается к Keenetic API и не хранит пароли"));
         ShowPage("overview");
         StartUpdateChecks();
     }
@@ -48,7 +48,7 @@ public partial class MainWindow : Window
     {
         var file = ReportLocator.FindLatest("08_Top_Traffic.csv");
         if (file != null) LoadTraffic(file);
-        else AddLog("Нет локальных 08_Top_Traffic.csv. Нажми ЗАГРУЗИТЬ CSV.");
+        else AddLog(UiText.T("No local 08_Top_Traffic.csv. Click LOAD CSV.", "Нет локальных 08_Top_Traffic.csv. Нажми ЗАГРУЗИТЬ CSV."));
         await WindowMotion.FadeAsync(this, 1, 280);
     }
 
@@ -96,14 +96,14 @@ public partial class MainWindow : Window
                     Width = Math.Clamp(260.0 * device.TotalBytes / max, 2, 260)
                 });
             }
-            PageSubtitle.Text = Path.GetFileName(Path.GetDirectoryName(file)) + "  •  " + (data.FirstOrDefault()?.Window ?? "неизвестное окно");
-            _island?.SetSummary(data.Count, "●  Локальная статистика загружена");
-            AddLog($"CSV IMPORT  //  {data.Count} устройств; {FormatBytes(bytes)}; источник={Path.GetFileName(file)}");
+            PageSubtitle.Text = Path.GetFileName(Path.GetDirectoryName(file)) + "  •  " + (data.FirstOrDefault()?.Window ?? UiText.T("unknown window", "неизвестное окно"));
+            _island?.SetSummary(data.Count, UiText.T("●  Local statistics loaded", "●  Локальная статистика загружена"));
+            AddLog((UiText.IsRussian ? $"CSV IMPORT  //  {data.Count} устройств; {FormatBytes(bytes)}; источник={Path.GetFileName(file)}" : $"CSV IMPORT  //  {data.Count} devices; {FormatBytes(bytes)}; source={Path.GetFileName(file)}"));
             ShowPage("traffic");
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
         {
-            MessageBox.Show(ex.Message, "Импорт TOP TRAFFIC", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(ex.Message, UiText.T("TOP TRAFFIC import", "Импорт TOP TRAFFIC"), MessageBoxButton.OK, MessageBoxImage.Warning);
             AddLog("CSV ERROR  //  " + ex.GetType().Name);
         }
     }
@@ -123,15 +123,15 @@ public partial class MainWindow : Window
         ConnectionsGrid.Visibility = showConnections ? Visibility.Visible : Visibility.Collapsed;
         if (page == "connections")
         {
-            PageTitle.Text = "СОЕДИНЕНИЯ / WHO → WHERE";
-            TableTitle.Text = "НАБЛЮДАЕМЫЕ СОЕДИНЕНИЯ";
-            TableHint.Text = _connections == null ? "Загрузи 01_All_Connections.csv из v1.9.1" : $"Строк: {_connections.Rows.Count}";
+            PageTitle.Text = UiText.T("CONNECTIONS / WHO → WHERE", "СОЕДИНЕНИЯ / WHO → WHERE");
+            TableTitle.Text = UiText.T("OBSERVED CONNECTIONS", "НАБЛЮДАЕМЫЕ СОЕДИНЕНИЯ");
+            TableHint.Text = _connections == null ? UiText.T("Load 01_All_Connections.csv from v1.9.1", "Загрузи 01_All_Connections.csv из v1.9.1") : (UiText.IsRussian ? $"Строк: {_connections.Rows.Count}" : $"Rows: {_connections.Rows.Count}");
         }
         else
         {
-            PageTitle.Text = page == "traffic" ? "TOP TRAFFIC / NETWORK ANALYTICS" : "ОБЗОР СЕТИ";
-            TableTitle.Text = "ТОП ПОТРЕБИТЕЛЕЙ";
-            TableHint.Text = "Объём за выбранное окно монитора Keenetic";
+            PageTitle.Text = page == "traffic" ? UiText.T("TOP TRAFFIC / NETWORK ANALYTICS", "ТОП ТРАФИКА / СЕТЕВАЯ АНАЛИТИКА") : UiText.T("NETWORK OVERVIEW", "ОБЗОР СЕТИ");
+            TableTitle.Text = UiText.T("TOP CONSUMERS", "ТОП ПОТРЕБИТЕЛЕЙ");
+            TableHint.Text = UiText.T("Volume for the selected Keenetic monitor window", "Объём за выбранное окно монитора Keenetic");
         }
         AnimateWorkspacePage();
     }
@@ -175,7 +175,7 @@ public partial class MainWindow : Window
         {
             string? path = ReportLocator.FindLatest("01_All_Connections.csv");
             if (path != null) LoadConnections(path);
-            else AddLog("Нет 01_All_Connections.csv. Импортируй файл вручную.");
+            else AddLog(UiText.T("No 01_All_Connections.csv. Import the file manually.", "Нет 01_All_Connections.csv. Импортируй файл вручную."));
         }
         ShowPage("connections");
     }
@@ -186,7 +186,7 @@ public partial class MainWindow : Window
         {
             _connections = CsvTableReader.ReadTable(file);
             ConnectionsGrid.ItemsSource = _connections.DefaultView;
-            AddLog($"CONNECTIONS  //  {_connections.Rows.Count} строк; {Path.GetFileName(file)}");
+            AddLog((UiText.IsRussian ? $"CONNECTIONS  //  {_connections.Rows.Count} строк; {Path.GetFileName(file)}" : $"CONNECTIONS  //  {_connections.Rows.Count} rows; {Path.GetFileName(file)}"));
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
         {
@@ -198,8 +198,8 @@ public partial class MainWindow : Window
     {
         var fileDialog = new OpenFileDialog
         {
-            Title = "Импортировать отчёт Keenetic Observer",
-            Filter = "CSV (*.csv)|*.csv|Все файлы (*.*)|*.*",
+            Title = UiText.T("Import Keenetic Observer report", "Импортировать отчёт Keenetic Observer"),
+            Filter = UiText.T("CSV (*.csv)|*.csv|All files (*.*)|*.*", "CSV (*.csv)|*.csv|Все файлы (*.*)|*.*"),
             CheckFileExists = true,
             InitialDirectory = Directory.Exists(ReportLocator.ResultsRoot) ? ReportLocator.ResultsRoot
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
@@ -217,7 +217,7 @@ public partial class MainWindow : Window
     {
         if (!Directory.Exists(ReportLocator.ResultsRoot))
         {
-            AddLog("REPORTS  //  папка отчётов ещё не создана");
+            AddLog(UiText.T("REPORTS  //  report folder has not been created", "REPORTS  //  папка отчётов ещё не создана"));
             return;
         }
         var folder = _reportPath.Length > 0 ? Path.GetDirectoryName(_reportPath) : ReportLocator.ResultsRoot;
@@ -225,17 +225,17 @@ public partial class MainWindow : Window
         {
             Arguments = $"\"{folder}\"", UseShellExecute = true
         });
-        AddLog("REPORTS  //  открыта папка с локальными данными");
+        AddLog(UiText.T("REPORTS  //  opened local data folder", "REPORTS  //  открыта папка с локальными данными"));
     }
 
     private async void RouterCheck_Click(object sender, RoutedEventArgs e)
     {
         var address = RouterIP.Text.Trim();
-        AddLog("HEALTH  //  проверка ровно двух TCP-портов управляемого адреса: 80 / 443");
+        AddLog(UiText.T("HEALTH  //  checking exactly two TCP ports on the managed address: 80 / 443", "HEALTH  //  проверка ровно двух TCP-портов управляемого адреса: 80 / 443"));
         try
         {
             string result = await RouterHealthProbe.CheckAsync(address);
-            AddLog("HEALTH  //  " + result + "  (это не проверка авторизации API)");
+            AddLog("HEALTH  //  " + result + UiText.T("  (not an API authentication check)", "  (это не проверка авторизации API)"));
         }
         catch (Exception ex) when (ex is ArgumentException or SocketException)
         {
@@ -259,7 +259,7 @@ public partial class MainWindow : Window
         _purple = !_purple;
         var accent = (Color)ColorConverter.ConvertFromString(_purple ? "#B392FF" : "#3DE7EA")!;
         Application.Current.Resources["Accent"] = new SolidColorBrush(accent);
-        AddLog("THEME  //  акцент: " + (_purple ? "lavender" : "cyan"));
+        AddLog(UiText.T("THEME  //  accent: ", "THEME  //  акцент: ") + (_purple ? "lavender" : "cyan"));
     }
 
     private void CopyAllLogs_Click(object sender, RoutedEventArgs e)
@@ -269,11 +269,11 @@ public partial class MainWindow : Window
         {
             // Copy exactly the displayed lines, including their timestamps and original order.
             Clipboard.SetText(string.Join(Environment.NewLine, _consoleItems.Select(x => x.Text)));
-            BottomStatus.Text = $"LOG COPY  //  скопировано {_consoleItems.Count} строк; выделение фрагментов работает через Ctrl+C";
+            BottomStatus.Text = (UiText.IsRussian ? $"LOG COPY  //  скопировано {_consoleItems.Count} строк; выделение фрагментов работает через Ctrl+C" : $"LOG COPY  //  copied {_consoleItems.Count} lines; select text and press Ctrl+C");
         }
         catch (System.Runtime.InteropServices.ExternalException ex)
         {
-            AddLog("COPY ERROR  //  буфер обмена сейчас недоступен: " + ex.Message);
+            AddLog(UiText.T("COPY ERROR  //  clipboard is currently unavailable: ", "COPY ERROR  //  буфер обмена сейчас недоступен: ") + ex.Message);
         }
     }
 
@@ -284,13 +284,13 @@ public partial class MainWindow : Window
         _glassMode = (_glassMode + 1) % 3;
         (byte alpha, string label) = _glassMode switch
         {
-            1 => ((byte)249, "МАКСИМУМ"),
-            2 => ((byte)255, "МАТОВО"),
-            _ => ((byte)253, "ПРОЗРАЧНО")
+            1 => ((byte)249, UiText.T("MAXIMUM", "МАКСИМУМ")),
+            2 => ((byte)255, UiText.T("MATTE", "МАТОВО")),
+            _ => ((byte)253, UiText.T("TRANSLUCENT", "ПРОЗРАЧНО"))
         };
         GlassShell.Background = new SolidColorBrush(Color.FromArgb(alpha, 5, 6, 8));
-        GlassModeButton.Content = "✦   Стекло: " + label;
-        AddLog("SYSTEM  //  прозрачность основного окна: " + label);
+        GlassModeButton.Content = UiText.T("✦   Glass: ", "✦   Стекло: ") + label;
+        AddLog(UiText.T("SYSTEM  //  main window transparency: ", "SYSTEM  //  прозрачность основного окна: ") + label);
     }
 
     private void CornerResizeGrip_DragDelta(object sender, DragDeltaEventArgs e)
@@ -314,7 +314,7 @@ public partial class MainWindow : Window
                 _island.Closed += (_, _) => _island = null;
             }
             RefreshUpdateBanner();
-            _island.SetSummary(_devices.Count, "●  Локальный просмотр");
+            _island.SetSummary(_devices.Count, UiText.T("●  Local preview", "●  Локальный просмотр"));
             await WindowMotion.FadeAsync(this, 0, 140);
             Hide();
             await _island.ShowAnimatedAsync();

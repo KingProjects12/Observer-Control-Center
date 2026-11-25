@@ -19,7 +19,7 @@ public partial class MainWindow
     private UpdateCenterWindow? _updateCenter;
     private bool _openingUpdateCenter;
     private UpdateNoticeWindow? _updateNotice;
-    private string _updateMessage = "Репозиторий обновлений ещё не задан.";
+    private string _updateMessage = UiText.T("Update repository has not been configured.", "Репозиторий обновлений ещё не задан.");
 
     internal string UpdatesRepository => _updateSettings.Repository;
     internal bool UpdatesAutoCheck => _updateSettings.AutoCheck;
@@ -29,7 +29,7 @@ public partial class MainWindow
     private void StartUpdateChecks()
     {
         if (GitHubReleaseClient.IsValidRepository(_updateSettings.Repository))
-            _updateMessage = "Источник обновлений: " + _updateSettings.Repository;
+            _updateMessage = UiText.T("Update source: ", "Источник обновлений: ") + _updateSettings.Repository;
         _updateTimer.Tick += async (_, _) => await CheckUpdatesAsync(manual: false);
         // Start the timer after the initial delayed check to avoid two requests in the first minute.
         _ = CheckShortlyAfterStartAsync();
@@ -56,15 +56,15 @@ public partial class MainWindow
         if (!manual && !_updateSettings.AutoCheck) return _latestRelease;
         if (!GitHubReleaseClient.IsValidRepository(_updateSettings.Repository))
         {
-            _updateMessage = "Сначала укажи owner/repo в настройках обновлений.";
-            if (manual) AddLog("UPDATES  //  GitHub репозиторий не настроен");
+            _updateMessage = UiText.T("Set owner/repo in update settings first.", "Сначала укажи owner/repo в настройках обновлений.");
+            if (manual) AddLog(UiText.T("UPDATES  //  GitHub repository not configured", "UPDATES  //  GitHub репозиторий не настроен"));
             return null;
         }
         if (_updateCheckBusy) return _latestRelease;
         if (UpdatePollingPolicy.IsThrottled(DateTimeOffset.UtcNow, _updatesBlockedUntilUtc))
         {
-            _updateMessage = $"GitHub временно ограничил запросы. Следующая попытка после {_updatesBlockedUntilUtc.ToLocalTime():HH:mm}.";
-            if (manual) AddLog("UPDATES  //  GitHub API rate-limit cooldown is active");
+            _updateMessage = (UiText.IsRussian ? $"GitHub временно ограничил запросы. Следующая попытка после {_updatesBlockedUntilUtc.ToLocalTime():HH:mm}." : $"GitHub temporarily limited requests. Next attempt after {_updatesBlockedUntilUtc.ToLocalTime():HH:mm}.");
+            if (manual) AddLog(UiText.T("UPDATES  //  GitHub API rate-limit cooldown is active", "UPDATES  //  действует пауза из-за лимита GitHub API"));
             RefreshUpdateBanner();
             return _latestRelease;
         }
@@ -75,19 +75,19 @@ public partial class MainWindow
             _latestRelease = discovered;
             if (discovered == null)
             {
-                _updateMessage = $"Установлена актуальная версия: {GitHubReleaseClient.AppVersionText}";
-                if (manual) AddLog("UPDATES  //  опубликованная версия не новее установленной");
+                _updateMessage = (UiText.IsRussian ? $"Установлена актуальная версия: {GitHubReleaseClient.AppVersionText}" : $"Installed version is up to date: {GitHubReleaseClient.AppVersionText}");
+                if (manual) AddLog(UiText.T("UPDATES  //  no newer published version", "UPDATES  //  опубликованная версия не новее установленной"));
             }
             else
             {
-                _updateMessage = $"Новая версия {discovered.Tag} доступна на GitHub";
+                _updateMessage = (UiText.IsRussian ? $"Новая версия {discovered.Tag} доступна на GitHub" : $"New version {discovered.Tag} is available on GitHub");
                 bool wasShown = _shownUpdateTag == discovered.Tag;
-                if (manual) AddLog($"UPDATES  //  доступна {discovered.Tag}");
+                if (manual) AddLog((UiText.IsRussian ? $"UPDATES  //  доступна {discovered.Tag}" : $"UPDATES  //  {discovered.Tag} available"));
                 if (!wasShown && _updateSettings.DismissedTag != discovered.Tag)
                 {
                     _shownUpdateTag = discovered.Tag;
-                    AddLog($"NEW RELEASE  //  {discovered.Tag} · нажми ОБНОВЛЕНИЯ");
-                    UpdateToastText.Text = $"Observer {discovered.Tag} доступен. Посмотреть изменения?";
+                    AddLog((UiText.IsRussian ? $"NEW RELEASE  //  {discovered.Tag} · нажми ОБНОВЛЕНИЯ" : $"NEW RELEASE  //  {discovered.Tag} · click UPDATES"));
+                    UpdateToastText.Text = (UiText.IsRussian ? $"Observer {discovered.Tag} доступен. Посмотреть изменения?" : $"Observer {discovered.Tag} is available. View changes?");
                     UpdateToast.Visibility = Visibility.Visible;
                     if (SystemParameters.ClientAreaAnimation)
                     {
@@ -113,16 +113,16 @@ public partial class MainWindow
             if (limited)
                 _updatesBlockedUntilUtc = DateTimeOffset.UtcNow + UpdatePollingPolicy.RateLimitCooldown;
             _updateMessage = e.StatusCode == HttpStatusCode.NotFound
-                ? "GitHub не нашёл опубликованный стабильный Release (HTTP 404)."
+                ? UiText.T("GitHub found no published stable release (HTTP 404).", "GitHub не нашёл опубликованный стабильный Release (HTTP 404).")
                 : e.StatusCode == HttpStatusCode.Forbidden || (int?)e.StatusCode == 429
-                ? "GitHub отклонил запрос или исчерпан лимит. Автоматические проверки приостановлены на 30 минут."
-                : "GitHub временно недоступен. Проверь сеть и повтори позже.";
+                ? UiText.T("GitHub rejected the request or rate limit was reached. Automatic checks paused for 30 minutes.", "GitHub отклонил запрос или исчерпан лимит. Автоматические проверки приостановлены на 30 минут.")
+                : UiText.T("GitHub is temporarily unavailable. Check your connection and retry.", "GitHub временно недоступен. Проверь сеть и повтори позже.");
             if (manual) AddLog($"UPDATES ERROR  //  HTTP {e.StatusCode?.ToString() ?? "network"}");
         }
         catch (Exception e) when (e is ArgumentException or TaskCanceledException or System.Text.Json.JsonException)
         {
-            _updateMessage = e is TaskCanceledException ? "Превышено время ответа GitHub."
-                : "Не удалось прочитать сведения о последнем релизе.";
+            _updateMessage = e is TaskCanceledException ? UiText.T("GitHub response timed out.", "Превышено время ответа GitHub.")
+                : UiText.T("Could not read the latest release information.", "Не удалось прочитать сведения о последнем релизе.");
             if (manual) AddLog("UPDATES ERROR  //  " + e.GetType().Name);
         }
         finally
@@ -141,9 +141,9 @@ public partial class MainWindow
         _updateCenter?.RefreshInfo();
         bool show = _latestRelease != null && _latestRelease.Tag != _updateSettings.DismissedTag;
         if (!show) UpdateToast.Visibility = Visibility.Collapsed;
-        BtnUpdates.Content = show ? $"●  НОВАЯ {_latestRelease!.Tag}" : "↻  ОБНОВЛЕНИЯ";
-        BtnUpdates.ToolTip = show ? "Открыть сведения о новой версии и установить обновление"
-            : "Проверить и настроить обновления GitHub";
+        BtnUpdates.Content = show ? (UiText.IsRussian ? $"●  НОВАЯ {_latestRelease!.Tag}" : $"●  NEW {_latestRelease!.Tag}") : UiText.T("↻  UPDATES", "↻  ОБНОВЛЕНИЯ");
+        BtnUpdates.ToolTip = show ? UiText.T("View new release and update", "Открыть сведения о новой версии и установить обновление")
+            : UiText.T("Check and configure GitHub updates", "Проверить и настроить обновления GitHub");
         if (_island != null)
         {
             if (show) _island.SetUpdateAvailable(_latestRelease!.Tag);
@@ -155,7 +155,7 @@ public partial class MainWindow
     {
         repo = repo.Trim();
         if (!GitHubReleaseClient.IsValidRepository(repo))
-            throw new ArgumentException("Укажи GitHub репозиторий в формате владелец/проект, например example/observer.");
+            throw new ArgumentException(UiText.T("Enter a GitHub repository as owner/repo, e.g. example/observer.", "Укажи GitHub репозиторий в формате владелец/проект, например example/observer."));
         if (_updateSettings.Repository != repo)
         {
             _updateSettings.DismissedTag = "";
@@ -167,12 +167,12 @@ public partial class MainWindow
         string locked = UpdateSettingsStore.EmbeddedRepository;
         if (GitHubReleaseClient.IsValidRepository(locked) &&
             !string.Equals(repo, locked, StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("Источник обновлений официальной сборки зафиксирован при публикации.");
+            throw new ArgumentException(UiText.T("The official build has a fixed update source.", "Источник обновлений официальной сборки зафиксирован при публикации."));
         _updateSettings.Repository = GitHubReleaseClient.IsValidRepository(locked) ? locked : repo;
         _updateSettings.AutoCheck = autoCheck;
         UpdateSettingsStore.Save(_updateSettings);
-        _updateMessage = "Настройки обновлений сохранены локально.";
-        AddLog($"UPDATES  //  GitHub repository configured; auto-check={(autoCheck ? "ON" : "OFF")}");
+        _updateMessage = UiText.T("Update settings saved locally.", "Настройки обновлений сохранены локально.");
+        AddLog((UiText.IsRussian ? $"UPDATES  //  репозиторий настроен; автопроверка={(autoCheck ? "ВКЛ" : "ВЫКЛ")}" : $"UPDATES  //  GitHub repository configured; auto-check={(autoCheck ? "ON" : "OFF")}"));
         RefreshUpdateBanner();
     }
 
