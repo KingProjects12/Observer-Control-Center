@@ -38,7 +38,7 @@ internal sealed class WorkspaceGuideWindow : Window
             ("TOP Traffic","ТОП трафика","View the ranking by traffic volume, not current speed.","Рейтинг по объёму, а не текущей скорости."),
             ("Filter","Поиск","Filter the displayed table. Advanced search is planned next.","Фильтр отображаемой таблицы. Расширенный поиск — следующий этап."));
         Group("02 / COLLECTION","02 / СБОР ДАННЫХ",
-            ("Connect / NAT","Подключение / NAT","Enter the router, credentials and office CIDR; then Collect NAT.","Введите роутер, логин, пароль и сеть офиса; затем «Собрать NAT»."),
+            ("Connect / NAT","Подключение / NAT","Enter one router per line, shared credentials and office CIDR; Collect NAT combines multiple routers.","Введите роутеры по одному на строку, общие логин, пароль и сеть офиса; «Собрать NAT» объединит результаты."),
             ("VPN REMOTE","VPN REMOTE","Use a pre-existing authorized VPN; does not establish a tunnel.","Использовать уже подключённый разрешённый VPN; туннель не создаётся."),
             ("Collect traffic","Собрать трафик","Choose one monitor period and collect TOP Traffic.","Выберите один период монитора и соберите TOP Traffic."),
             ("HTTPS","HTTPS","Prefer trusted HTTPS. HTTP is not encrypted.","Предпочтителен доверенный HTTPS. HTTP не шифруется."),

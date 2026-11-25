@@ -22,11 +22,12 @@ internal sealed class LegacyCollectorWindow : Window
     private string? _folder, _excelPath;
     public string? SelectedCsv { get; private set; }
     public string? ReportFolder => _folder;
-    public string Address => _address.Text.Trim();
+    public string Address => BatchNatCollector.Split(_address.Text).FirstOrDefault() ?? "";
     private static string T(string en, string ru) => UiText.T(en, ru);
     private static readonly (string File, string En, string Ru)[] Views =
     {
         ("07_Office_To_Connections.csv", "To office", "В офис"),
+        ("00_Router_Status.csv", "Router status", "Статус роутеров"),
         ("05_Office_Related.csv", "Office related", "Все связанные с офисом"),
         ("01_All_Connections.csv", "All connections", "Все соединения"),
         ("02_Target_Connections.csv", "Target connections", "Целевые соединения"),
@@ -60,7 +61,9 @@ internal sealed class LegacyCollectorWindow : Window
         void Label(string s) => section.Children.Add(new TextBlock { Text = s, Margin = new Thickness(0,6,0,4), TextWrapping = TextWrapping.Wrap });
         TextBox Field(string s, string v) { Label(s); var b = new TextBox { Text = v, Style = (Style)FindResource("TextInput") }; section.Children.Add(b); return b; }
         Group("01 / CONNECTION", "01 / ПОДКЛЮЧЕНИЕ", "Enter the managed router and credentials. The password is never saved.", "Введите адрес роутера и данные входа. Пароль не сохраняется.");
-        _address = Field(T("Keenetic IPv4 (optional :port)", "IPv4 Keenetic (можно :порт)"), address);
+        _address = Field(T("Keenetic IPv4 list — one per line (optional :port)", "IP роутеров Keenetic — по одному на строку (можно :порт)"), address);
+        _address.AcceptsReturn=true; _address.MinHeight=88; _address.MaxHeight=150; _address.VerticalScrollBarVisibility=ScrollBarVisibility.Auto;
+        Label(T("NAT accepts multiple routers with the same login and password. Up to three collect in parallel; one combined office report.", "NAT принимает несколько роутеров с общими логином и паролем. До трёх одновременно; один общий отчёт по офису."));
         _user = Field(T("Username", "Логин"), "");
         Label(T("Password (not saved)", "Пароль (не сохраняется)"));
         _password = new PasswordBox { Background = new SolidColorBrush(Color.FromRgb(12,15,18)), Foreground = Brushes.White, Padding = new Thickness(10), BorderBrush = Brushes.DarkSlateGray };
@@ -128,12 +131,14 @@ internal sealed class LegacyCollectorWindow : Window
         var addr = Address; var user = _user.Text.Trim(); bool https = _https.IsChecked==true, vpn = _vpn.IsChecked==true;
         int samples = 3, interval = 5, detail = _period.SelectedIndex;
         string? import = null;
+        string[] routers = [];
         try
         {
             if (operation is "nat" or "traffic" or "probe")
             {
-                var uri = Engine.ParseRouterUri(addr, https);
-                if (vpn || operation == "probe") RemoteVpn.RequirePrivateTarget(uri);
+                routers = BatchNatCollector.ParseAddresses(_address.Text,https,vpn || operation=="probe");
+                if(operation!="nat" && routers.Length!=1) throw new ArgumentException(T("TOP Traffic and TCP checks require one router. Use Collect NAT for a list.", "TOP Traffic и проверка TCP требуют один роутер. Для списка используйте «Собрать NAT»."));
+                addr=routers[0];
                 if (operation != "probe" && (user.Length == 0 || _password.Password.Length == 0)) throw new ArgumentException(T("Enter username and password.", "Введите логин и пароль."));
                 if (operation != "probe" && !https && MessageBox.Show(this,T("HTTP is not encrypted. Continue only on an authorized trusted network or VPN?", "HTTP не шифруется. Продолжить только в разрешённой доверенной сети или VPN?"),Title,MessageBoxButton.YesNo,MessageBoxImage.Warning)!=MessageBoxResult.Yes) return;
             }
@@ -161,6 +166,12 @@ internal sealed class LegacyCollectorWindow : Window
             {
                 var result=await Task.Run(()=>TrafficMonitor.Run(addr,user,secret,https,vpn,detail,cts.Token,log),cts.Token);
                 SetReport(result.Folder,result.Excel,T("Traffic devices: ","Устройств в рейтинге: ")+result.Rows.Count,true);
+            }
+            else if(operation=="nat" && routers.Length>1)
+            {
+                var result=await Task.Run(()=>BatchNatCollector.Run(routers,user,secret,https,vpn,samples,interval,ReportLocator.ResultsRoot,cts.Token,log));
+                SetReport(result.Folder,result.Excel,T("Combined office rows: ","Общий отчёт в офис: ")+result.OfficeCount+$" | OK {result.Complete} | PARTIAL {result.Partial} | FAILED {result.Failed} | CANCELLED/NOT STARTED {result.Skipped}",false);
+                if(string.IsNullOrEmpty(result.Excel)) Report(T("Excel unavailable; CSV is saved.","Excel недоступен; CSV сохранён."));
             }
             else
             {

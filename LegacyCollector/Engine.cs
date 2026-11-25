@@ -875,6 +875,29 @@ namespace KeeneticObserver
         }
         private static string Hex(byte[] value) { return BitConverter.ToString(value).Replace("-", "").ToLowerInvariant(); }
 
+        internal static string SaveBatchOfficeReport(string folder,List<Entry> rows,IEnumerable<BatchRouterStatus> statuses)
+        {
+            string[] statusCols = { "Router", "Status", "OfficeRows", "AllRows", "ReportFolder" };
+            var statusRows=statuses.Cast<object>().ToList();
+            SaveCsv(Path.Combine(folder,"07_Office_To_Connections.csv"),AllCols,rows.Cast<object>());
+            SaveCsv(Path.Combine(folder,"00_Router_Status.csv"),statusCols,statusRows);
+            string excel=Path.Combine(folder,"Office_Connections_All_Routers.xlsx");
+            var sheets=new List<Sheet> {
+                new Sheet("To office",AllCols,rows.Cast<object>().ToList()),
+                new Sheet("Router status",statusCols,statusRows),
+                new Sheet("Read me",new[]{"Topic","Purpose"},new List<object>{
+                    new Note("Target",TargetSubnet+"; original DestinationIP only."),
+                    new Note("Repeat","Original per-router observation flags; rows are not deleted."),
+                    new Note("Coverage","Check Router status. Failed, cancelled and partial routers mean incomplete coverage. Zero matches does not prove absence of VPN/LAN traffic."),
+                    new Note("Privacy","Internal network data; keep private.")
+                })
+            };
+            // Preserve CSV if the workbook exceeds Excel limits or cannot be written.
+            try { SaveXlsx(excel,sheets,CancellationToken.None); return excel; }
+            catch(Exception ex) when(ex is IOException or InvalidDataException or UnauthorizedAccessException)
+            { try { File.Delete(excel); } catch { } return ""; }
+        }
+
         internal static void SaveReport(CollectionResult r, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
