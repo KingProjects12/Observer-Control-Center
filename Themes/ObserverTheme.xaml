@@ -74,7 +74,6 @@
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="Margin" Value="0,0,0,5"/>
     <Setter Property="Height" Value="37"/>
-    <Style.Resources><SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#EDF5FB"/></Style.Resources>
     <Setter Property="RenderTransform">
       <Setter.Value><TranslateTransform X="0"/></Setter.Value>
     </Setter>
