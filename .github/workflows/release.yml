@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - '.github/release-requests/public-v2.0.11.txt'
+      - '.github/release-requests/public-v2.0.12.txt'
   workflow_dispatch:
     inputs:
       version:
@@ -34,7 +34,7 @@ jobs:
             '${{ github.event.inputs.version }}'
           } elseif ($env:GITHUB_REF -eq 'refs/heads/main') {
             # One-time main-branch release, triggered only when its marker is first merged.
-            'v2.0.11'
+            'v2.0.12'
           } else {
             $env:GITHUB_REF_NAME
           }
@@ -49,7 +49,11 @@ jobs:
         run: ./tools/PublicSourceAudit.ps1
       - name: Offline update and SemVer tests
         shell: pwsh
-        run: dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
+        run: |
+          dotnet run --project Tests/Observer.UpdateTests.csproj --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw 'Update tests failed' }
+          dotnet run --project LegacyCollectorTests/LegacyCollectorTests.csproj --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw 'Legacy collector tests failed' }
       - name: Publish self-contained EXE with icon
         shell: pwsh
         run: |

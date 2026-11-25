@@ -1,0 +1,15 @@
+using KeeneticObserver;
+Engine.SetTargetSubnet(Engine.DemoSubnet);
+Engine.CheckSelfTestFixtures();
+Engine.CheckAuthSelfTestFixtures();
+Engine.CheckPartialSelfTestFixtures();
+Engine.CheckRemoteVpnSelfTestFixtures();
+Engine.CheckOfficeEvidenceFixtures();
+CentralFlowImporter.CheckSelfTestFixtures();
+TrafficMonitor.CheckSelfTestFixtures();
+TrafficAnalyticsExport.CheckSelfTestFixtures();
+var result = Engine.Run(true,"","","",false,2,1,CancellationToken.None,_=>{});
+if(result.All.Count!=10 || result.Target.Count!=4 || result.Routes.Count!=2 || !File.Exists(result.Excel)) throw new Exception("DEMO mismatch");
+Engine.SetTargetSubnet("198.51.100.0/24");
+if (!Engine.TargetIP("198.51.100.23") || Engine.TargetIP("203.0.113.23")) throw new Exception("Dynamic target failed");
+Console.WriteLine("PASS: legacy NAT, auth, VPN, partial reports, central flow, TOP traffic, XLSX and DEMO");

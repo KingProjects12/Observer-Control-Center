@@ -39,7 +39,7 @@ public partial class MainWindow : Window
         HeaderVersionText.Text = (UiText.IsRussian ? $"  v{GitHubReleaseClient.AppVersionText} ЧЁРНОЕ СТЕКЛО" : $"  v{GitHubReleaseClient.AppVersionText} BLACK GLASS");
         FooterVersionText.Text = (UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY");
         AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
-        AddLog(UiText.T("READ-ONLY  //  Keenetic NAT read-only collection; credentials are not stored", "READ-ONLY  //  сбор NAT только для чтения; пароли не сохраняются"));
+        AddLog(UiText.T("READ-ONLY // Keenetic NAT / VPN / TOP Traffic collector. Credentials are not stored.", "READ-ONLY // Сбор NAT / VPN / TOP Traffic. Пароли не сохраняются."));
         ShowPage("overview");
         StartUpdateChecks();
     }
@@ -205,7 +205,7 @@ public partial class MainWindow : Window
                 : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
         if (fileDialog.ShowDialog(this) != true) return;
-        if (Path.GetFileName(fileDialog.FileName).StartsWith("01_All_Connections", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(fileDialog.FileName).StartsWith("02_Target_", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(fileDialog.FileName).StartsWith("05_Office_Related", StringComparison.OrdinalIgnoreCase))
+        if (!Path.GetFileName(fileDialog.FileName).StartsWith("08_Top_Traffic", StringComparison.OrdinalIgnoreCase))
         {
             LoadConnections(fileDialog.FileName);
             ShowPage("connections");
@@ -226,36 +226,6 @@ public partial class MainWindow : Window
             Arguments = $"\"{folder}\"", UseShellExecute = true
         });
         AddLog(UiText.T("REPORTS  //  opened local data folder", "REPORTS  //  открыта папка с локальными данными"));
-    }
-
-    private void ToolsMenu_Click(object sender, RoutedEventArgs e)
-    {
-        var menu = new ContextMenu { PlacementTarget = (UIElement)sender, Placement = PlacementMode.Bottom };
-        void Add(string label, RoutedEventHandler handler)
-        {
-            var item = new MenuItem { Header = label };
-            item.Click += handler;
-            menu.Items.Add(item);
-        }
-        Add(UiText.X019, RouterCheck_Click);
-        Add(UiText.X020, Import_Click);
-        Add(UiText.X021, Theme_Click);
-        Add(GlassModeButton.Content?.ToString() ?? UiText.X022, Glass_Click);
-        Add(UiText.X017, Updates_Click);
-        menu.IsOpen = true;
-    }
-
-    private void KeeneticCollect_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new KeeneticCollectorWindow(RouterIP.Text.Trim()) { Owner = this };
-        if (dialog.ShowDialog() != true || dialog.Result is not { } result) return;
-        LoadConnections(result.TargetPath);
-        _reportPath = result.AllPath;
-        ShowPage("connections");
-        TableHint.Text = UiText.IsRussian ? $"Целевых: {result.TargetCount}; всего: {result.AllCount}; связанных: {result.RelatedCount}; пропущено: {result.Skipped}" : $"Target: {result.TargetCount}; all: {result.AllCount}; related: {result.RelatedCount}; skipped: {result.Skipped}";
-        AddLog("NAT // " + TableHint.Text);
-        if (result.HostnamesUnavailable) AddLog(UiText.T("NAT WARNING // Client names may be unavailable.", "NAT WARNING // Имена клиентов могут отсутствовать."));
-        if (result.TargetCount == 0) AddLog(UiText.T("NAT WARNING // No matching original destinations observed; this does not prove absence of VPN traffic.", "NAT WARNING // Целевых назначений не найдено; это не доказывает отсутствие VPN-трафика."));
     }
 
     private async void RouterCheck_Click(object sender, RoutedEventArgs e)
