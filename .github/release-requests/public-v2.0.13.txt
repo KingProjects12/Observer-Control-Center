@@ -1,1 +1,2 @@
 Publish v2.0.13 after offline regression tests and Windows packaging.
+Final navigation and theme revision.

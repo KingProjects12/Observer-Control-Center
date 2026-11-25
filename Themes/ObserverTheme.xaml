@@ -78,6 +78,11 @@
       <Setter.Value><TranslateTransform X="0"/></Setter.Value>
     </Setter>
     <Style.Triggers>
+      <Trigger Property="Tag" Value="selected">
+        <Setter Property="Background" Value="#16313A"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
+      </Trigger>
       <EventTrigger RoutedEvent="MouseEnter">
         <BeginStoryboard>
           <Storyboard>

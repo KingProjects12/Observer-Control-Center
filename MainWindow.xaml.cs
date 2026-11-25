@@ -118,6 +118,9 @@ public partial class MainWindow : Window
     private void ShowPage(string page)
     {
         _page = page;
+        NavOverview.Tag = page == "overview" ? "selected" : null;
+        NavTraffic.Tag = page == "traffic" ? "selected" : null;
+        NavConnections.Tag = page == "connections" ? "selected" : null;
         bool showConnections = page == "connections";
         TrafficGrid.Visibility = showConnections ? Visibility.Collapsed : Visibility.Visible;
         ConnectionsGrid.Visibility = showConnections ? Visibility.Visible : Visibility.Collapsed;
