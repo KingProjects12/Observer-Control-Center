@@ -8,7 +8,7 @@
         Foreground="{StaticResource TextMain}" FontFamily="Segoe UI" Loaded="Window_Loaded">
  <Window.Resources>
     <Style x:Key="NavGroupTitle" TargetType="TextBlock" BasedOn="{StaticResource LabelSmall}">
-      <Setter Property="Margin" Value="9,20,0,12"/>
+      <Setter Property="Margin" Value="9,13,0,7"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
  </Window.Resources>
@@ -63,7 +63,7 @@
   <Grid x:Name="WorkspacePanel" Grid.Row="1" Margin="13,13,13,10">
     <Grid.RenderTransform><TranslateTransform Y="0"/></Grid.RenderTransform>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="218"/>
+      <ColumnDefinition Width="234"/>
       <ColumnDefinition Width="13"/>
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
@@ -79,21 +79,27 @@
            </Border>
            <TextBlock Margin="5,12,0,0" FontSize="10" Foreground="#7192A6" Text="{x:Static loc:UiText.X011}"/>
         </StackPanel>
-        <StackPanel>
-          <TextBlock Text="{x:Static loc:UiText.X012}" Style="{StaticResource NavGroupTitle}"/>
-          <Button x:Name="NavOverview" Content="{x:Static loc:UiText.X013}" Style="{StaticResource NavigationButton}" Click="Overview_Click"/>
-          <Button x:Name="NavTraffic" Content="{x:Static loc:UiText.X014}" Style="{StaticResource NavigationButton}" Click="Traffic_Click"/>
-          <Button x:Name="NavConnections" Content="{x:Static loc:UiText.X015}" Style="{StaticResource NavigationButton}" Click="Connections_Click"/>
-          <Button x:Name="NavReports" Content="{x:Static loc:UiText.X016}" Style="{StaticResource NavigationButton}" Click="Reports_Click"/>
-          <Button Content="{x:Static loc:UiText.X017}" Style="{StaticResource NavigationButton}" Click="Updates_Click"/>
-          <TextBlock Text="{x:Static loc:UiText.X018}" Style="{StaticResource NavGroupTitle}"/>
-          <Button Content="{x:Static loc:UiText.KeeneticConnect}" Style="{StaticResource NavigationButton}" Click="LegacyCollect_Click"/>
-          <Button Content="{x:Static loc:UiText.LegacyVpn}" Style="{StaticResource NavigationButton}" Click="LegacyVpn_Click"/>
-          <Button Content="{x:Static loc:UiText.LegacyTraffic}" Style="{StaticResource NavigationButton}" Click="LegacyTraffic_Click"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+         <StackPanel Margin="0,0,4,0">
+          <TextBlock Text="{x:Static loc:UiText.GroupAnalytics}" Style="{StaticResource NavGroupTitle}"/>
+          <Button x:Name="NavOverview" Content="{x:Static loc:UiText.X013}" Style="{StaticResource NavigationButton}" Click="Overview_Click" ToolTip="{x:Static loc:UiText.HintOverview}"/>
+          <Button x:Name="NavConnections" Content="{x:Static loc:UiText.X015}" Style="{StaticResource NavigationButton}" Click="Connections_Click" ToolTip="{x:Static loc:UiText.HintConnections}"/>
+          <Button x:Name="NavTraffic" Content="{x:Static loc:UiText.X014}" Style="{StaticResource NavigationButton}" Click="Traffic_Click" ToolTip="{x:Static loc:UiText.HintTraffic}"/>
+          <Separator Style="{StaticResource GlassSeparator}"/>
+          <TextBlock Text="{x:Static loc:UiText.GroupCollect}" Style="{StaticResource NavGroupTitle}"/>
+          <Button Content="{x:Static loc:UiText.KeeneticConnect}" Style="{StaticResource NavigationButton}" Click="LegacyCollect_Click" ToolTip="{x:Static loc:UiText.HintNat}"/>
+          <Button Content="{x:Static loc:UiText.LegacyVpn}" Style="{StaticResource NavigationButton}" Click="LegacyVpn_Click" ToolTip="{x:Static loc:UiText.HintVpn}"/>
+          <Button Content="{x:Static loc:UiText.LegacyTraffic}" Style="{StaticResource NavigationButton}" Click="LegacyTraffic_Click" ToolTip="{x:Static loc:UiText.HintCollectTraffic}"/>
+          <Separator Style="{StaticResource GlassSeparator}"/>
+          <TextBlock Text="{x:Static loc:UiText.GroupReports}" Style="{StaticResource NavGroupTitle}"/>
+          <Button x:Name="NavReports" Content="{x:Static loc:UiText.X016}" Style="{StaticResource NavigationButton}" Click="Reports_Click" ToolTip="{x:Static loc:UiText.HintReports}"/>
+          <Button Content="{x:Static loc:UiText.X020}" Style="{StaticResource NavigationButton}" Click="Import_Click"/>
+          <Separator Style="{StaticResource GlassSeparator}"/>
+          <TextBlock Text="{x:Static loc:UiText.GroupSystem}" Style="{StaticResource NavGroupTitle}"/>
           <Button Content="{x:Static loc:UiText.LegacyTools}" Style="{StaticResource NavigationButton}" Click="LegacyTools_Click"/>
           <Button x:Name="GlassModeButton" Visibility="Collapsed" Content="{x:Static loc:UiText.X022}" Style="{StaticResource NavigationButton}" Click="Glass_Click"/>
-          <TextBlock Text="{x:Static loc:UiText.LegacyHint}" Foreground="#7FC8C7" FontSize="11" TextWrapping="Wrap" Margin="9,12,0,7"/>
-        </StackPanel>
+         </StackPanel>
+        </ScrollViewer>
       </DockPanel>
     </Border>
 

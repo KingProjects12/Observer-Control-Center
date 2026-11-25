@@ -41,28 +41,39 @@ internal sealed class LegacyCollectorWindow : Window
     public LegacyCollectorWindow(string address, bool vpn = false, bool traffic = false)
     {
         Title = T("Observer · Network collector", "Observer · Сбор данных");
-        Width = 760; Height = 820; MinWidth = 570; MinHeight = 600;
+        Width = 810; Height = 880; MinWidth = 600; MinHeight = 600;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         Background = new SolidColorBrush(Color.FromRgb(7,9,12)); Foreground = Brushes.White;
         FontFamily = new FontFamily("Segoe UI");
         var root = new StackPanel { Margin = new Thickness(24) };
         Content = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         root.Children.Add(new TextBlock { Text = T("NETWORK COLLECTION / READ-ONLY", "СБОР СЕТЕВЫХ ДАННЫХ / ТОЛЬКО ЧТЕНИЕ"), FontSize = 19, FontWeight = FontWeights.Bold, Foreground = Brushes.Turquoise, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0,0,0,12) });
-        void Label(string s) => root.Children.Add(new TextBlock { Text = s, Margin = new Thickness(0,6,0,4), TextWrapping = TextWrapping.Wrap });
-        TextBox Field(string s, string v) { Label(s); var b = new TextBox { Text = v, Style = (Style)FindResource("TextInput") }; root.Children.Add(b); return b; }
+        StackPanel section = root;
+        void Group(string en, string ru, string hintEn, string hintRu)
+        {
+            var card = new Border { Style=(Style)FindResource("CardBorder"), Margin=new Thickness(0,0,0,12) };
+            section = new StackPanel(); card.Child=section; root.Children.Add(card);
+            section.Children.Add(new TextBlock { Text=T(en,ru), Foreground=(Brush)FindResource("Accent"), FontSize=13, FontWeight=FontWeights.SemiBold });
+            section.Children.Add(new TextBlock { Text=T(hintEn,hintRu), Foreground=(Brush)FindResource("TextSecondary"), FontSize=11, TextWrapping=TextWrapping.Wrap, Margin=new Thickness(0,4,0,8) });
+        }
+        void Label(string s) => section.Children.Add(new TextBlock { Text = s, Margin = new Thickness(0,6,0,4), TextWrapping = TextWrapping.Wrap });
+        TextBox Field(string s, string v) { Label(s); var b = new TextBox { Text = v, Style = (Style)FindResource("TextInput") }; section.Children.Add(b); return b; }
+        Group("01 / CONNECTION", "01 / ПОДКЛЮЧЕНИЕ", "Enter the managed router and credentials. The password is never saved.", "Введите адрес роутера и данные входа. Пароль не сохраняется.");
         _address = Field(T("Keenetic IPv4 (optional :port)", "IPv4 Keenetic (можно :порт)"), address);
         _user = Field(T("Username", "Логин"), "");
         Label(T("Password (not saved)", "Пароль (не сохраняется)"));
         _password = new PasswordBox { Background = new SolidColorBrush(Color.FromRgb(12,15,18)), Foreground = Brushes.White, Padding = new Thickness(10), BorderBrush = Brushes.DarkSlateGray };
-        root.Children.Add(_password);
-        _https = new CheckBox { Content = "HTTPS", IsChecked = true, Foreground = Brushes.White, Margin = new Thickness(0,10,0,4) }; root.Children.Add(_https);
-        _vpn = new CheckBox { Content = T("VPN REMOTE — existing authorized VPN route", "VPN REMOTE — существующий разрешённый VPN-маршрут"), IsChecked = vpn, Foreground = Brushes.White, Margin = new Thickness(0,4,0,6) }; root.Children.Add(_vpn);
+        section.Children.Add(_password);
+        _https = new CheckBox { Content = "HTTPS", IsChecked = true, Foreground = Brushes.White, Margin = new Thickness(0,10,0,4) }; section.Children.Add(_https);
+        _vpn = new CheckBox { Content = T("VPN REMOTE — existing authorized VPN route", "VPN REMOTE — существующий разрешённый VPN-маршрут"), IsChecked = vpn, Foreground = Brushes.White, Margin = new Thickness(0,4,0,6) }; section.Children.Add(_vpn);
+        Group("02 / COLLECTION SETTINGS", "02 / ПАРАМЕТРЫ СБОРА", "NAT finds destinations; TOP Traffic measures volume for a selected window.", "NAT показывает назначения; TOP Traffic — объём за выбранный период.");
         _target = Field(T("Office destination /24 (saved locally)", "Сеть назначения офиса /24 (сохраняется локально)"), LoadTarget());
         _samples = Field(T("NAT snapshots (1–12)", "Снимки NAT (1–12)"), "3");
         _interval = Field(T("Interval in seconds (1–60)", "Интервал в секундах (1–60)"), "5");
         Label(T("TOP Traffic window", "Период TOP Traffic"));
-        _period = new ComboBox { ItemsSource = new[] { T("3 minutes", "3 минуты"), T("1 hour", "1 час"), T("3 hours", "3 часа"), T("24 hours", "24 часа") }, SelectedIndex = traffic ? 3 : 0 }; root.Children.Add(_period);
-        var buttons = new WrapPanel { Margin = new Thickness(0,12,0,4) }; root.Children.Add(buttons);
+        _period = new ComboBox { ItemsSource = new[] { T("3 minutes", "3 минуты"), T("1 hour", "1 час"), T("3 hours", "3 часа"), T("24 hours", "24 часа") }, SelectedIndex = traffic ? 3 : 0 }; section.Children.Add(_period);
+        Group("03 / ACTIONS", "03 / ДЕЙСТВИЯ", "Choose a collection or test the existing VPN route. Extra actions are under Tools.", "Выберите сбор или проверку существующего VPN-маршрута. Дополнительные действия — в инструментах.");
+        var buttons = new WrapPanel { Margin = new Thickness(0,12,0,4) }; section.Children.Add(buttons);
         Button Button(string label, RoutedEventHandler handler, bool accent = false)
         {
             var b = new Button { Content = label, Style = (Style)FindResource(accent ? "AccentButton" : "FlatButton"), Margin = new Thickness(0,0,8,8) }; b.Click += handler; buttons.Children.Add(b); return b;
@@ -77,15 +88,19 @@ internal sealed class LegacyCollectorWindow : Window
             menu.IsOpen=true;
         }));
         _stop = Button(T("STOP", "СТОП"), (_,_) => _running?.Cancel()); _stop.IsEnabled = false;
+        Group("04 / RESULTS", "04 / РЕЗУЛЬТАТЫ", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
         Label(T("Report view", "Отображение отчёта"));
-        _view = new ComboBox { DisplayMemberPath = "Label" }; root.Children.Add(_view);
+        _view = new ComboBox { DisplayMemberPath = "Label" }; section.Children.Add(_view);
         _view.SelectionChanged += (_,_) => { if (_show != null) _show.IsEnabled = _running == null && _view.SelectedItem != null; };
-        var output = new WrapPanel { Margin = new Thickness(0,10,0,4) }; root.Children.Add(output); buttons = output;
+        var output = new WrapPanel { Margin = new Thickness(0,10,0,4) }; section.Children.Add(output); buttons = output;
         _show = Button(T("SHOW IN OBSERVER", "ПОКАЗАТЬ В OBSERVER"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); DialogResult = true; } }); _show.IsEnabled = false;
         _excel = Button(T("OPEN EXCEL", "ОТКРЫТЬ EXCEL"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false;
         _reports = Button(T("OPEN REPORTS", "ОТКРЫТЬ ОТЧЁТЫ"), (_,_) => Open(_folder)); _reports.IsEnabled = false;
-        _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Turquoise }; root.Children.Add(_status);
-        _log = new TextBox { IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = Brushes.Black, Foreground = Brushes.White, Margin = new Thickness(0,8,0,0) }; root.Children.Add(_log);
+        Group("05 / ACTIVITY", "05 / ЖУРНАЛ", "Progress and diagnostic details. Copy the log when troubleshooting.", "Прогресс и диагностика. При ошибке скопируйте журнал.");
+        _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = Brushes.Turquoise }; section.Children.Add(_status);
+        _log = new TextBox { IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = Brushes.Black, Foreground = Brushes.White, Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);
+        var copyLog = new Button { Content=T("COPY LOG","КОПИРОВАТЬ ЖУРНАЛ"), Style=(Style)FindResource("FlatButton"), HorizontalAlignment=HorizontalAlignment.Right, Margin=new Thickness(0,8,0,0) };
+        copyLog.Click += (_,_) => { if(_log.Text.Length==0)return; try { Clipboard.SetText(_log.Text); } catch(System.Runtime.InteropServices.COMException) { _status.Text=T("Clipboard unavailable.","Буфер обмена недоступен."); } }; section.Children.Add(copyLog);
         Label(T("Read-only. The existing VPN must already be connected. NAT and TOP Traffic do not prove all VPN/LAN flows. Raw reports are confidential.", "Только чтение. VPN должен уже существовать и быть подключён. NAT и TOP Traffic не показывают гарантированно все VPN/LAN-потоки. Сырые отчёты конфиденциальны."));
     }
     private sealed record View(string File, string Label);

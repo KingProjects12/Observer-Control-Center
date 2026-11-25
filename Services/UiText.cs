@@ -24,6 +24,17 @@ public static class UiText
         CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.CurrentUICulture;
     }
     public static string KeeneticConnect => T("◉   Connect / NAT", "◉   Подключение / NAT");
+    public static string GroupAnalytics => T("01 / ANALYTICS", "01 / АНАЛИТИКА");
+    public static string GroupCollect => T("02 / COLLECTION", "02 / СБОР ДАННЫХ");
+    public static string GroupReports => T("03 / REPORTS", "03 / ОТЧЁТЫ");
+    public static string GroupSystem => T("04 / SYSTEM", "04 / СИСТЕМА");
+    public static string HintOverview => T("Overview of the loaded report", "Обзор загруженного отчёта");
+    public static string HintConnections => T("View observed source and destination connections", "Просмотр источников и назначений соединений");
+    public static string HintTraffic => T("View device traffic ranking", "Просмотр рейтинга трафика устройств");
+    public static string HintNat => T("Login to Keenetic and collect active NAT connections", "Вход в Keenetic и сбор активных NAT-соединений");
+    public static string HintVpn => T("Collect and diagnose over an existing VPN route", "Сбор и диагностика через существующий VPN-маршрут");
+    public static string HintCollectTraffic => T("Collect a traffic monitor window from Keenetic", "Сбор данных монитора трафика Keenetic за период");
+    public static string HintReports => T("Open the local report folder", "Открыть папку локальных отчётов");
     public static string LegacyConnect => T("CONNECT", "ПОДКЛЮЧИТЬСЯ");
     public static string LegacyVpn => T("◈   VPN REMOTE", "◈   VPN REMOTE");
     public static string LegacyTraffic => T("◫   Collect traffic", "◫   Собрать трафик");

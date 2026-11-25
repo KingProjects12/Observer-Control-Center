@@ -20,11 +20,16 @@ public partial class MainWindow
     {
         var menu=new ContextMenu { PlacementTarget=(UIElement)sender, Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom };
         void Item(string en,string ru,RoutedEventHandler handler){var item=new MenuItem{Header=UiText.T(en,ru)};item.Click+=handler;menu.Items.Add(item);}
+        void Group(string en,string ru) { if(menu.Items.Count>0)menu.Items.Add(new Separator()); menu.Items.Add(new MenuItem { Header=UiText.T(en,ru), IsEnabled=false }); }
+        Group("REPORTS","ОТЧЁТЫ");
         Item("Import CSV","Импорт CSV",Import_Click);
         Item("Open reports","Открыть отчёты",Reports_Click);
+        Group("DIAGNOSTICS","ДИАГНОСТИКА");
         Item("Check TCP 80/443","Проверить TCP 80/443",RouterCheck_Click);
+        Group("APPEARANCE","ОФОРМЛЕНИЕ");
         Item("Change accent","Сменить акцент",Theme_Click);
         var glass = new MenuItem { Header = GlassModeButton.Content?.ToString() ?? UiText.X022 }; glass.Click += Glass_Click; menu.Items.Add(glass);
+        Group("SYSTEM","СИСТЕМА");
         Item("Updates","Обновления",Updates_Click);
         menu.IsOpen=true;
     }
