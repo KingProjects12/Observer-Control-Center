@@ -20,7 +20,8 @@ public partial class MainWindow
     private Button? _retryIssues;
     private string _module="";
     private string? _trafficReport,_networkReport;
-    private bool _tableExpanded=true,_logExpanded=true;
+    private bool _tableExpanded=true,_logExpanded=true,_moduleExpanded=true;
+    private readonly Dictionary<string,bool> _moduleExpansion=new();
     private readonly DispatcherTimer _moduleTimer=new(){Interval=TimeSpan.FromSeconds(1)};
     private DateTime? _moduleStarted;
     private string _lastModuleLog="";
@@ -54,7 +55,7 @@ public partial class MainWindow
             var hint=new TextBlock{Text=T(subEn,subRu),FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(0,4,0,0)};hint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");content.Children.Add(hint);row.Children.Add(content);
             var arrow=new TextBlock{Text="›",FontSize=25,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(8,0,0,0)};
             arrow.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");DockPanel.SetDock(arrow,Dock.Right);row.Children.Insert(1,arrow);
-            b.Content=row;b.Click+=(_,_)=>{if(_module==id)ShowPage("overview");else ShowModule(id);};ModuleTiles.Children.Add(b);_moduleButtons.Add(id,b);_moduleTitles[id]=T(en,ru);
+            b.Content=row;b.Click+=(_,_)=>{if(_module==id)ToggleModule();else ShowModule(id);};ModuleTiles.Children.Add(b);_moduleButtons.Add(id,b);_moduleTitles[id]=T(en,ru);
         }
         SessionTitle.Text=T("Session results","Результаты сессии");SessionHint.Text=T("Actual observations","Фактические наблюдения");
         var metrics=new[]{("routers",T("Routers","Роутеров")),("connections",T("Office observations","Наблюдений в офис")),("tcp",T("Reachable TCP","Доступных TCP")),("issues",T("Failed / partial","Ошибки / частично"))};
@@ -91,7 +92,7 @@ public partial class MainWindow
         }
         issueTable.Children.Add(_issuesGrid);
         _issuesEmpty=new TextBlock{FontSize=15,TextWrapping=TextWrapping.Wrap,HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center,TextAlignment=TextAlignment.Center,IsHitTestVisible=false,Margin=new Thickness(20)};_issuesEmpty.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");issueTable.Children.Add(_issuesEmpty);
-        ModuleStop.Content=T("Stop","Стоп");ModuleCollapse.Content=T("⌃  Home / collapse","⌃  Свернуть / главная");
+        ModuleStop.Content=T("Stop","Стоп");ModuleCollapse.Content="⌃";
         _moduleTimer.Tick+=(_,_)=>UpdateModuleSummary();_moduleTimer.Start();UpdateModuleSummary();
     }
     private void ModuleLog(string message){_lastModuleLog=message;AddLog(message);UpdateModuleSummary();}
@@ -100,7 +101,10 @@ public partial class MainWindow
     {
         if(_collector==null||_analyzer==null)return;
         _module=id;ModuleSurface.Visibility=Visibility.Visible;OldKpiPanel.Visibility=OldReportPanel.Visibility=OldConnectionHeader.Visibility=Visibility.Collapsed;
-        LogPanel.Visibility=OperationPanel.Visibility=Visibility.Visible;
+        SessionPanel.Visibility=LogPanel.Visibility=OperationPanel.Visibility=Visibility.Visible;
+        _moduleExpanded=!_moduleExpansion.TryGetValue(id,out bool expanded)||expanded;
+        ModuleHost.Visibility=_moduleExpanded?Visibility.Visible:Visibility.Collapsed;
+        ModuleCollapse.Content=_moduleExpanded?"⌃":"⌄";
         ModuleHeading.Text=_moduleTitles[id];
         LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;
         foreach(var pair in _moduleButtons)pair.Value.Tag=pair.Key==id?"selected":null;
@@ -115,9 +119,10 @@ public partial class MainWindow
     {
         if(_collector==null)return;
         _module="";ModuleSurface.Visibility=OperationPanel.Visibility=OldKpiPanel.Visibility=OldConnectionHeader.Visibility=Visibility.Collapsed;
-        OldReportPanel.Visibility=LogPanel.Visibility=Visibility.Visible;
+        bool home=_page=="overview";
+        OldReportPanel.Visibility=LogPanel.Visibility=SessionPanel.Visibility=home?Visibility.Collapsed:Visibility.Visible;
         LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;
-        foreach(var button in _moduleButtons.Values)button.Tag=null;
+        foreach(var pair in _moduleButtons)pair.Value.Tag=!home&&pair.Key==_page?"selected":null;
         UpdateDashboardTableVisibility();ReflowPanels();
     }
     private void UpdateDashboardTableVisibility()
@@ -127,19 +132,29 @@ public partial class MainWindow
         ConnectionsGrid.Visibility=_tableExpanded&&_page=="connections"?Visibility.Visible:Visibility.Collapsed;
         DashboardCollapse.Content=_tableExpanded?"⌃":"⌄";ReflowPanels();
     }
-    private void ModuleCollapse_Click(object sender,RoutedEventArgs e)=>ShowPage("overview");
+    private void ModuleCollapse_Click(object sender,RoutedEventArgs e)=>ToggleModule();
+    private void ToggleModule()
+    {
+        if(_module=="")return;
+        _moduleExpanded=!_moduleExpanded;_moduleExpansion[_module]=_moduleExpanded;
+        ModuleHost.Visibility=_moduleExpanded?Visibility.Visible:Visibility.Collapsed;
+        ModuleCollapse.Content=_moduleExpanded?"⌃":"⌄";ReflowPanels();
+    }
     private void DashboardCollapse_Click(object sender,RoutedEventArgs e){_tableExpanded=!_tableExpanded;UpdateDashboardTableVisibility();}
     private void SessionToggle_Click(object sender,RoutedEventArgs e){SessionMetrics.Visibility=SessionMetrics.Visibility==Visibility.Visible?Visibility.Collapsed:Visibility.Visible;SessionHint.Visibility=SessionMetrics.Visibility;SessionToggle.Content=SessionMetrics.Visibility==Visibility.Visible?"⌃":"⌄";ReflowPanels();}
     private void LogToggle_Click(object sender,RoutedEventArgs e){_logExpanded=!_logExpanded;LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;LogToggle.Content=_logExpanded?"⌃":"⌄";ReflowPanels();}
     private void ReflowPanels()
     {
-        bool workExpanded=_module!=""||_tableExpanded;
-        // Only an expanded panel receives star-sized space. Collapsed panels are sized to their header.
-        WorkRow.Height=workExpanded?new GridLength(_logExpanded?3:1,GridUnitType.Star):GridLength.Auto;
-        ConsoleRow.Height=_logExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
-        if(!workExpanded&&!_logExpanded)WorkRow.Height=new GridLength(1,GridUnitType.Star);
+        bool home=_module==""&&_page=="overview";
+        bool workExpanded=!home&&(_module!=""?_moduleExpanded:_tableExpanded);
+        bool logExpanded=!home&&_logExpanded;
+        WorkRow.Height=workExpanded?new GridLength(logExpanded?4:1,GridUnitType.Star):GridLength.Auto;
+        ConsoleRow.Height=logExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
+        // Keep collapsed cards at header height even when no other content is expanded.
+        if(!workExpanded&&!logExpanded)ConsoleRow.Height=new GridLength(1,GridUnitType.Star);
+        ModuleSurface.VerticalAlignment=_moduleExpanded?VerticalAlignment.Stretch:VerticalAlignment.Top;
         OldReportPanel.VerticalAlignment=!_tableExpanded&&_module==""?VerticalAlignment.Top:VerticalAlignment.Stretch;
-        LogPanel.VerticalAlignment=_logExpanded?VerticalAlignment.Stretch:VerticalAlignment.Top;
+        LogPanel.VerticalAlignment=logExpanded?VerticalAlignment.Stretch:VerticalAlignment.Top;
     }
     private void DashboardTableToggle_Click(object sender,RoutedEventArgs e){_tableExpanded=true;if(_page=="connections")ShowPage("overview");else Connections_Click(sender,e);}
     private void DashboardExport_Click(object sender,RoutedEventArgs e)=>ExportDashboard();
@@ -170,7 +185,7 @@ public partial class MainWindow
         foreach(bool signal in new[]{true,false}){var theme=new MenuItem{Header=signal?"Signal":"Black Liquid Glass",IsCheckable=true,IsChecked=AppearanceTheme.IsSignal==signal};theme.Click+=(_,_)=>ChangeAppearance(signal);themes.Items.Add(theme);}
         Item(T("Change accent","Сменить акцент"),Theme_Click);Item(T("Glass opacity","Прозрачность стекла"),Glass_Click);
         menu.Items.Add(new Separator());
-        Item(T("Home","Главная"),Overview_Click);Item(T("Import CSV","Импорт CSV"),Import_Click);Item(T("Reports","Отчёты"),Reports_Click);
+        Item(T("Module selection","Выбор модуля"),Overview_Click);Item(T("Import CSV","Импорт CSV"),Import_Click);Item(T("Reports","Отчёты"),Reports_Click);
         Item(T("Check router TCP 80/443","Проверка TCP роутера 80/443"),RouterCheck_Click);
         Item(T("Updates / language","Обновления / язык"),Updates_Click);Item(T("Help / F1","Справка / F1"),Help_Click);
         menu.IsOpen=true;
@@ -182,6 +197,7 @@ public partial class MainWindow
         _collector.IsEnabled=!analyze;_analyzer.IsEnabled=!collect;
         if(busy&&_moduleStarted==null)_moduleStarted=DateTime.Now;
         if(!busy)_moduleStarted=null;
+        OperationPanel.Visibility=_module!=""&&busy?Visibility.Visible:Visibility.Collapsed;
         ModuleStop.IsEnabled=busy;ModuleProgress.IsIndeterminate=analyze||(collect&&(!_collector.IsNatRunning||_collector.RouterCount==0));
         ModuleProgress.Maximum=Math.Max(1,_collector.RouterCount);ModuleProgress.Value=_collector.Processed;
         _sessionValues[0].Text=_collector.RouterCount==0?"—":_collector.Processed+"/"+_collector.RouterCount;
@@ -209,7 +225,8 @@ public partial class MainWindow
     {
         if(_collector==null||_analyzer==null)return false;
         ShowPage("overview");
-        if(LogPanel.Visibility!=Visibility.Visible||OldReportPanel.Visibility!=Visibility.Visible||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
+        if(LogPanel.Visibility!=Visibility.Collapsed||OldReportPanel.Visibility!=Visibility.Collapsed||SessionPanel.Visibility!=Visibility.Collapsed||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
+        ShowModule("routers");
         bool expanded=_logExpanded;LogToggle_Click(this,new RoutedEventArgs());
         if(LogList.Visibility!=(expanded?Visibility.Collapsed:Visibility.Visible)||ConsoleRow.Height.IsAuto!=expanded)return false;
         LogToggle_Click(this,new RoutedEventArgs());
@@ -221,9 +238,15 @@ public partial class MainWindow
             if((id=="connections"||id=="tcp")&&!ReferenceEquals(ModuleHost.Content,_analyzer))return false;
         }
         ModuleCollapse_Click(this,new RoutedEventArgs());
-        DashboardCollapse_Click(this,new RoutedEventArgs());
-        if(_logExpanded&&!WorkRow.Height.IsAuto)return false;
-        DashboardCollapse_Click(this,new RoutedEventArgs());
-        return !ModuleStop.IsEnabled&&_moduleButtons.Count==5&&LogPanel.Visibility==Visibility.Visible&&OldReportPanel.Visibility==Visibility.Visible;
+        if(!WorkRow.Height.IsAuto||ModuleHost.Visibility!=Visibility.Collapsed)return false;
+        ShowModule("tcp");ShowModule("routers");
+        if(ModuleHost.Visibility!=Visibility.Collapsed||!WorkRow.Height.IsAuto)return false;
+        ModuleCollapse_Click(this,new RoutedEventArgs());
+        if(!WorkRow.Height.IsStar||ModuleHost.Visibility!=Visibility.Visible)return false;
+        LogToggle_Click(this,new RoutedEventArgs());
+        if(!ConsoleRow.Height.IsAuto||!WorkRow.Height.IsStar)return false;
+        LogToggle_Click(this,new RoutedEventArgs());
+        ShowPage("overview");
+        return !ModuleStop.IsEnabled&&_moduleButtons.Count==5&&LogPanel.Visibility==Visibility.Collapsed&&OldReportPanel.Visibility==Visibility.Collapsed;
     }
 }

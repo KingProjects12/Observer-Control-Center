@@ -55,7 +55,7 @@ public partial class MainWindow : Window
         var file = ReportLocator.FindLatest("08_Top_Traffic.csv");
         if (file != null) LoadTraffic(file,false);
         else AddLog(UiText.T("No local 08_Top_Traffic.csv. Collect traffic or import a report.", "Нет локальных 08_Top_Traffic.csv. Соберите трафик или импортируйте отчёт."));
-        if(ReportLocator.FindLatest("07_Office_To_Connections.csv") is string nat) LoadConnections(nat);
+        if(ReportLocator.FindLatest("07_Office_To_Connections.csv") is string nat) { LoadConnections(nat); if(_collector!=null) _analyzer?.SetInput(nat,_collector.Target); }
         ShowPage("overview");
         await WindowMotion.FadeAsync(this, 1, 280);
     }

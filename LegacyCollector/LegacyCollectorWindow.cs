@@ -86,6 +86,9 @@ internal sealed class LegacyCollectorPanel : UserControl
     private FrameworkElement? _trafficSettings;
     private FrameworkElement? _routerStatusArea;
     private bool _natFormExpanded=true,_trafficFormExpanded=true;
+    private bool _natPreviewExpanded=false,_trafficPreviewExpanded=true;
+    private Expander? _previewSection;
+    private Action? _reflowWorkspace;
     private System.Windows.Controls.RadioButton? _httpRadio,_httpsRadio;
     private readonly Button _start;
     private readonly TextBlock _addressSummary;
@@ -101,13 +104,14 @@ internal sealed class LegacyCollectorPanel : UserControl
         if(IsBusy)return;
         if(_operation!=operation)
         {
-            if(_operation=="traffic")_trafficFormExpanded=_connection.IsExpanded;else _natFormExpanded=_connection.IsExpanded;
+            if(_operation=="traffic"){_trafficFormExpanded=_connection.IsExpanded;_trafficPreviewExpanded=_previewSection?.IsExpanded??true;}else{_natFormExpanded=_connection.IsExpanded;_natPreviewExpanded=_previewSection?.IsExpanded??false;}
             if(_folder!=null)_reportsByMode[_operation]=(_folder,_excelPath,(_view.SelectedItem as View)?.File);
             _operation=operation;
             if(_reportsByMode.TryGetValue(operation,out var saved))
                 ApplyReportView(saved.Folder,saved.Excel,operation=="traffic",saved.Selected);
             else ApplyReportView(null,null,false,null);
             _connection.IsExpanded=operation=="traffic"?_trafficFormExpanded:_natFormExpanded;
+            if(_previewSection!=null)_previewSection.IsExpanded=operation=="traffic"?_trafficPreviewExpanded:_natPreviewExpanded;
         }
         if(vpn.HasValue)_vpn.IsChecked=vpn.Value;
         _start.Content=operation=="traffic"?T("▶  Collect traffic","▶  Собрать трафик"):operation=="probe"?T("▶  Check router TCP","▶  Проверить TCP роутера"):T("▶  Start NAT collection","▶  Начать сбор NAT");
@@ -115,6 +119,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         if(_natSettings!=null)_natSettings.Visibility=operation=="traffic"?Visibility.Collapsed:Visibility.Visible;
         if(_trafficSettings!=null)_trafficSettings.Visibility=operation=="traffic"?Visibility.Visible:Visibility.Collapsed;
         if(_routerStatusArea!=null)_routerStatusArea.Visibility=operation=="traffic"?Visibility.Collapsed:Visibility.Visible;
+        _reflowWorkspace?.Invoke();
         if(_modeHint!=null)_modeHint.Text=operation=="traffic"?T("Choose one router and the observation window. Results show registered-device Internet volume, not all LAN/VPN traffic.","Выберите один роутер и период. Результаты показывают объём интернет-трафика зарегистрированных устройств, а не все LAN/VPN-потоки."):T("Collect observed NAT connections from authorized routers and match the office subnet.","Соберите наблюдаемые NAT-соединения разрешённых роутеров и отфильтруйте сеть офиса.");
     }
     public LegacyCollectorPanel(string address, bool vpn = false, bool traffic = false,bool embedded=false,bool offline=false)
@@ -217,28 +222,48 @@ internal sealed class LegacyCollectorPanel : UserControl
         if(embedded)
         {
             var connectionCard=(Border)root.Children[0];var actionCard=(Border)root.Children[1];var reportCard=(Border)root.Children[2];
+            // Move existing controls, not data or operation handlers, into full-width collapsible rows.
+            ((StackPanel)connectionCard.Child).Children.Remove(_connection);
+            ((StackPanel)actionCard.Child).Children.Remove(statusExpander);
             root.Children.Clear();
-            // Each tool panel can be reduced to its header without holding space in the results area.
-            void MakeCollapsible(Border card,string label)
-            {
-                var body=(StackPanel)card.Child;card.Child=null;body.Children.RemoveAt(0);
-                card.Child=new Expander{Header=label,IsExpanded=true,Content=body};
-            }
-            MakeCollapsible(actionCard,T("Collection","Сбор данных"));
-            MakeCollapsible(reportCard,T("Reports and export","Отчёты и экспорт"));
-            var workspace=new Grid{Margin=new Thickness(6)};
-            var leftCol=new ColumnDefinition{Width=new GridLength(2,GridUnitType.Star),MinWidth=290,MaxWidth=510};workspace.ColumnDefinitions.Add(leftCol);workspace.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(10)});workspace.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(3,GridUnitType.Star)});
-            var left=new ScrollViewer{VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Content=connectionCard};workspace.Children.Add(left);
-            var right=new Grid();Grid.SetColumn(right,2);workspace.Children.Add(right);
-            right.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});right.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});right.RowDefinitions.Add(new RowDefinition());
-            right.Children.Add(actionCard);Grid.SetRow(reportCard,1);right.Children.Add(reportCard);
-            var previewCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(12),Margin=new Thickness(0)};
+            _connection.Content=null;
+            form.Children.Clear();
+            var settingsForm=new Grid();
+            settingsForm.ColumnDefinitions.Add(new ColumnDefinition());settingsForm.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(12)});settingsForm.ColumnDefinitions.Add(new ColumnDefinition());
+            var leftFields=new StackPanel();leftFields.Children.Add(addressRow);leftFields.Children.Add(auth);leftFields.Children.Add(individual);settingsForm.Children.Add(leftFields);
+            var rightFields=new StackPanel();rightFields.Children.Add(network);rightFields.Children.Add(protocolRow);rightFields.Children.Add(advanced);rightFields.Children.Add(periodRow);Grid.SetColumn(rightFields,2);settingsForm.Children.Add(rightFields);
+            var settingsBody=new Grid();
+            settingsBody.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(2,GridUnitType.Star)});settingsBody.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(12)});settingsBody.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1,GridUnitType.Star)});
+            settingsBody.Children.Add(settingsForm);Grid.SetColumn(actionCard,2);actionCard.Padding=new Thickness(9);actionCard.Margin=new Thickness(0);settingsBody.Children.Add(actionCard);
+            _connection.Content=settingsBody;connectionCard.Child=_connection;connectionCard.Padding=new Thickness(7);connectionCard.Margin=new Thickness(0,0,0,7);
+            statusExpander.Content=null;statusArea.Children.Remove(_batchGrid);
+            var statusBody=new Grid();statusBody.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});statusBody.RowDefinitions.Add(new RowDefinition());
+            statusBody.Children.Add(statusArea);_batchGrid.MaxHeight=double.PositiveInfinity;_batchGrid.MinHeight=0;Grid.SetRow(_batchGrid,1);statusBody.Children.Add(_batchGrid);
+            statusExpander.Content=statusBody;statusExpander.IsExpanded=true;statusExpander.Margin=new Thickness(0);
+            var statusCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Margin=new Thickness(0,0,0,7),Child=statusExpander};
+            var reportBody=(StackPanel)reportCard.Child;reportCard.Child=null;reportBody.Children.RemoveAt(0);
+            var reportTools=new Expander{Header=T("Report options and export","Параметры отчёта и экспорт"),IsExpanded=false,Content=reportBody,Margin=new Thickness(0,0,0,5)};
             var previewRoot=new DockPanel();
-            _previewHint=new TextBlock{Text=T("No report yet — run collection to see actual data.","Отчёта пока нет — запустите сбор, чтобы увидеть данные."),TextWrapping=TextWrapping.Wrap,FontSize=13,Margin=new Thickness(0,0,0,9)};_previewHint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");DockPanel.SetDock(_previewHint,Dock.Top);previewRoot.Children.Add(_previewHint);
+            DockPanel.SetDock(reportTools,Dock.Top);previewRoot.Children.Add(reportTools);
+            _previewHint=new TextBlock{Text=T("No report yet — run collection to see actual data.","Отчёта пока нет — запустите сбор, чтобы увидеть данные."),TextWrapping=TextWrapping.Wrap,FontSize=13,Margin=new Thickness(0,0,0,5)};_previewHint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");DockPanel.SetDock(_previewHint,Dock.Top);previewRoot.Children.Add(_previewHint);
             _preview=new DataGrid{AutoGenerateColumns=true,IsReadOnly=true,CanUserAddRows=false,FontSize=13,RowHeight=32,ColumnHeaderHeight=35};previewRoot.Children.Add(_preview);
-            previewCard.Child=previewRoot;Grid.SetRow(previewCard,2);right.Children.Add(previewCard);
-            void ResizeConnection(){leftCol.MinWidth=_connection.IsExpanded?290:180;leftCol.MaxWidth=_connection.IsExpanded?510:220;leftCol.Width=_connection.IsExpanded?new GridLength(2,GridUnitType.Star):new GridLength(210);}
-            _connection.Expanded+=(_,_)=>ResizeConnection();_connection.Collapsed+=(_,_)=>ResizeConnection();ResizeConnection();
+            _previewSection=new Expander{Header=T("Data and reports","Данные и отчёты"),IsExpanded=traffic,Content=previewRoot};
+            var previewCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Child=_previewSection};
+            var workspace=new Grid{Margin=new Thickness(2)};
+            workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition{Height=new GridLength(0)});
+            workspace.Children.Add(connectionCard);Grid.SetRow(statusCard,1);workspace.Children.Add(statusCard);Grid.SetRow(previewCard,2);workspace.Children.Add(previewCard);
+            void Reflow()
+            {
+                bool showStatus=statusExpander.Visibility==Visibility.Visible;
+                statusCard.Visibility=showStatus?Visibility.Visible:Visibility.Collapsed;
+                workspace.RowDefinitions[1].Height=!showStatus?new GridLength(0):statusExpander.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
+                workspace.RowDefinitions[2].Height=_previewSection.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
+                workspace.RowDefinitions[3].Height=(!showStatus||!statusExpander.IsExpanded)&&!_previewSection.IsExpanded?new GridLength(1,GridUnitType.Star):new GridLength(0);
+            }
+            _reflowWorkspace=Reflow;
+            statusExpander.Expanded+=(_,_)=>Reflow();statusExpander.Collapsed+=(_,_)=>Reflow();
+            _previewSection.Expanded+=(_,_)=>Reflow();_previewSection.Collapsed+=(_,_)=>Reflow();
+            Reflow();
             Content=workspace;
         }
         SetMode(traffic?"traffic":"nat",vpn);

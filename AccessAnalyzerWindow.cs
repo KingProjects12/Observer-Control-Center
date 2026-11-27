@@ -15,7 +15,8 @@ internal sealed class AccessAnalyzerPanel : UserControl
     private readonly TextBox _target,_files,_filter;
     private readonly TextBlock _summary,_status;
     private TextBlock? _modeTitle,_modeDescription,_empty;
-    private Expander? _filesExpander;
+    private Expander? _filesExpander,_toolsExpander,_resultsExpander;
+    private bool _connectionsToolsExpanded=true,_tcpToolsExpanded=true,_connectionsResultsExpanded=true,_tcpResultsExpanded=true;
     private bool _connectionsFilesExpanded=true,_tcpFilesExpanded=false;
     private readonly bool _embedded;
     private readonly DataGrid _grid;
@@ -47,6 +48,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
         if(changed)
         {
             if(_filesExpander!=null){if(_tcpMode)_tcpFilesExpanded=_filesExpander.IsExpanded;else _connectionsFilesExpanded=_filesExpander.IsExpanded;}
+            if(_toolsExpander!=null&&_resultsExpander!=null){if(_tcpMode){_tcpToolsExpanded=_toolsExpander.IsExpanded;_tcpResultsExpanded=_resultsExpander.IsExpanded;}else{_connectionsToolsExpanded=_toolsExpander.IsExpanded;_connectionsResultsExpanded=_resultsExpander.IsExpanded;}}
             if(tcp){_connectionsView=_view.SelectedIndex;_view.SelectedIndex=0;}else _view.SelectedIndex=_connectionsView;
         }
         _tcpMode=tcp;
@@ -55,6 +57,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
         _compare.Visibility=tcp?Visibility.Collapsed:Visibility.Visible;_check.Visibility=tcp||!_embedded?Visibility.Visible:Visibility.Collapsed;
         _view.Visibility=tcp?Visibility.Collapsed:Visibility.Visible;
         if(changed&&_filesExpander!=null)_filesExpander.IsExpanded=tcp?_tcpFilesExpanded:_connectionsFilesExpanded;
+        if(changed&&_toolsExpander!=null&&_resultsExpander!=null){_toolsExpander.IsExpanded=tcp?_tcpToolsExpanded:_connectionsToolsExpanded;_resultsExpander.IsExpanded=tcp?_tcpResultsExpanded:_connectionsResultsExpanded;}
         _analyze.Content=tcp?T("Prepare endpoints","Подготовить назначения"):T("Analyze CSV","Анализировать CSV");
         RefreshGrid();
     }
@@ -102,6 +105,19 @@ internal sealed class AccessAnalyzerPanel : UserControl
         };
         var gridArea=new Grid();gridArea.Children.Add(_grid);
         _empty=new TextBlock{TextWrapping=TextWrapping.Wrap,TextAlignment=TextAlignment.Center,VerticalAlignment=VerticalAlignment.Center,HorizontalAlignment=HorizontalAlignment.Center,FontSize=15,Margin=new Thickness(18),IsHitTestVisible=false};_empty.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");gridArea.Children.Add(_empty);root.Children.Add(gridArea);
+        if(embedded)
+        {
+            root.Children.Clear();
+            _toolsExpander=new Expander{Header=T("Analysis settings and actions","Настройки и действия"),IsExpanded=true,Content=top};
+            _resultsExpander=new Expander{Header=T("Network results","Результаты сети"),IsExpanded=true,Content=gridArea};
+            var workspace=new Grid();workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition{Height=new GridLength(0)});
+            var toolsCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Margin=new Thickness(0,0,0,7),Child=_toolsExpander};
+            var resultsCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Child=_resultsExpander};
+            workspace.Children.Add(toolsCard);Grid.SetRow(resultsCard,1);workspace.Children.Add(resultsCard);
+            void Reflow(){workspace.RowDefinitions[1].Height=_resultsExpander.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;workspace.RowDefinitions[2].Height=_resultsExpander.IsExpanded?new GridLength(0):new GridLength(1,GridUnitType.Star);}
+            _resultsExpander.Expanded+=(_,_)=>Reflow();_resultsExpander.Collapsed+=(_,_)=>Reflow();
+            Reflow();Content=workspace;
+        }
         _view.SelectionChanged+=(_,_)=>RefreshGrid();_filter.TextChanged+=(_,_)=>RefreshFilter();
         if(initialFile!=null&&File.Exists(initialFile))_paths.Add(initialFile);
         ShowPaths();SetBusy(false);
