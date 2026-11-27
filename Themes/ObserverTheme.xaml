@@ -84,7 +84,7 @@
         </Grid>
       </Border>
       <ControlTemplate.Triggers>
-        <Trigger Property="Tag" Value="selected"><Setter TargetName="ActiveLine" Property="Opacity" Value="1"/><Setter TargetName="TileSurface" Property="BorderThickness" Value="2"/></Trigger>
+        <Trigger Property="Tag" Value="selected"><Setter TargetName="ActiveLine" Property="Opacity" Value="1"/><Setter TargetName="TileSurface" Property="BorderThickness" Value="2"/><Setter TargetName="TileSurface" Property="Effect"><Setter.Value><DropShadowEffect Color="#42DAEA" BlurRadius="13" ShadowDepth="0" Opacity="0.5"/></Setter.Value></Setter></Trigger>
         <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="TileSurface" Property="Opacity" Value="0.83"/></Trigger>
         <Trigger Property="IsPressed" Value="True"><Setter TargetName="TileSurface" Property="Opacity" Value="0.70"/></Trigger>
       </ControlTemplate.Triggers>

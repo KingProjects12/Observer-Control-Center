@@ -1,1 +1,2 @@
 Publish full-width dashboard and retained module state after Windows and offline tests.
+Retry unpublished 2.2.1 with corrected startup conditional and approved dashboard including collapsible console.

@@ -31,6 +31,10 @@ public partial class MainWindow
     private void InitializeModules()
     {
         BtnSettings.ToolTip=T("Application settings","Настройки приложения");
+        DashboardTagline.Text=T("Unified network data collection and analytics.","Единый центр сбора и анализа сетевых данных.");
+        DashboardExport.Content=T("↓ Export CSV","↓ Экспорт CSV");
+        ClearDashboardLog.Content=T("Clear","Очистить");
+        LogCount.Text=_consoleItems.Count+" "+T("events","событий");
         NavOverview.Content=T("Home","Главная");
         var definitions=new[]{
             ("routers","M2,16 L2,25 L30,25 L30,16 Z M7,16 L7,5 M25,16 L25,5 M5,4 A2,2 0 1 0 9,4 A2,2 0 1 0 5,4 M23,4 A2,2 0 1 0 27,4 A2,2 0 1 0 23,4 M7,21 L9,21 M13,21 L15,21 M19,21 L21,21","Routers","Роутеры","Collection and analysis","Сбор и анализ устройств"),
@@ -46,15 +50,19 @@ public partial class MainWindow
             var content=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
             var title=new TextBlock{Text=T(en,ru),FontSize=17,FontWeight=FontWeights.SemiBold,TextTrimming=TextTrimming.CharacterEllipsis};title.SetResourceReference(TextBlock.ForegroundProperty,"TextMain");content.Children.Add(title);
             var hint=new TextBlock{Text=T(subEn,subRu),FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(0,4,0,0)};hint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");content.Children.Add(hint);row.Children.Add(content);
+            var arrow=new TextBlock{Text="›",FontSize=25,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(8,0,0,0)};
+            arrow.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");DockPanel.SetDock(arrow,Dock.Right);row.Children.Insert(1,arrow);
             b.Content=row;b.Click+=(_,_)=>{if(_module==id)ShowPage("overview");else ShowModule(id);};ModuleTiles.Children.Add(b);_moduleButtons.Add(id,b);_moduleTitles[id]=T(en,ru);
         }
         SessionTitle.Text=T("Session results","Результаты сессии");SessionHint.Text=T("Actual observations","Фактические наблюдения");
         var metrics=new[]{("routers",T("Routers","Роутеров")),("connections",T("Office observations","Наблюдений в офис")),("tcp",T("Reachable TCP","Доступных TCP")),("issues",T("Failed / partial","Ошибки / частично"))};
         for(int i=0;i<metrics.Length;i++)
         {
-            var (id,label)=metrics[i];var panel=new StackPanel{Margin=new Thickness(10,2,5,2)};
+            var (id,label)=metrics[i];var panel=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
             panel.Children.Add(new TextBlock{Text=label,FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis});
-            var value=new TextBlock{Text="—",FontSize=25,FontWeight=FontWeights.Bold,Margin=new Thickness(0,3,0,0)};value.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");panel.Children.Add(value);_sessionValues[i]=value;SessionMetrics.Children.Add(panel);
+            var value=new TextBlock{Text="—",FontSize=25,FontWeight=FontWeights.Bold,Margin=new Thickness(0,3,0,0)};value.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");panel.Children.Add(value);_sessionValues[i]=value;
+            var metric=new DockPanel{Margin=new Thickness(6,2,5,2)};
+            var icon=Glyph(definitions.First(d=>d.Item1==id).Item2,"Module_"+id+"_Fg",29);icon.Margin=new Thickness(0,0,10,0);DockPanel.SetDock(icon,Dock.Left);metric.Children.Add(icon);metric.Children.Add(panel);SessionMetrics.Children.Add(metric);
         }
         TrafficStatusColumn.Header=T("Status","Статус");
         _collector=new LegacyCollectorPanel(RouterIP.Text,vpn:true,embedded:true,offline:_offlineUiCheck);
@@ -93,8 +101,9 @@ public partial class MainWindow
     private void DisplayLegacyReport()
     {
         if(_collector==null)return;
-        _module="";ModuleSurface.Visibility=OperationPanel.Visibility=LogPanel.Visibility=OldKpiPanel.Visibility=OldConnectionHeader.Visibility=Visibility.Collapsed;
-        OldReportPanel.Visibility=Visibility.Visible;
+        _module="";ModuleSurface.Visibility=OperationPanel.Visibility=OldKpiPanel.Visibility=OldConnectionHeader.Visibility=Visibility.Collapsed;
+        OldReportPanel.Visibility=LogPanel.Visibility=Visibility.Visible;
+        LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;
         foreach(var button in _moduleButtons.Values)button.Tag=null;
         UpdateDashboardTableVisibility();
     }
@@ -110,10 +119,13 @@ public partial class MainWindow
     private void SessionToggle_Click(object sender,RoutedEventArgs e){SessionMetrics.Visibility=SessionMetrics.Visibility==Visibility.Visible?Visibility.Collapsed:Visibility.Visible;SessionToggle.Content=SessionMetrics.Visibility==Visibility.Visible?"⌃":"⌄";}
     private void LogToggle_Click(object sender,RoutedEventArgs e){_logExpanded=!_logExpanded;LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;LogToggle.Content=_logExpanded?"⌃":"⌄";}
     private void DashboardTableToggle_Click(object sender,RoutedEventArgs e){_tableExpanded=true;if(_page=="connections")ShowPage("overview");else Connections_Click(sender,e);}
+    private void DashboardExport_Click(object sender,RoutedEventArgs e)=>ExportDashboard();
+    private void ClearDashboardLog_Click(object sender,RoutedEventArgs e){_consoleItems.Clear();LogList.Document.Blocks.Clear();LogCount.Text="0 "+T("events","событий");}
     private void DashboardActions_Click(object sender,RoutedEventArgs e)
     {
         var menu=new ContextMenu{PlacementTarget=(UIElement)sender,Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom};
         void Item(string label,RoutedEventHandler handler){var item=new MenuItem{Header=label};item.Click+=handler;menu.Items.Add(item);}
+        Item(T("Import CSV","Импорт CSV"),Import_Click);
         Item(T("Export displayed report CSV","Экспорт текущего CSV"),(_,_)=>ExportDashboard());
         Item(T("Open report folder","Открыть папку отчётов"),Reports_Click);
         menu.IsOpen=true;
@@ -168,7 +180,10 @@ public partial class MainWindow
     {
         if(_collector==null||_analyzer==null)return false;
         ShowPage("overview");
-        if(LogPanel.Visibility!=Visibility.Collapsed||OldReportPanel.Visibility!=Visibility.Visible||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
+        if(LogPanel.Visibility!=Visibility.Visible||OldReportPanel.Visibility!=Visibility.Visible||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
+        bool expanded=_logExpanded;LogToggle_Click(this,new RoutedEventArgs());
+        if(LogList.Visibility!=(expanded?Visibility.Collapsed:Visibility.Visible))return false;
+        LogToggle_Click(this,new RoutedEventArgs());
         foreach(string id in new[]{"routers","traffic","connections","tcp","issues","routers"})
         {
             ShowModule(id);
@@ -177,6 +192,6 @@ public partial class MainWindow
             if((id=="connections"||id=="tcp")&&!ReferenceEquals(ModuleHost.Content,_analyzer))return false;
         }
         ModuleCollapse_Click(this,new RoutedEventArgs());
-        return !ModuleStop.IsEnabled&&_moduleButtons.Count==5&&LogPanel.Visibility==Visibility.Collapsed&&OldReportPanel.Visibility==Visibility.Visible;
+        return !ModuleStop.IsEnabled&&_moduleButtons.Count==5&&LogPanel.Visibility==Visibility.Visible&&OldReportPanel.Visibility==Visibility.Visible;
     }
 }
