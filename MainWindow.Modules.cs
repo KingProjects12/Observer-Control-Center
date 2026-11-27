@@ -48,8 +48,8 @@ public partial class MainWindow
         foreach(var (id,geometry,en,ru,subEn,subRu) in definitions)
         {
             var b=new Button{Style=(Style)FindResource("ModuleTileButton"),Margin=new Thickness(0,0,id=="issues"?0:8,0),Padding=new Thickness(12,12,12,12),MinHeight=62,ToolTip=T(subEn,subRu)};
-            b.SetResourceReference(Control.BackgroundProperty,"PanelBg");b.SetResourceReference(Control.BorderBrushProperty,"Module_"+id+"_Fg");
-            var row=new DockPanel{LastChildFill=true};var icon=Glyph(geometry,"TextSecondary",22);icon.Margin=new Thickness(0,0,12,0);DockPanel.SetDock(icon,Dock.Left);row.Children.Add(icon);
+            b.SetResourceReference(Control.BackgroundProperty,"Module_"+id+"_Bg");b.SetResourceReference(Control.BorderBrushProperty,"Module_"+id+"_Fg");
+            var row=new DockPanel{LastChildFill=true};var icon=Glyph(geometry,"Module_"+id+"_Fg",26);icon.Margin=new Thickness(0,0,12,0);DockPanel.SetDock(icon,Dock.Left);row.Children.Add(icon);
             var content=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
             var title=new TextBlock{Text=T(en,ru),FontSize=16,FontWeight=FontWeights.SemiBold,TextTrimming=TextTrimming.CharacterEllipsis};title.SetResourceReference(TextBlock.ForegroundProperty,"TextMain");content.Children.Add(title);
             var hint=new TextBlock{Text=T(subEn,subRu),FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(0,4,0,0)};hint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");content.Children.Add(hint);row.Children.Add(content);
@@ -194,7 +194,7 @@ public partial class MainWindow
         menu.Items.Add(new Separator());
         Item(T("Module selection","Выбор модуля"),Overview_Click);Item(T("Import CSV","Импорт CSV"),Import_Click);Item(T("Reports","Отчёты"),Reports_Click);
         Item(T("Check router TCP 80/443","Проверка TCP роутера 80/443"),RouterCheck_Click);
-        Item(T("Updates / language","Обновления / язык"),Updates_Click);Item(T("Help / F1","Справка / F1"),Help_Click);
+        Item(T("Help / F1","Справка / F1"),Help_Click);
         menu.IsOpen=true;
     }
     private void UpdateModuleSummary()
@@ -232,7 +232,7 @@ public partial class MainWindow
     {
         if(_collector==null||_analyzer==null)return false;
         ShowPage("overview");
-        if(LogPanel.Visibility!=Visibility.Collapsed||OldReportPanel.Visibility!=Visibility.Collapsed||SessionPanel.Visibility!=Visibility.Collapsed||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
+        if(ModuleTiles.Columns!=1||LogPanel.Visibility!=Visibility.Collapsed||OldReportPanel.Visibility!=Visibility.Collapsed||SessionPanel.Visibility!=Visibility.Collapsed||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
         ShowModule("routers");
         if(!_collector.EmbeddedActionsVisible())return false;
         bool expanded=_logExpanded;LogToggle_Click(this,new RoutedEventArgs());
@@ -241,7 +241,7 @@ public partial class MainWindow
         foreach(string id in new[]{"routers","traffic","connections","tcp","issues","routers"})
         {
             ShowModule(id);
-            if(!Equals(_moduleButtons[id].Tag,"selected")||ModuleHost.Content==null||ModuleSurface.Visibility!=Visibility.Visible||LogPanel.Visibility!=Visibility.Visible)return false;
+            if(ModuleTiles.Columns!=5||!Equals(_moduleButtons[id].Tag,"selected")||ModuleHost.Content==null||ModuleSurface.Visibility!=Visibility.Visible||LogPanel.Visibility!=Visibility.Visible)return false;
             if((id=="routers"||id=="traffic")&&!ReferenceEquals(ModuleHost.Content,_collector))return false;
             if((id=="connections"||id=="tcp")&&!ReferenceEquals(ModuleHost.Content,_analyzer))return false;
         }

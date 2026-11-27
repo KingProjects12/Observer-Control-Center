@@ -153,9 +153,9 @@ internal static class AppearanceTheme
         foreach(var (key,classic,alternate) in Colors) next[key]=BrushFor(signal?alternate:classic);
         next["NavSpacing"]=new Thickness(0,0,0,8);
         foreach(var (id,dark,navy,accent) in new[]{
-            ("routers","#152527","#192B30","#69DFFF"),("connections","#1B222D","#1D2939","#88ADFF"),
-            ("tcp","#24202D","#28253A","#B3A0FF"),("traffic","#28212A","#2E2635","#E4A0CD"),
-            ("issues","#28251E","#302C24","#FFD27E")})
+            ("routers","#08343C","#073F49","#69DFFF"),("connections","#142945","#152C52","#6BADFF"),
+            ("tcp","#2A213E","#302444","#B3A0FF"),("traffic","#352135","#40283F","#ED86C9"),
+            ("issues","#332B1D","#3D3222","#FFC452")})
         {next["Module_"+id+"_Bg"]=BrushFor(signal?navy:dark);next["Module_"+id+"_Fg"]=BrushFor(accent);}
         next["CardGradient"]=signal?BrushFor("#1A2431"):Gradient("#F21B1C20","#F0192121","#F0191A1E");
         next["HeaderGradient"]=signal?BrushFor("#10141B"):Gradient("#F21B1C20","#F0192121","#F0191A1E");
