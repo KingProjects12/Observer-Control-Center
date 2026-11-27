@@ -1,1 +1,2 @@
 Publish Observer 2.4.0 after Windows build and offline tests.
+Retry after fixing CS0136 theme identifier shadowing.

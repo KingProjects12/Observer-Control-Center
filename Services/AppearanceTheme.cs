@@ -156,9 +156,9 @@ internal static class AppearanceTheme
         Apply(ThemeCatalog.Get(id).Id);
     }
     internal static void Apply(bool signal,bool purple=false,int glassMode=0,bool persist=false)=>Apply(signal?"signal":"classic",purple,glassMode,persist);
-    internal static void Apply(string id,bool purple=false,int glassMode=0,bool persist=false)
+    internal static void Apply(string themeId,bool purple=false,int glassMode=0,bool persist=false)
     {
-        var preset=ThemeCatalog.Get(id);
+        var preset=ThemeCatalog.Get(themeId);
         bool signal=preset.Id=="signal",classicTheme=preset.Id=="classic",custom=!signal&&!classicTheme;
         var next=new ResourceDictionary();
         foreach(var (key,classic,alternate) in Colors) next[key]=BrushFor(signal?alternate:classic);
