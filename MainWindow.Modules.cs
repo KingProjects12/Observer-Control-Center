@@ -14,7 +14,9 @@ public partial class MainWindow
     private readonly Dictionary<string,string> _moduleTitles=new();
     private readonly TextBlock[] _sessionValues=new TextBlock[4];
     private DataGrid? _issuesGrid;
-    private StackPanel? _issuesPanel;
+    private DockPanel? _issuesPanel;
+    private TextBlock? _issuesEmpty;
+    private string _issueSignature="";
     private Button? _retryIssues;
     private string _module="";
     private string? _trafficReport,_networkReport;
@@ -73,12 +75,22 @@ public partial class MainWindow
         _collector.ReportReady+=(file,traffic)=>{if(traffic)LoadTraffic(file,false);else LoadConnections(file);UpdateModuleSummary();};
         _collector.NavigateAccess+=()=>ShowModule("connections");
         _collector.CsvSelected+=path=>{if(Path.GetFileName(path).StartsWith("08_Top_Traffic",StringComparison.OrdinalIgnoreCase))LoadTraffic(path);else{LoadConnections(path);ShowPage("connections");}_reportPath=path;};
-        _issuesPanel=new StackPanel{Margin=new Thickness(12)};
-        _issuesPanel.Children.Add(new TextBlock{Text=T("Issues and incomplete routers","Проблемы и незавершённые роутеры"),FontSize=19,FontWeight=FontWeights.SemiBold,Margin=new Thickness(0,0,0,8)});
-        _retryIssues=new Button{Content=T("Retry incomplete routers","Повторить проблемные"),Style=(Style)FindResource("AccentButton"),HorizontalAlignment=HorizontalAlignment.Left,Margin=new Thickness(0,0,0,8),IsEnabled=false};
-        _retryIssues.Click+=async (_,_)=>{ShowModule("routers");await _collector.RetryAsync();};_issuesPanel.Children.Add(_retryIssues);
-        _issuesGrid=new DataGrid{AutoGenerateColumns=true,IsReadOnly=true,CanUserAddRows=false,MinHeight=110,MaxHeight=280};_issuesPanel.Children.Add(_issuesGrid);
-        _issuesPanel.Children.Add(new TextBlock{Text=T("See the shared log for authentication, API and timeout details.","Подробности авторизации, API и тайм-аутов — в журнале ниже."),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,8,0,0)});
+        _issuesPanel=new DockPanel{Margin=new Thickness(12)};
+        var issuesHeader=new StackPanel{Margin=new Thickness(0,0,0,12)};DockPanel.SetDock(issuesHeader,Dock.Top);_issuesPanel.Children.Add(issuesHeader);
+        issuesHeader.Children.Add(new TextBlock{Text=T("Collection diagnostics","Диагностика сбора"),FontSize=21,FontWeight=FontWeights.SemiBold});
+        var issueHint=new TextBlock{Text=T("Failed or incomplete NAT collections. Retry only the affected routers.","Неудачные или незавершённые сборы NAT. Повторяются только проблемные роутеры."),TextWrapping=TextWrapping.Wrap,FontSize=13,Margin=new Thickness(0,5,0,10)};issueHint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");issuesHeader.Children.Add(issueHint);
+        _retryIssues=new Button{Content=T("↻ Retry incomplete","↻ Повторить проблемные"),Style=(Style)FindResource("AccentButton"),HorizontalAlignment=HorizontalAlignment.Left,IsEnabled=false};
+        _retryIssues.Click+=async (_,_)=>{ShowModule("routers");await _collector.RetryAsync();};issuesHeader.Children.Add(_retryIssues);
+        var issueTable=new Grid();_issuesPanel.Children.Add(issueTable);
+        _issuesGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,FontSize=14,RowHeight=36,ColumnHeaderHeight=36};
+        foreach(var (key,label) in new[]{("Router",T("Router","Роутер")),("Status",T("Status / reason","Статус / причина")),("Samples",T("Snapshots","Снимки")),("Office",T("Office rows","Строк в офис"))})
+        {
+            var col=new DataGridTextColumn{Header=label,Binding=new System.Windows.Data.Binding(key),Width=new DataGridLength(key=="Status"?2:1,DataGridLengthUnitType.Star)};
+            if(key=="Status"){var style=new Style(typeof(TextBlock));style.Setters.Add(new Setter(TextBlock.ForegroundProperty,new System.Windows.Data.Binding(key){Converter=new StatusBrushConverter()}));col.ElementStyle=style;}
+            _issuesGrid.Columns.Add(col);
+        }
+        issueTable.Children.Add(_issuesGrid);
+        _issuesEmpty=new TextBlock{FontSize=15,TextWrapping=TextWrapping.Wrap,HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center,TextAlignment=TextAlignment.Center,IsHitTestVisible=false,Margin=new Thickness(20)};_issuesEmpty.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");issueTable.Children.Add(_issuesEmpty);
         ModuleStop.Content=T("Stop","Стоп");ModuleCollapse.Content=T("⌃  Home / collapse","⌃  Свернуть / главная");
         _moduleTimer.Tick+=(_,_)=>UpdateModuleSummary();_moduleTimer.Start();UpdateModuleSummary();
     }
@@ -95,6 +107,7 @@ public partial class MainWindow
         if(id=="routers"||id=="traffic"){_collector.SetMode(id=="traffic"?"traffic":"nat");ModuleHost.Content=_collector;}
         else if(id=="issues")ModuleHost.Content=_issuesPanel;
         else{_analyzer.SetTcpMode(id=="tcp");ModuleHost.Content=_analyzer;}
+        ReflowPanels();
         UpdateModuleSummary();
         if(IsLoaded&&SystemParameters.ClientAreaAnimation)ModuleSurface.BeginAnimation(OpacityProperty,new DoubleAnimation(.82,1,TimeSpan.FromMilliseconds(150)){FillBehavior=FillBehavior.Stop});
     }
@@ -105,19 +118,29 @@ public partial class MainWindow
         OldReportPanel.Visibility=LogPanel.Visibility=Visibility.Visible;
         LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;
         foreach(var button in _moduleButtons.Values)button.Tag=null;
-        UpdateDashboardTableVisibility();
+        UpdateDashboardTableVisibility();ReflowPanels();
     }
     private void UpdateDashboardTableVisibility()
     {
         if(_module!="")return;
         TrafficGrid.Visibility=_tableExpanded&&_page!="connections"?Visibility.Visible:Visibility.Collapsed;
         ConnectionsGrid.Visibility=_tableExpanded&&_page=="connections"?Visibility.Visible:Visibility.Collapsed;
-        DashboardCollapse.Content=_tableExpanded?"⌃":"⌄";
+        DashboardCollapse.Content=_tableExpanded?"⌃":"⌄";ReflowPanels();
     }
     private void ModuleCollapse_Click(object sender,RoutedEventArgs e)=>ShowPage("overview");
     private void DashboardCollapse_Click(object sender,RoutedEventArgs e){_tableExpanded=!_tableExpanded;UpdateDashboardTableVisibility();}
-    private void SessionToggle_Click(object sender,RoutedEventArgs e){SessionMetrics.Visibility=SessionMetrics.Visibility==Visibility.Visible?Visibility.Collapsed:Visibility.Visible;SessionToggle.Content=SessionMetrics.Visibility==Visibility.Visible?"⌃":"⌄";}
-    private void LogToggle_Click(object sender,RoutedEventArgs e){_logExpanded=!_logExpanded;LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;LogToggle.Content=_logExpanded?"⌃":"⌄";}
+    private void SessionToggle_Click(object sender,RoutedEventArgs e){SessionMetrics.Visibility=SessionMetrics.Visibility==Visibility.Visible?Visibility.Collapsed:Visibility.Visible;SessionHint.Visibility=SessionMetrics.Visibility;SessionToggle.Content=SessionMetrics.Visibility==Visibility.Visible?"⌃":"⌄";ReflowPanels();}
+    private void LogToggle_Click(object sender,RoutedEventArgs e){_logExpanded=!_logExpanded;LogList.Visibility=_logExpanded?Visibility.Visible:Visibility.Collapsed;LogToggle.Content=_logExpanded?"⌃":"⌄";ReflowPanels();}
+    private void ReflowPanels()
+    {
+        bool workExpanded=_module!=""||_tableExpanded;
+        // Only an expanded panel receives star-sized space. Collapsed panels are sized to their header.
+        WorkRow.Height=workExpanded?new GridLength(_logExpanded?3:1,GridUnitType.Star):GridLength.Auto;
+        ConsoleRow.Height=_logExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
+        if(!workExpanded&&!_logExpanded)WorkRow.Height=new GridLength(1,GridUnitType.Star);
+        OldReportPanel.VerticalAlignment=!_tableExpanded&&_module==""?VerticalAlignment.Top:VerticalAlignment.Stretch;
+        LogPanel.VerticalAlignment=_logExpanded?VerticalAlignment.Stretch:VerticalAlignment.Top;
+    }
     private void DashboardTableToggle_Click(object sender,RoutedEventArgs e){_tableExpanded=true;if(_page=="connections")ShowPage("overview");else Connections_Click(sender,e);}
     private void DashboardExport_Click(object sender,RoutedEventArgs e)=>ExportDashboard();
     private void ClearDashboardLog_Click(object sender,RoutedEventArgs e){_consoleItems.Clear();LogList.Document.Blocks.Clear();LogCount.Text="0 "+T("events","событий");}
@@ -167,7 +190,13 @@ public partial class MainWindow
         _sessionValues[3].Text=_collector.RouterCount==0?"—":_collector.FailedCount+"/"+_collector.PartialCount;
         ModuleSummary.Text=busy?T("Operation running","Выполняется операция"):T("Ready","Готово");
         ModuleProgressText.Text=(busy?(DateTime.Now-_moduleStarted!.Value).ToString(@"hh\:mm\:ss")+"  •  ":"")+_lastModuleLog;
-        if(_issuesGrid!=null)_issuesGrid.ItemsSource=_collector.Issues;
+        if(_issuesGrid!=null&&_issuesEmpty!=null)
+        {
+            var issues=_collector.Issues;var signature=string.Join("|",issues.Select(r=>r.ToString()));
+            if(signature!=_issueSignature){_issueSignature=signature;_issuesGrid.ItemsSource=issues;}
+            _issuesEmpty.Visibility=issues.Length==0?Visibility.Visible:Visibility.Collapsed;
+            _issuesEmpty.Text=_collector.RouterCount==0?T("No NAT run yet. Start collection in Routers.","Сбор NAT ещё не запускался. Начните в разделе «Роутеры»."):T("No incomplete routers currently recorded.","Нет зафиксированных незавершённых роутеров.");
+        }
         if(_retryIssues!=null)_retryIssues.IsEnabled=_collector.CanRetry&&!analyze;
     }
     private void ModuleStop_Click(object sender,RoutedEventArgs e){_collector?.Stop();_analyzer?.Stop();}
@@ -182,7 +211,7 @@ public partial class MainWindow
         ShowPage("overview");
         if(LogPanel.Visibility!=Visibility.Visible||OldReportPanel.Visibility!=Visibility.Visible||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
         bool expanded=_logExpanded;LogToggle_Click(this,new RoutedEventArgs());
-        if(LogList.Visibility!=(expanded?Visibility.Collapsed:Visibility.Visible))return false;
+        if(LogList.Visibility!=(expanded?Visibility.Collapsed:Visibility.Visible)||ConsoleRow.Height.IsAuto!=expanded)return false;
         LogToggle_Click(this,new RoutedEventArgs());
         foreach(string id in new[]{"routers","traffic","connections","tcp","issues","routers"})
         {
@@ -192,6 +221,9 @@ public partial class MainWindow
             if((id=="connections"||id=="tcp")&&!ReferenceEquals(ModuleHost.Content,_analyzer))return false;
         }
         ModuleCollapse_Click(this,new RoutedEventArgs());
+        DashboardCollapse_Click(this,new RoutedEventArgs());
+        if(_logExpanded&&!WorkRow.Height.IsAuto)return false;
+        DashboardCollapse_Click(this,new RoutedEventArgs());
         return !ModuleStop.IsEnabled&&_moduleButtons.Count==5&&LogPanel.Visibility==Visibility.Visible&&OldReportPanel.Visibility==Visibility.Visible;
     }
 }

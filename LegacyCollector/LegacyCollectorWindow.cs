@@ -79,6 +79,14 @@ internal sealed class LegacyCollectorPanel : UserControl
     internal void SetAddress(string value){if(!IsBusy && !string.IsNullOrWhiteSpace(value))_address.Text=value;}
     private readonly bool _embedded,_offline;
     private readonly Expander _connection;
+    private DataGrid? _preview;
+    private TextBlock? _previewHint;
+    private TextBlock? _modeHint;
+    private FrameworkElement? _natSettings;
+    private FrameworkElement? _trafficSettings;
+    private FrameworkElement? _routerStatusArea;
+    private bool _natFormExpanded=true,_trafficFormExpanded=true;
+    private System.Windows.Controls.RadioButton? _httpRadio,_httpsRadio;
     private readonly Button _start;
     private readonly TextBlock _addressSummary;
     private string _operation="nat";
@@ -93,32 +101,38 @@ internal sealed class LegacyCollectorPanel : UserControl
         if(IsBusy)return;
         if(_operation!=operation)
         {
+            if(_operation=="traffic")_trafficFormExpanded=_connection.IsExpanded;else _natFormExpanded=_connection.IsExpanded;
             if(_folder!=null)_reportsByMode[_operation]=(_folder,_excelPath,(_view.SelectedItem as View)?.File);
             _operation=operation;
             if(_reportsByMode.TryGetValue(operation,out var saved))
                 ApplyReportView(saved.Folder,saved.Excel,operation=="traffic",saved.Selected);
             else ApplyReportView(null,null,false,null);
+            _connection.IsExpanded=operation=="traffic"?_trafficFormExpanded:_natFormExpanded;
         }
         if(vpn.HasValue)_vpn.IsChecked=vpn.Value;
         _start.Content=operation=="traffic"?T("▶  Collect traffic","▶  Собрать трафик"):operation=="probe"?T("▶  Check router TCP","▶  Проверить TCP роутера"):T("▶  Start NAT collection","▶  Начать сбор NAT");
         _operation=operation;
+        if(_natSettings!=null)_natSettings.Visibility=operation=="traffic"?Visibility.Collapsed:Visibility.Visible;
+        if(_trafficSettings!=null)_trafficSettings.Visibility=operation=="traffic"?Visibility.Visible:Visibility.Collapsed;
+        if(_routerStatusArea!=null)_routerStatusArea.Visibility=operation=="traffic"?Visibility.Collapsed:Visibility.Visible;
+        if(_modeHint!=null)_modeHint.Text=operation=="traffic"?T("Choose one router and the observation window. Results show registered-device Internet volume, not all LAN/VPN traffic.","Выберите один роутер и период. Результаты показывают объём интернет-трафика зарегистрированных устройств, а не все LAN/VPN-потоки."):T("Collect observed NAT connections from authorized routers and match the office subnet.","Соберите наблюдаемые NAT-соединения разрешённых роутеров и отфильтруйте сеть офиса.");
     }
     public LegacyCollectorPanel(string address, bool vpn = false, bool traffic = false,bool embedded=false,bool offline=false)
     {
         _embedded=embedded;_offline=offline;
         SetResourceReference(ForegroundProperty,"DialogText");
-        FontFamily = new FontFamily("Segoe UI");
+        FontFamily = new FontFamily("Segoe UI");FontSize=14;
         var root = new StackPanel { Margin = new Thickness(embedded?4:18) };
         Content = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         StackPanel section = root;
         void Group(string en, string ru, string hintEn, string hintRu)
         {
-            var card = new Border { Style=(Style)FindResource("CardBorder"), Margin=new Thickness(0,0,0,9),Padding=new Thickness(12) };
+            var card = new Border { Style=(Style)FindResource("CardBorder"), Margin=new Thickness(0,0,0,9),Padding=new Thickness(14) };
             section = new StackPanel(); card.Child=section; root.Children.Add(card);
-            section.Children.Add(new TextBlock { Text=T(en,ru), FontSize=15, FontWeight=FontWeights.SemiBold });
-            section.Children.Add(new TextBlock { Text=T(hintEn,hintRu), FontSize=11, TextWrapping=TextWrapping.Wrap, Margin=new Thickness(0,4,0,8) });
+            section.Children.Add(new TextBlock { Text=T(en,ru), FontSize=18, FontWeight=FontWeights.SemiBold });
+            section.Children.Add(new TextBlock { Text=T(hintEn,hintRu), FontSize=13, TextWrapping=TextWrapping.Wrap, Margin=new Thickness(0,4,0,8) });
         }
-        TextBlock LabelFor(string value)=>new(){Text=value,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(0,4,9,4),TextWrapping=TextWrapping.Wrap};
+        TextBlock LabelFor(string value){var label=new TextBlock{Text=value,FontSize=13,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(0,5,9,5),TextWrapping=TextWrapping.Wrap};label.SetResourceReference(TextBlock.ForegroundProperty,"TextMain");return label;}
         void Label(string s)=>section.Children.Add(LabelFor(s));
         TextBox Field(string s,string v){Label(s);var b=new TextBox{Text=v};section.Children.Add(b);return b;}
         Group("Connection settings","Настройки подключения","Shared for all modules. Credentials stay in memory only.","Общие для модулей. Пароли хранятся только в памяти.");
@@ -126,10 +140,10 @@ internal sealed class LegacyCollectorPanel : UserControl
         _connection=new Expander{IsExpanded=true,Content=form,Margin=new Thickness(0,2,0,5)};
         _addressSummary=new TextBlock{FontWeight=FontWeights.SemiBold,TextWrapping=TextWrapping.Wrap};
         _connection.Header=_addressSummary;section.Children.Add(_connection);
-        _address=new TextBox{Text=address,AcceptsReturn=true,MinHeight=80,MaxHeight=150,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};
+        _address=new TextBox{Text=address,AcceptsReturn=true,MinHeight=66,MaxHeight=112,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,FontFamily=new FontFamily("Consolas"),FontSize=14};
         var list=new Expander{Header=T("Edit router list (one IPv4 or IPv4:port per line)","Редактировать список (IPv4 или IPv4:порт по строкам)"),IsExpanded=string.IsNullOrWhiteSpace(address),Content=_address};
         var addressRow=new DockPanel{Margin=new Thickness(0,4,0,5)};
-        var importList=new Button{Content=T("Import .txt","Импорт .txt"),Style=(Style)FindResource("FlatButton"),Margin=new Thickness(8,0,0,0)};
+        var importList=new Button{Content=T("Import .txt","Импорт .txt"),Style=(Style)FindResource("FlatButton"),Margin=new Thickness(8,0,0,0),VerticalAlignment=VerticalAlignment.Top};
         DockPanel.SetDock(importList,Dock.Right);addressRow.Children.Add(importList);addressRow.Children.Add(list);form.Children.Add(addressRow);
         importList.Click+=(_,_)=>{try{var d=new OpenFileDialog{Filter="Text (*.txt)|*.txt",CheckFileExists=true};if((DialogOwner is Window owner?d.ShowDialog(owner):d.ShowDialog())==true){if(new FileInfo(d.FileName).Length>65536)throw new InvalidDataException("IP list exceeds 64 KB.");_address.Text=File.ReadAllText(d.FileName);list.IsExpanded=true;}}catch(Exception ex){Report("ERROR: "+ex.Message);}};
         var auth=new Grid{Margin=new Thickness(0,3,0,5)};
@@ -140,23 +154,33 @@ internal sealed class LegacyCollectorPanel : UserControl
         individual.Click+=(_,_)=>EditLogin();form.Children.Add(individual);
         var network=new WrapPanel{Margin=new Thickness(0,3,0,4)};
         network.Children.Add(LabelFor(T("Office /24","Сеть офиса /24")));_target=new TextBox{Width=165,Text=LoadTarget(),Margin=new Thickness(0,0,10,0)};network.Children.Add(_target);
-        _https=new CheckBox{Content=T("HTTPS (off = HTTP)","HTTPS (выкл. = HTTP)"),IsChecked=LoadHttps(),VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(0,0,10,0)};network.Children.Add(_https);
-        _vpn=new CheckBox{Content="VPN REMOTE",IsChecked=vpn,VerticalAlignment=VerticalAlignment.Center};network.Children.Add(_vpn);form.Children.Add(network);
+        _https=new CheckBox{IsChecked=LoadHttps(),Visibility=Visibility.Collapsed};network.Children.Add(_https);
+        form.Children.Add(network);
+        var protocolRow=new WrapPanel{Margin=new Thickness(0,6,0,4)};
+        protocolRow.Children.Add(LabelFor(T("Protocol","Протокол")));
+        _httpRadio=new RadioButton{Content="HTTP",GroupName=Guid.NewGuid().ToString(),IsChecked=_https.IsChecked!=true,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(0,0,14,0)};
+        _httpsRadio=new RadioButton{Content="HTTPS",GroupName=_httpRadio.GroupName,IsChecked=_https.IsChecked==true,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(0,0,18,0)};
+        foreach(var radio in new[]{_httpRadio,_httpsRadio}){radio.SetResourceReference(Control.ForegroundProperty,"TextMain");protocolRow.Children.Add(radio);}
+        _httpRadio.Checked+=(_,_)=>_https.IsChecked=false;_httpsRadio.Checked+=(_,_)=>_https.IsChecked=true;
+        _vpn=new CheckBox{Content="VPN REMOTE",IsChecked=vpn,VerticalAlignment=VerticalAlignment.Center};protocolRow.Children.Add(_vpn);form.Children.Add(protocolRow);
         var advanced=new Expander{Header=T("Advanced settings: NAT snapshots, intervals, traffic period","Дополнительно: снимки NAT, интервалы, период трафика"),Margin=new Thickness(0,6,0,3)};
         var advancedFields=new WrapPanel{Margin=new Thickness(0,7,0,0)};
         advancedFields.Children.Add(LabelFor(T("Snapshots (1–12)","Снимки (1–12)")));_samples=new TextBox{Text="3",Width=52,Margin=new Thickness(0,0,10,0)};advancedFields.Children.Add(_samples);
         advancedFields.Children.Add(LabelFor(T("Interval (s)","Интервал (с)")));_interval=new TextBox{Text="5",Width=52,Margin=new Thickness(0,0,10,0)};advancedFields.Children.Add(_interval);
-        advancedFields.Children.Add(LabelFor(T("Traffic window","Период трафика")));_period=new ComboBox{Width=120,ItemsSource=new[]{T("3 minutes","3 минуты"),T("1 hour","1 час"),T("3 hours","3 часа"),T("24 hours","24 часа")},SelectedIndex=traffic?3:0};advancedFields.Children.Add(_period);advanced.Content=advancedFields;form.Children.Add(advanced);
+        advanced.Content=advancedFields;form.Children.Add(advanced);_natSettings=advanced;
+        var periodRow=new WrapPanel{Margin=new Thickness(0,5,0,0)};periodRow.Children.Add(LabelFor(T("Traffic window","Период трафика")));
+        _period=new ComboBox{Width=150,ItemsSource=new[]{T("3 minutes","3 минуты"),T("1 hour","1 час"),T("3 hours","3 часа"),T("24 hours","24 часа")},SelectedIndex=traffic?3:0};periodRow.Children.Add(_period);form.Children.Add(periodRow);_trafficSettings=periodRow;
         void UpdateConnectionSummary(){_addressSummary.Text=T("Selected routers: ","Выбрано роутеров: ")+BatchNatCollector.Split(_address.Text).Distinct(StringComparer.OrdinalIgnoreCase).Count()+"  •  "+(_https.IsChecked==true?"HTTPS":"HTTP")+"  •  VPN "+(_vpn.IsChecked==true?"ON":"OFF")+"  •  "+_target.Text;}
         _address.TextChanged+=(_,_)=>UpdateConnectionSummary();_target.TextChanged+=(_,_)=>UpdateConnectionSummary();_vpn.Checked+=(_,_)=>UpdateConnectionSummary();_vpn.Unchecked+=(_,_)=>UpdateConnectionSummary();
         _https.Checked+=(_,_)=>{UpdateConnectionSummary();SaveProtocol();};_https.Unchecked+=(_,_)=>{UpdateConnectionSummary();SaveProtocol();};UpdateConnectionSummary();
-        Group("03 / ACTIONS", "03 / ДЕЙСТВИЯ", "Choose a collection or test the existing VPN route. Extra actions are under Tools.", "Выберите сбор или проверку существующего VPN-маршрута. Дополнительные действия — в инструментах.");
-        var buttons = new WrapPanel { Margin = new Thickness(0,12,0,4) }; section.Children.Add(buttons);
+        Group("Collection", "Сбор данных", "Choose a collection operation.", "Выберите операцию сбора.");
+        _modeHint=(TextBlock)section.Children[1];
+        var buttons = new WrapPanel { Margin = new Thickness(0,4,0,2) }; section.Children.Add(buttons);
         Button Button(string label, RoutedEventHandler handler, bool accent = false, string? hint = null)
         {
             var b = new Button { Content = label, Style = (Style)FindResource(accent ? "AccentButton" : "FlatButton"), Margin = new Thickness(0,0,8,8), ToolTip=hint }; b.Click += handler; buttons.Children.Add(b); return b;
         }
-        _start=Button(T("▶  Start NAT collection","▶  Начать сбор NAT"),async (_,_)=>await Run(_operation),true);_start.FontSize=16;_start.Padding=new Thickness(22,13,22,13);_commands.Add(_start);
+        _start=Button(T("▶  Start NAT collection","▶  Начать сбор NAT"),async (_,_)=>await Run(_operation),true);_start.FontSize=15;_start.Padding=new Thickness(16,10,16,10);_commands.Add(_start);
         _commands.Add(Button(T("VPN / CHECK TCP","VPN / ПРОВЕРИТЬ TCP"),async (_,_)=>await Run("probe"),false,T("Test the configured router port, not a VPN tunnel.","Проверка порта роутера, а не VPN-туннеля.")));
         _commands.Add(Button(T("TOOLS ▾", "ИНСТРУМЕНТЫ ▾"), (sender,_) => {
             var menu = new ContextMenu { PlacementTarget=(UIElement)sender, Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom };
@@ -169,14 +193,16 @@ internal sealed class LegacyCollectorPanel : UserControl
         _commands.Add(individual);_commands.Add(importList);
         _retry=Button(T("RETRY INCOMPLETE", "ПОВТОРИТЬ ПРОБЛЕМНЫЕ"), async (_,_)=>await Run("retry"));_retry.IsEnabled=false;
         _stop = Button(T("STOP", "СТОП"), (_,_) => _running?.Cancel()); _stop.IsEnabled = false; _stop.ToolTip=T("Cancel collection and retain available results.","Остановить сбор, сохранить доступные результаты.");
-        _batchSummary=new TextBlock{TextWrapping=TextWrapping.Wrap,Foreground = (Brush)FindResource("DialogAccent"),Margin=new Thickness(0,8,0,4)};section.Children.Add(_batchSummary);
-        _batchProgress=new ProgressBar{Minimum=0,Maximum=1,Height=9,Margin=new Thickness(0,3,0,8)};section.Children.Add(_batchProgress);
-        _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=210,MinHeight=75};
-        foreach(string key in new[]{"Router","Status","Samples","Office"}){var c=new DataGridTextColumn{Header=key,Binding=new Binding(key),Width=new DataGridLength(1,DataGridLengthUnitType.Star)};if(key=="Status"){var st=new Style(typeof(TextBlock));st.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(key){Converter=new StatusBrushConverter()}));c.ElementStyle=st;}_batchGrid.Columns.Add(c);}section.Children.Add(_batchGrid);
-        Group("04 / RESULTS", "04 / РЕЗУЛЬТАТЫ", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
+        var statusArea=new StackPanel();_routerStatusArea=statusArea;
+        _batchSummary=new TextBlock{Text=T("No collection started","Сбор ещё не запускался"),TextWrapping=TextWrapping.Wrap,Foreground = (Brush)FindResource("DialogAccent"),Margin=new Thickness(0,8,0,4)};statusArea.Children.Add(_batchSummary);
+        _batchProgress=new ProgressBar{Minimum=0,Maximum=1,Height=6,Margin=new Thickness(0,3,0,8)};statusArea.Children.Add(_batchProgress);
+        _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=180,MinHeight=64,RowHeight=31,FontSize=13};
+        foreach(string key in new[]{"Router","Status","Samples","Office"}){var c=new DataGridTextColumn{Header=key switch{"Router"=>T("Router","Роутер"),"Status"=>T("Status","Статус"),"Samples"=>T("Snapshots","Снимки"),_=>T("Office","В офис")},Binding=new Binding(key),Width=new DataGridLength(1,DataGridLengthUnitType.Star)};if(key=="Status"){var st=new Style(typeof(TextBlock));st.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(key){Converter=new StatusBrushConverter()}));c.ElementStyle=st;}_batchGrid.Columns.Add(c);}statusArea.Children.Add(_batchGrid);
+        var statusExpander=new Expander{Header=T("Router status","Статусы роутеров"),IsExpanded=true,Content=statusArea,Margin=new Thickness(0,4,0,0)};section.Children.Add(statusExpander);_routerStatusArea=statusExpander;
+        Group("Reports", "Отчёты", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
         Label(T("Report view", "Отображение отчёта"));
-        _view = new ComboBox { DisplayMemberPath = "Label" }; section.Children.Add(_view);
-        _view.SelectionChanged += (_,_) => { if (_show != null) _show.IsEnabled = _running == null && _view.SelectedItem != null; };
+        _view = new ComboBox { DisplayMemberPath = "Label",MaxWidth=420,HorizontalAlignment=HorizontalAlignment.Left,MinWidth=230 }; section.Children.Add(_view);
+        _view.SelectionChanged += (_,_) => { if (_show != null) _show.IsEnabled = _running == null && _view.SelectedItem != null; RefreshPreview(); };
         var output = new WrapPanel { Margin = new Thickness(0,10,0,4) }; section.Children.Add(output); buttons = output;
         _show = Button(T("SHOW IN OBSERVER", "ПОКАЗАТЬ В OBSERVER"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); CsvSelected?.Invoke(SelectedCsv); } }); _show.IsEnabled = false; _show.ToolTip=T("Open the selected CSV in the main table.","Показать выбранный CSV в главной таблице.");
         _excel = Button(T("OPEN EXCEL", "ОТКРЫТЬ EXCEL"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false; _excel.ToolTip=T("Open the generated Excel workbook.","Открыть сформированный файл Excel.");
@@ -188,9 +214,35 @@ internal sealed class LegacyCollectorPanel : UserControl
         var copyLog = new Button { Content=T("COPY LOG","КОПИРОВАТЬ ЖУРНАЛ"), Style=(Style)FindResource("FlatButton"), HorizontalAlignment=HorizontalAlignment.Right, Margin=new Thickness(0,8,0,0) };
         copyLog.Click += (_,_) => { if(_logText.Length==0)return; try { Clipboard.SetText(_logText.ToString()); } catch(System.Runtime.InteropServices.COMException) { _status.Text=T("Clipboard unavailable.","Буфер обмена недоступен."); } }; section.Children.Add(copyLog);
         Label(T("Read-only. The existing VPN must already be connected. NAT and TOP Traffic do not prove all VPN/LAN flows. Raw reports are confidential.", "Только чтение. VPN должен уже существовать и быть подключён. NAT и TOP Traffic не показывают гарантированно все VPN/LAN-потоки. Сырые отчёты конфиденциальны."));
-        if(embedded && root.Children[^1] is Border logCard)logCard.Visibility=Visibility.Collapsed;
+        if(embedded)
+        {
+            var connectionCard=(Border)root.Children[0];var actionCard=(Border)root.Children[1];var reportCard=(Border)root.Children[2];
+            root.Children.Clear();
+            var workspace=new Grid{Margin=new Thickness(6)};
+            var leftCol=new ColumnDefinition{Width=new GridLength(2,GridUnitType.Star),MinWidth=290,MaxWidth=510};workspace.ColumnDefinitions.Add(leftCol);workspace.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(10)});workspace.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(3,GridUnitType.Star)});
+            var left=new ScrollViewer{VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Content=connectionCard};workspace.Children.Add(left);
+            var right=new Grid();Grid.SetColumn(right,2);workspace.Children.Add(right);
+            right.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});right.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});right.RowDefinitions.Add(new RowDefinition());
+            right.Children.Add(actionCard);Grid.SetRow(reportCard,1);right.Children.Add(reportCard);
+            var previewCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(12),Margin=new Thickness(0)};
+            var previewRoot=new DockPanel();
+            _previewHint=new TextBlock{Text=T("No report yet — run collection to see actual data.","Отчёта пока нет — запустите сбор, чтобы увидеть данные."),TextWrapping=TextWrapping.Wrap,FontSize=13,Margin=new Thickness(0,0,0,9)};_previewHint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");DockPanel.SetDock(_previewHint,Dock.Top);previewRoot.Children.Add(_previewHint);
+            _preview=new DataGrid{AutoGenerateColumns=true,IsReadOnly=true,CanUserAddRows=false,FontSize=13,RowHeight=32,ColumnHeaderHeight=35};previewRoot.Children.Add(_preview);
+            previewCard.Child=previewRoot;Grid.SetRow(previewCard,2);right.Children.Add(previewCard);
+            void ResizeConnection(){leftCol.MinWidth=_connection.IsExpanded?290:180;leftCol.MaxWidth=_connection.IsExpanded?510:220;leftCol.Width=_connection.IsExpanded?new GridLength(2,GridUnitType.Star):new GridLength(210);}
+            _connection.Expanded+=(_,_)=>ResizeConnection();_connection.Collapsed+=(_,_)=>ResizeConnection();ResizeConnection();
+            Content=workspace;
+        }
         SetMode(traffic?"traffic":"nat",vpn);
         PanelPalette.Bind(this);
+    }
+    private void RefreshPreview()
+    {
+        if(_preview==null||_previewHint==null)return;
+        _preview.ItemsSource=null;
+        if(_folder==null||_view.SelectedItem is not View v){_previewHint.Text=T("No report yet — run collection to see actual data.","Отчёта пока нет — запустите сбор, чтобы увидеть данные.");return;}
+        try{var file=Path.Combine(_folder,v.File);var table=CsvTableReader.ReadTable(file);_preview.ItemsSource=table.DefaultView;_previewHint.Text=v.Label+"  •  "+table.Rows.Count+" "+T("rows","строк");}
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or InvalidDataException){_previewHint.Text=T("Preview unavailable: ","Предпросмотр недоступен: ")+ex.Message;}
     }
     private sealed record View(string File, string Label);
     private static string TargetPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ObserverControlCenter", "collector-target.txt");
@@ -302,6 +354,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         _show.IsEnabled=_excel.IsEnabled=_reports.IsEnabled=_retry.IsEnabled=_access.IsEnabled=false;
         if(operation=="nat"){_live.Clear();if(prior!=null)foreach(var s in prior.Statuses)_live[s.Router]=new RouterLive{Router=s.Router,Status=s.Status,Office=s.OfficeRows};foreach(var a in routers)_live[a]=new RouterLive{Router=a};RefreshLive();}
         _address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=false;
+        if(_httpRadio!=null)_httpRadio.IsEnabled=false;if(_httpsRadio!=null)_httpsRadio.IsEnabled=false;
         string secret = _password.Password; if(!_embedded)_password.Clear();
         var progress = new Progress<string>(Report); Action<string> log = s => ((IProgress<string>)progress).Report(s);
         try
@@ -338,7 +391,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         }
         catch(OperationCanceledException) when(cts.IsCancellationRequested){Report("CANCELLED: "+T("Stopped by user.","Остановлено пользователем."));}
         catch(Exception ex){var kind=Engine.Classify(ex,cts.Token);Report(kind+": "+Engine.Friendly(ex,kind)+" | "+ex.Message);}
-        finally {secret="";_running=null;_runningOperation=""; _stop.IsEnabled=false;foreach(var b in _commands)b.IsEnabled=true;_show.IsEnabled=_view.SelectedItem!=null;_excel.IsEnabled=File.Exists(_excelPath);_reports.IsEnabled=Directory.Exists(_folder);_retry.IsEnabled=_lastBatch?.Statuses.Any(s=>s.Status!="COMPLETE")==true;_access.IsEnabled=_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv"));_address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=true;SetMode(_requestedMode);StateChanged?.Invoke();}
+        finally {secret="";_running=null;_runningOperation=""; _stop.IsEnabled=false;foreach(var b in _commands)b.IsEnabled=true;_show.IsEnabled=_view.SelectedItem!=null;_excel.IsEnabled=File.Exists(_excelPath);_reports.IsEnabled=Directory.Exists(_folder);_retry.IsEnabled=_lastBatch?.Statuses.Any(s=>s.Status!="COMPLETE")==true;_access.IsEnabled=_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv"));_address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=true;if(_httpRadio!=null)_httpRadio.IsEnabled=true;if(_httpsRadio!=null)_httpsRadio.IsEnabled=true;SetMode(_requestedMode);StateChanged?.Invoke();}
     }
 }
 
