@@ -46,6 +46,7 @@ public sealed class ConsoleEntry
         if (line.Contains("WARNING") || line.Contains("WARN") ||
             line.Contains("ВНИМАН") || line.Contains("PARTIAL") || line.Contains("UDP OBSERVED") || line.Contains("NOT OBSERVED LATER") || line.Contains("NO MATCHES") || line.Contains("REVIEW"))
             return "WARNING";
+        if (line.Contains("СНИМОК ") || line.Contains("COLLECTING") || line.Contains("PROCESSING") || line.Contains("CHECKING CSV")) return "WARNING";
         if (line.Contains("CANCELLED") || line.Contains("NOT_STARTED") || line.Contains("NOT CHECKED") || line.Contains("SKIPPED")) return "INFO";
         if (line.Contains("COMPLETE") || line.Contains("TCP OPEN") || line.Contains("OBSERVED BOTH") || line.Contains("VERIFIED") || line.Contains("СОВПАДАЕТ") || line.Contains("SUCCESS") || line.Contains("PASS") || line.Contains("READY") ||
             line.Contains("CONNECTED") || line.Contains("IMPORTED") ||

@@ -61,6 +61,7 @@ internal static class UiSmoke
                     foreach(string name in new[]{"NavAccess","NavNat","NavVpn","NavCollectTraffic","NavReports","NavImport","NavTools","NavHelp"})
                     {
                         var action=FindButton(main,name);
+                        var visibility=action.Visibility;action.Visibility=Visibility.Visible;
                         // An offline window is never shown; a clipped sidebar child may not have its template realized by layout.
                         action.ApplyTemplate();
                         using(main.BeginNavigationAction(action))
@@ -79,6 +80,7 @@ internal static class UiSmoke
                         Require((nav.Tag as string)=="selected" && action.Tag==null,"selection restored "+name);
                         var inactive=(Border)action.Template.FindName("SignalSelection",action);
                         Require((double)inactive.GetAnimationBaseValue(UIElement.OpacityProperty)==0d,"inactive overlay opacity "+name);
+                        action.Visibility=visibility;
                     }
                     var menu=main.BeginNavigationAction(FindButton(main,"NavTools"));
                     using(main.BeginNavigationAction(FindButton(main,"NavHelp")))
@@ -88,6 +90,10 @@ internal static class UiSmoke
                     }
                     Require((nav.Tag as string)=="selected","nested selection restored");
                 }
+                Click(FindButton(main,"ThemeClassicButton"));
+                Require(main.ModuleSmoke(),"five embedded modules / shared state classic");
+                Click(FindButton(main,"ThemeSignalButton"));
+                Require(main.ModuleSmoke(),"five embedded modules / shared state signal");
                 Click(FindButton(main,"ThemeClassicButton"));
             }
             finally { foreach(var w in windows.Reverse()) w.Close(); }

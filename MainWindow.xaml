@@ -86,20 +86,16 @@
          <StackPanel Margin="0,0,4,0">
           <TextBlock Text="{x:Static loc:UiText.WorkspaceHeading}" FontSize="15" FontWeight="SemiBold" Margin="9,2,0,3"/>
           <TextBlock Text="{x:Static loc:UiText.WorkspaceHint}" Style="{StaticResource LabelSmall}" Margin="9,0,5,8"/>
-          <TextBlock Text="{x:Static loc:UiText.GroupAnalytics}" Style="{StaticResource NavGroupTitle}"/>
+          
           <Button x:Name="NavOverview" Content="{x:Static loc:UiText.X013}" Style="{StaticResource NavigationButton}" Click="Overview_Click" ToolTip="{x:Static loc:UiText.HintOverview}"/>
-          <Button x:Name="NavAccess" Content="{x:Static loc:UiText.AccessAnalyzerLabel}" Style="{StaticResource NavigationButton}" Click="AccessAnalyzer_Click"/>
-          <Button x:Name="NavConnections" Content="{x:Static loc:UiText.X015}" Style="{StaticResource NavigationButton}" Click="Connections_Click" ToolTip="{x:Static loc:UiText.HintConnections}"/>
-          <Button x:Name="NavTraffic" Content="{x:Static loc:UiText.X014}" Style="{StaticResource NavigationButton}" Click="Traffic_Click" ToolTip="{x:Static loc:UiText.HintTraffic}"/>
-          <Separator Style="{StaticResource GlassSeparator}"/>
-          <TextBlock Text="{x:Static loc:UiText.GroupCollect}" Style="{StaticResource NavGroupTitle}"/>
-          <Button x:Name="NavNat" Content="{x:Static loc:UiText.KeeneticConnect}" Style="{StaticResource NavigationButton}" Click="LegacyCollect_Click" ToolTip="{x:Static loc:UiText.HintNat}"/>
-          <Button x:Name="NavVpn" Content="{x:Static loc:UiText.LegacyVpn}" Style="{StaticResource NavigationButton}" Click="LegacyVpn_Click" ToolTip="{x:Static loc:UiText.HintVpn}"/>
-          <Button x:Name="NavCollectTraffic" Content="{x:Static loc:UiText.LegacyTraffic}" Style="{StaticResource NavigationButton}" Click="LegacyTraffic_Click" ToolTip="{x:Static loc:UiText.HintCollectTraffic}"/>
-          <Separator Style="{StaticResource GlassSeparator}"/>
-          <TextBlock Text="{x:Static loc:UiText.GroupReports}" Style="{StaticResource NavGroupTitle}"/>
+          <Button x:Name="NavAccess" Visibility="Collapsed" Content="{x:Static loc:UiText.AccessAnalyzerLabel}" Style="{StaticResource NavigationButton}" Click="AccessAnalyzer_Click"/>
+          <Button x:Name="NavConnections" Visibility="Collapsed" Content="{x:Static loc:UiText.X015}" Style="{StaticResource NavigationButton}" Click="Connections_Click" ToolTip="{x:Static loc:UiText.HintConnections}"/>
+          <Button x:Name="NavTraffic" Visibility="Collapsed" Content="{x:Static loc:UiText.X014}" Style="{StaticResource NavigationButton}" Click="Traffic_Click" ToolTip="{x:Static loc:UiText.HintTraffic}"/>
+          <Button x:Name="NavNat" Visibility="Collapsed" Content="{x:Static loc:UiText.KeeneticConnect}" Style="{StaticResource NavigationButton}" Click="LegacyCollect_Click" ToolTip="{x:Static loc:UiText.HintNat}"/>
+          <Button x:Name="NavVpn" Visibility="Collapsed" Content="{x:Static loc:UiText.LegacyVpn}" Style="{StaticResource NavigationButton}" Click="LegacyVpn_Click" ToolTip="{x:Static loc:UiText.HintVpn}"/>
+          <Button x:Name="NavCollectTraffic" Visibility="Collapsed" Content="{x:Static loc:UiText.LegacyTraffic}" Style="{StaticResource NavigationButton}" Click="LegacyTraffic_Click" ToolTip="{x:Static loc:UiText.HintCollectTraffic}"/>
           <Button x:Name="NavReports" Content="{x:Static loc:UiText.X016}" Style="{StaticResource NavigationButton}" Click="Reports_Click" ToolTip="{x:Static loc:UiText.HintReports}"/>
-          <Button x:Name="NavImport" Content="{x:Static loc:UiText.X020}" Style="{StaticResource NavigationButton}" Click="Import_Click" ToolTip="{x:Static loc:UiText.HintImport}"/>
+          <Button x:Name="NavImport" Visibility="Collapsed" Content="{x:Static loc:UiText.X020}" Style="{StaticResource NavigationButton}" Click="Import_Click" ToolTip="{x:Static loc:UiText.HintImport}"/>
           <Separator Style="{StaticResource GlassSeparator}"/>
           <TextBlock Text="{x:Static loc:UiText.GroupSystem}" Style="{StaticResource NavGroupTitle}"/>
           <Button x:Name="NavTools" Content="{x:Static loc:UiText.LegacyTools}" Style="{StaticResource NavigationButton}" Click="LegacyTools_Click" ToolTip="{x:Static loc:UiText.HintTools}"/>
@@ -113,9 +109,11 @@
     <Grid Grid.Column="2">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
-        <RowDefinition Height="94"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
         <RowDefinition Height="*"/>
-        <RowDefinition Height="142"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="170"/>
       </Grid.RowDefinitions>
       <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="13" Margin="0,0,0,10">
         <StackPanel>
@@ -127,7 +125,7 @@
               <TextBlock Text="CONTROL CENTER" Foreground="#B3A0FF" FontSize="14" FontWeight="SemiBold"/>
               <TextBlock Text="Turn connections into evidence." Foreground="#E2EAF7" FontSize="11" Margin="0,3,0,0"/>
             </StackPanel>
-            <Viewbox Grid.Column="1" Height="82" HorizontalAlignment="Right" Margin="0,0,8,0">
+            <Viewbox Grid.Column="1" Height="52" HorizontalAlignment="Right" Margin="0,0,8,0">
               <Canvas Width="150" Height="100">
                 <Ellipse Canvas.Left="34" Canvas.Top="9" Width="82" Height="82" Stroke="{DynamicResource BrandLine}" StrokeDashArray="3 4"/>
                 <Ellipse Canvas.Left="47" Canvas.Top="22" Width="56" Height="56" Stroke="{DynamicResource BrandLine}"/>
@@ -144,7 +142,7 @@
             </Viewbox>
           </Grid>
         </Border>
-        <Grid>
+        <Grid x:Name="OldConnectionHeader" Visibility="Collapsed">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="180"/>
@@ -162,7 +160,8 @@
         </Grid>
         </StackPanel>
       </Border>
-      <Grid Grid.Row="1" Margin="0,0,0,10">
+      <UniformGrid x:Name="ModuleTiles" Grid.Row="1" Columns="5" Margin="0,0,0,10"/>
+      <Grid x:Name="OldKpiPanel" Grid.Row="2" Height="78" Visibility="Collapsed" Margin="0,0,0,10">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/><ColumnDefinition Width="9"/><ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -179,7 +178,7 @@
           <StackPanel><TextBlock Text="{x:Static loc:UiText.X036}" Style="{StaticResource LabelSmall}"/><TextBlock Text="CSV" Foreground="{DynamicResource Accent}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
         </Border>
       </Grid>
-      <Grid Grid.Row="2" Margin="0,0,0,10">
+      <Grid x:Name="OldReportPanel" Grid.Row="3" Visibility="Collapsed" Margin="0,0,0,10">
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="11"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
         <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="13">
           <Grid>
@@ -232,7 +231,17 @@
           </Grid>
         </Border>
       </Grid>
-      <Border Grid.Row="3" Style="{StaticResource CardBorder}" Padding="14">
+      <Border x:Name="ModuleSurface" Grid.Row="2" Grid.RowSpan="2" Style="{StaticResource CardBorder}" Padding="8" Margin="0,0,0,8">
+        <ContentControl x:Name="ModuleHost"/>
+      </Border>
+      <Border Grid.Row="4" Style="{StaticResource CardBorder}" Padding="12,8" Margin="0,0,0,8">
+        <StackPanel>
+          <DockPanel><Button x:Name="ModuleStop" DockPanel.Dock="Right" Style="{StaticResource FlatButton}" Click="ModuleStop_Click" IsEnabled="False" Margin="8,0,0,0" Padding="9,5"/><TextBlock x:Name="ModuleSummary" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/></DockPanel>
+          <ProgressBar x:Name="ModuleProgress" Height="7" Margin="0,7,0,3" Minimum="0" Maximum="1"/>
+          <TextBlock x:Name="ModuleProgressText" Style="{StaticResource LabelSmall}" TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
+      </Border>
+      <Border Grid.Row="5" Style="{StaticResource CardBorder}" Padding="12">
         <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
           <Grid Margin="0,0,0,9">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>

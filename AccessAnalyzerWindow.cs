@@ -10,7 +10,7 @@ using Observer.ControlCenter.Services;
 
 namespace Observer.ControlCenter;
 
-internal sealed class AccessAnalyzerWindow : Window
+internal sealed class AccessAnalyzerPanel : UserControl
 {
     private readonly TextBox _target,_files,_filter;
     private readonly TextBlock _summary,_status;
@@ -22,11 +22,23 @@ internal sealed class AccessAnalyzerWindow : Window
     private CancellationTokenSource? _running;
     private string? _output;
     private static string T(string en,string ru)=>UiText.T(en,ru);
-    public AccessAnalyzerWindow(string? initialFile=null,string? target=null)
+    internal event Action<string>? LogLine;
+    internal event Action? StateChanged;
+    internal bool IsBusy=>_running!=null;
+    internal int? OpenTcp=>_analysis?.Endpoints.Count(r=>r.TcpStatus=="TCP OPEN");
+    internal void Stop()=>_running?.Cancel();
+    internal void SetInput(string path,string target)
     {
-        Title=T("Observer · Access analyzer","Observer · Анализ сетевых доступов");Width=1150;Height=780;MinWidth=720;MinHeight=520;WindowStartupLocation=WindowStartupLocation.CenterOwner;DarkTitleBar.Apply(this);
-        Background=(Brush)FindResource("DialogBg");Foreground = (Brush)FindResource("DialogText");
-        var root=new DockPanel{Margin=new Thickness(20)};Content=root;
+        if(IsBusy||!File.Exists(path))return;
+        _paths.Clear();_paths.Add(path);_target.Text=target;_analysis=null;_output=null;ShowPaths();RefreshGrid();SetBusy(false);
+        Status(T("READY: current NAT CSV loaded.","READY: текущий CSV NAT загружен."));
+    }
+    internal void SetTcpMode(bool tcp){if(_grid!=null)_view.SelectedIndex=0;}
+    private Window? DialogOwner=>Window.GetWindow(this);
+    public AccessAnalyzerPanel(string? initialFile=null,string? target=null)
+    {
+        SetResourceReference(ForegroundProperty,"DialogText");
+        var root=new DockPanel{Margin=new Thickness(12)};Content=root;
         var top=new StackPanel();DockPanel.SetDock(top,Dock.Top);root.Children.Add(top);
         top.Children.Add(new TextBlock{Text=T("ACCESS ANALYZER / OBSERVED EVIDENCE","АНАЛИЗ ДОСТУПОВ / НАБЛЮДАЕМЫЕ СВЯЗИ"),FontSize=20,FontWeight=FontWeights.Bold,Foreground = (Brush)FindResource("DialogAccent")});
         top.Children.Add(new TextBlock{Text=T("Import one or several original NAT CSV reports; no router or firewall settings are changed.","Импорт одного или нескольких исходных CSV NAT; настройки роутеров и межсетевого экрана не меняются."),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,5,0,8)});
@@ -62,22 +74,22 @@ internal sealed class AccessAnalyzerWindow : Window
         _view.SelectionChanged+=(_,_)=>RefreshGrid();_filter.TextChanged+=(_,_)=>RefreshFilter();
         if(initialFile!=null&&File.Exists(initialFile))_paths.Add(initialFile);
         ShowPaths();SetBusy(false);
-        Status(T("Select original NAT CSV files or compare two periods. TCP checks are optional and require authorized access.","Выберите исходные CSV NAT или сравните два периода. Проверка TCP — отдельно, только при разрешённом доступе."));
+        Status(T("Select original NAT CSV files or compare two periods. TCP checks are optional and require authorized access.","Выберите исходные CSV NAT или сравните два периода. Проверка TCP — отдельно, только при разрешённом доступе."));PanelPalette.Bind(this);
     }
     private static string LoadTarget(){try{var p=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ObserverControlCenter","collector-target.txt");return File.Exists(p)?File.ReadAllText(p).Trim():"";}catch{return "";}}
     private string[]? SelectFiles(string title)
     {
         var d=new OpenFileDialog{Title=title,Filter="CSV (*.csv)|*.csv",Multiselect=true,CheckFileExists=true,InitialDirectory=Directory.Exists(ReportLocator.ResultsRoot)?ReportLocator.ResultsRoot:Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)};
-        return d.ShowDialog(this)==true?d.FileNames:null;
+        return (DialogOwner is Window owner?d.ShowDialog(owner):d.ShowDialog())==true?d.FileNames:null;
     }
     private void Pick(){var selected=SelectFiles(T("Choose original NAT CSV files","Выберите исходные CSV NAT"));if(selected==null)return;_paths.Clear();_paths.AddRange(selected);_analysis=null;_output=null;ShowPaths();RefreshGrid();SetBusy(false);}
     private void ShowPaths()=>_files.Text=string.Join(Environment.NewLine,_paths);
-    private void Status(string message){_status.Text=message;_status.Foreground=new ConsoleEntry(message,ConsoleEntry.Classify(message)).Color;}
+    private void Status(string message){_status.Text=message;_status.Foreground=new ConsoleEntry(message,ConsoleEntry.Classify(message)).Color;LogLine?.Invoke(message);StateChanged?.Invoke();}
     private void SetBusy(bool busy)
     {
         _pick.IsEnabled=_compare.IsEnabled=_target.IsEnabled=!busy;
         _analyze.IsEnabled=!busy&&_paths.Count>0;_check.IsEnabled=_export.IsEnabled=!busy&&_analysis!=null;
-        _open.IsEnabled=!busy&&_output!=null&&Directory.Exists(_output);_stop.IsEnabled=busy;
+        _open.IsEnabled=!busy&&_output!=null&&Directory.Exists(_output);_stop.IsEnabled=busy;StateChanged?.Invoke();
     }
     private async Task Analyze(bool compare)
     {
@@ -109,7 +121,7 @@ internal sealed class AccessAnalyzerWindow : Window
     private async Task Check()
     {
         if(_analysis==null||_running!=null)return;
-        if(MessageBox.Show(this,T("Check only observed TCP destinations in the private target subnet from this PC? Confirm authorization. No application payload is sent.","Проверить только наблюдаемые TCP-назначения в частной целевой сети с этого ПК? Подтвердите разрешение. Прикладные данные не отправляются."),Title,MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
+        if(MessageBox.Show(DialogOwner!,T("Check only observed TCP destinations in the private target subnet from this PC? Confirm authorization. No application payload is sent.","Проверить только наблюдаемые TCP-назначения в частной целевой сети с этого ПК? Подтвердите разрешение. Прикладные данные не отправляются."),T("Observer · Access analyzer","Observer · Анализ доступов"),MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
         using var cts=new CancellationTokenSource();_running=cts;SetBusy(true);
         var progress=new Progress<string>(Status);
         try{await AccessAnalyzer.CheckTcp(_analysis,cts.Token,s=>((IProgress<string>)progress).Report(s));Status("COMPLETE: TCP checks finished; UDP remains observation only.");}
@@ -143,5 +155,16 @@ internal sealed class AccessAnalyzerWindow : Window
         RefreshFilter();
     }
     private void RefreshFilter(){if(_grid?.ItemsSource==null)return;string q=_filter.Text.Trim();CollectionViewSource.GetDefaultView(_grid.ItemsSource).Filter=o=>q.Length==0||o.GetType().GetProperties().Any(p=>(p.GetValue(o)?.ToString()??"").Contains(q,StringComparison.OrdinalIgnoreCase));}
-    protected override void OnClosing(System.ComponentModel.CancelEventArgs e){if(_running!=null){_running.Cancel();e.Cancel=true;}base.OnClosing(e);}
+}
+
+internal sealed class AccessAnalyzerWindow : Window
+{
+    private readonly AccessAnalyzerPanel _panel;
+    public AccessAnalyzerWindow(string? initialFile=null,string? target=null)
+    {
+        Title=UiText.T("Observer · Access analyzer","Observer · Анализ сетевых доступов");Width=1150;Height=780;MinWidth=720;MinHeight=520;WindowStartupLocation=WindowStartupLocation.CenterOwner;DarkTitleBar.Apply(this);
+        SetResourceReference(BackgroundProperty,"DialogBg");SetResourceReference(ForegroundProperty,"DialogText");
+        _panel=new AccessAnalyzerPanel(initialFile,target);Content=_panel;
+    }
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e){if(_panel.IsBusy){_panel.Stop();e.Cancel=true;}base.OnClosing(e);}
 }

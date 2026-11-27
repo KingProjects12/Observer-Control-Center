@@ -152,6 +152,11 @@ internal static class AppearanceTheme
         var next=new ResourceDictionary();
         foreach(var (key,classic,alternate) in Colors) next[key]=BrushFor(signal?alternate:classic);
         next["NavSpacing"]=new Thickness(0,0,0,9);
+        foreach(var (id,dark,navy,accent) in new[]{
+            ("routers","#112527","#16323B","#69DFFF"),("connections","#151E2E","#1C2940","#88ADFF"),
+            ("tcp","#211B2B","#29213C","#B3A0FF"),("traffic","#291C29","#34243B","#E4A0CD"),
+            ("issues","#272219","#342D20","#FFD27E")})
+        {next["Module_"+id+"_Bg"]=BrushFor(signal?navy:dark);next["Module_"+id+"_Fg"]=BrushFor(accent);}
         next["CardGradient"]=signal?Gradient("#121B2B","#101827","#192338"):Gradient("#E912151A","#EE090B0E","#ED0D1014");
         next["HeaderGradient"]=signal?Gradient("#0B101A","#121B2B","#192338",.65):Gradient("#F510141A","#F707090D","#F5101015",.65);
         next["IslandGradient"]=signal?Gradient("#121B2B","#0B101A","#192338",.58):Gradient("#FC0B0D10","#FE060709","#FC101014",.58);

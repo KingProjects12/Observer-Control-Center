@@ -44,6 +44,7 @@ public partial class MainWindow : Window
         FooterVersionText.Text = (UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY");
         AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
         AddLog(UiText.T("READ-ONLY // Keenetic NAT / VPN / TOP Traffic collector. Credentials are not stored.", "READ-ONLY // Сбор NAT / VPN / TOP Traffic. Пароли не сохраняются."));
+        InitializeModules();
         ShowPage("overview");
         if (!offlineUiCheck) StartUpdateChecks();
         PreviewKeyDown += (_, e) => { if (e.Key == Key.F1) { e.Handled = true; Help_Click(this, new RoutedEventArgs()); } };
@@ -52,7 +53,7 @@ public partial class MainWindow : Window
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         var file = ReportLocator.FindLatest("08_Top_Traffic.csv");
-        if (file != null) LoadTraffic(file);
+        if (file != null) { LoadTraffic(file); ShowModule("routers"); }
         else AddLog(UiText.T("No local 08_Top_Traffic.csv. Click LOAD CSV.", "Нет локальных 08_Top_Traffic.csv. Нажми ЗАГРУЗИТЬ CSV."));
         await WindowMotion.FadeAsync(this, 1, 280);
     }
@@ -124,6 +125,7 @@ public partial class MainWindow : Window
     private void ShowPage(string page)
     {
         _page = page;
+        if(page=="overview")DisplayModule("routers");else DisplayLegacyReport();
         RefreshNavigationSelection();
         bool showConnections = page == "connections";
         TrafficGrid.Visibility = showConnections ? Visibility.Collapsed : Visibility.Visible;
@@ -241,7 +243,7 @@ public partial class MainWindow : Window
 
     private async void RouterCheck_Click(object sender, RoutedEventArgs e)
     {
-        var address = RouterIP.Text.Trim();
+        var address = _collector?.Address??RouterIP.Text.Trim();
         AddLog(UiText.T("HEALTH  //  checking exactly two TCP ports on the managed address: 80 / 443", "HEALTH  //  проверка ровно двух TCP-портов управляемого адреса: 80 / 443"));
         try
         {
@@ -389,6 +391,7 @@ public partial class MainWindow : Window
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
     protected override void OnClosed(EventArgs e)
     {
+        _collector?.ClearSecrets();_moduleTimer.Stop();
         _updateShutdown.Cancel();
         _updateTimer.Stop();
         _updateNotice?.Close();
