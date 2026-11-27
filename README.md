@@ -18,17 +18,11 @@
 
 </div>
 
-## Using Observer 2.3.2
+<a id="using-observer-232"></a>
 
-Choose a module on the start screen. The five module buttons then form a row above the workspace. Click the active module again to collapse or expand its panel.
+![Using Observer 2.3.2. Choose a module on the start screen. The five module buttons then form a row above the workspace. Click the active module again to collapse or expand its panel. - Routers collects NAT snapshots from the Keenetic routers you specify. - Connections analyzes saved connection CSV files. Use this module to group endpoints, compare two periods and export CSV or Excel reports. - TCP prepares destinations from observations and lets you check TCP reachability from the computer running Observer. - Traffic collects traffic statistics by device. - Issues lists routers with incomplete collection. Retry opens Routers and repeats collection for the affected routers. To work with an existing report, open Connections, select the CSV files and run the analysis. A new router collection is optional. For a Windows x64 installation, choose the setup executable from the 2.3.2 release. For portable use, launch Observer.ControlCenter.exe. Both downloads have a matching SHA-256 file.](docs/media/cards/en/workspace-232.svg)
 
-- **Routers** collects NAT snapshots from the Keenetic routers you specify.
-- **Connections** analyzes saved connection CSV files. Use this module to group endpoints, compare two periods and export CSV or Excel reports.
-- **TCP** prepares destinations from observations and lets you check TCP reachability from the computer running Observer.
-- **Traffic** collects traffic statistics by device.
-- **Issues** lists routers with incomplete collection. Retry opens Routers and repeats collection for the affected routers.
-
-To work with an existing report, open **Connections**, select the CSV files and run the analysis. A new router collection is optional. For a Windows x64 installation, choose the setup executable from the [2.3.2 release](https://github.com/KingProjects12/Observer-Control-Center/releases/tag/v2.3.2). For portable use, launch `Observer.ControlCenter.exe`. Both downloads have a matching SHA-256 file.
+[Release 2.3.2 downloads](https://github.com/KingProjects12/Observer-Control-Center/releases/tag/v2.3.2)
 
 ![What is Observer? — Network visibility: Windows desktop console for authorized network administrators. Collects read-only NAT observations from managed Keenetic routers and processes existing data.; Read-only by design: No router or firewall configuration changes. Reports and original snapshots remain local.; Evidence, not assumptions: Review access using CSV/XLSX evidence, optional TCP checks and manual administrator review.](docs/media/cards/en/overview.svg)
 
