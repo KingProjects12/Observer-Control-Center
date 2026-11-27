@@ -1,1 +1,2 @@
 Publish improved module layouts and responsive panel sizing after Windows tests.
+Refine collapsible collection sections and preserve standalone analyzer actions.

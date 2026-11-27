@@ -68,7 +68,7 @@ public partial class MainWindow
         }
         TrafficStatusColumn.Header=T("Status","Статус");
         _collector=new LegacyCollectorPanel(RouterIP.Text,vpn:true,embedded:true,offline:_offlineUiCheck);
-        _analyzer=new AccessAnalyzerPanel();
+        _analyzer=new AccessAnalyzerPanel(embedded:true);
         _collector.LogLine+=ModuleLog;_analyzer.LogLine+=ModuleLog;
         _collector.StateChanged+=UpdateModuleSummary;_analyzer.StateChanged+=UpdateModuleSummary;
         _collector.NatReady+=(file,target)=>{_reportPath=file;_analyzer.SetInput(file,target);UpdateModuleSummary();};

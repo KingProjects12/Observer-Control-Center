@@ -17,6 +17,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
     private TextBlock? _modeTitle,_modeDescription,_empty;
     private Expander? _filesExpander;
     private bool _connectionsFilesExpanded=true,_tcpFilesExpanded=false;
+    private readonly bool _embedded;
     private readonly DataGrid _grid;
     private readonly ComboBox _view;
     private readonly Button _analyze,_compare,_check,_export,_open,_stop,_pick;
@@ -42,7 +43,8 @@ internal sealed class AccessAnalyzerPanel : UserControl
     internal void SetTcpMode(bool tcp)
     {
         if(_grid==null)return;
-        if(_tcpMode!=tcp)
+        bool changed=_tcpMode!=tcp;
+        if(changed)
         {
             if(_filesExpander!=null){if(_tcpMode)_tcpFilesExpanded=_filesExpander.IsExpanded;else _connectionsFilesExpanded=_filesExpander.IsExpanded;}
             if(tcp){_connectionsView=_view.SelectedIndex;_view.SelectedIndex=0;}else _view.SelectedIndex=_connectionsView;
@@ -50,9 +52,9 @@ internal sealed class AccessAnalyzerPanel : UserControl
         _tcpMode=tcp;
         if(_modeTitle!=null)_modeTitle.Text=tcp?T("TCP availability","Доступность TCP"):T("Observed connections","Наблюдаемые соединения");
         if(_modeDescription!=null)_modeDescription.Text=tcp?T("Check only authorized observed TCP destinations; UDP is observation only.","Проверка только разрешённых наблюдаемых TCP-назначений. UDP — только наблюдения."):T("Analyze collected NAT CSVs and compare observations between periods.","Анализируйте собранные CSV NAT и сравнивайте наблюдения за периоды.");
-        _compare.Visibility=tcp?Visibility.Collapsed:Visibility.Visible;_check.Visibility=tcp?Visibility.Visible:Visibility.Collapsed;
+        _compare.Visibility=tcp?Visibility.Collapsed:Visibility.Visible;_check.Visibility=tcp||!_embedded?Visibility.Visible:Visibility.Collapsed;
         _view.Visibility=tcp?Visibility.Collapsed:Visibility.Visible;
-        if(_filesExpander!=null)_filesExpander.IsExpanded=tcp?_tcpFilesExpanded:_connectionsFilesExpanded;
+        if(changed&&_filesExpander!=null)_filesExpander.IsExpanded=tcp?_tcpFilesExpanded:_connectionsFilesExpanded;
         _analyze.Content=tcp?T("Prepare endpoints","Подготовить назначения"):T("Analyze CSV","Анализировать CSV");
         RefreshGrid();
     }
@@ -60,8 +62,9 @@ internal sealed class AccessAnalyzerPanel : UserControl
     internal Task SaveCurrentAsync()=>Export();
     internal bool HasAnalysis=>_analysis!=null;
     private Window? DialogOwner=>Window.GetWindow(this);
-    public AccessAnalyzerPanel(string? initialFile=null,string? target=null)
+    public AccessAnalyzerPanel(string? initialFile=null,string? target=null,bool embedded=false)
     {
+        _embedded=embedded;
         SetResourceReference(ForegroundProperty,"DialogText");
         FontSize=14;
         var root=new DockPanel{Margin=new Thickness(10)};Content=root;
@@ -170,7 +173,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
     private void RefreshGrid()
     {
         if(_grid==null)return;
-        var a=_analysis;if(_empty!=null){_empty.Visibility=a==null||a.Endpoints.Count==0?Visibility.Visible:Visibility.Collapsed;_empty.Text=_tcpMode?T("Prepare endpoints from a NAT report, then check TCP.","Подготовьте назначения из отчёта NAT, затем проверьте TCP."):T("Select a NAT CSV or collect NAT in Routers, then analyze.","Выберите CSV NAT или соберите NAT в разделе «Роутеры», затем запустите анализ.");}
+        var a=_analysis;if(_empty!=null){_empty.Visibility=a==null||(_view.SelectedIndex==0&&(_tcpMode?!a.Endpoints.Any(r=>r.Protocol=="TCP"):a.Endpoints.Count==0))?Visibility.Visible:Visibility.Collapsed;_empty.Text=_tcpMode?T("Prepare endpoints from a NAT report, then check TCP.","Подготовьте назначения из отчёта NAT, затем проверьте TCP."):T("Select a NAT CSV or collect NAT in Routers, then analyze.","Выберите CSV NAT или соберите NAT в разделе «Роутеры», затем запустите анализ.");}
         if(a==null){_grid.ItemsSource=null;_summary.Text="";return;}
         _summary.Text=T("Endpoints","Назначения")+": "+a.Endpoints.Count+" | "+T("Source rules","Связи источников")+": "+a.Sources.Count+" | TCP OPEN "+a.Endpoints.Count(r=>r.TcpStatus=="TCP OPEN")+" | UDP "+a.Endpoints.Count(r=>r.Protocol=="UDP")+" | "+T("Import files","Файлы")+": "+a.Audit.Count;
         _grid.ItemsSource=_view.SelectedIndex switch

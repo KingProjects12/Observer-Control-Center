@@ -198,7 +198,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         _batchProgress=new ProgressBar{Minimum=0,Maximum=1,Height=6,Margin=new Thickness(0,3,0,8)};statusArea.Children.Add(_batchProgress);
         _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=180,MinHeight=64,RowHeight=31,FontSize=13};
         foreach(string key in new[]{"Router","Status","Samples","Office"}){var c=new DataGridTextColumn{Header=key switch{"Router"=>T("Router","Роутер"),"Status"=>T("Status","Статус"),"Samples"=>T("Snapshots","Снимки"),_=>T("Office","В офис")},Binding=new Binding(key),Width=new DataGridLength(1,DataGridLengthUnitType.Star)};if(key=="Status"){var st=new Style(typeof(TextBlock));st.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(key){Converter=new StatusBrushConverter()}));c.ElementStyle=st;}_batchGrid.Columns.Add(c);}statusArea.Children.Add(_batchGrid);
-        var statusExpander=new Expander{Header=T("Router status","Статусы роутеров"),IsExpanded=true,Content=statusArea,Margin=new Thickness(0,4,0,0)};section.Children.Add(statusExpander);_routerStatusArea=statusExpander;
+        var statusExpander=new Expander{Header=T("Router status","Статусы роутеров"),IsExpanded=!embedded,Content=statusArea,Margin=new Thickness(0,4,0,0)};section.Children.Add(statusExpander);_routerStatusArea=statusExpander;
         Group("Reports", "Отчёты", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
         Label(T("Report view", "Отображение отчёта"));
         _view = new ComboBox { DisplayMemberPath = "Label",MaxWidth=420,HorizontalAlignment=HorizontalAlignment.Left,MinWidth=230 }; section.Children.Add(_view);
@@ -218,6 +218,14 @@ internal sealed class LegacyCollectorPanel : UserControl
         {
             var connectionCard=(Border)root.Children[0];var actionCard=(Border)root.Children[1];var reportCard=(Border)root.Children[2];
             root.Children.Clear();
+            // Each tool panel can be reduced to its header without holding space in the results area.
+            void MakeCollapsible(Border card,string label)
+            {
+                var body=(StackPanel)card.Child;card.Child=null;body.Children.RemoveAt(0);
+                card.Child=new Expander{Header=label,IsExpanded=true,Content=body};
+            }
+            MakeCollapsible(actionCard,T("Collection","Сбор данных"));
+            MakeCollapsible(reportCard,T("Reports and export","Отчёты и экспорт"));
             var workspace=new Grid{Margin=new Thickness(6)};
             var leftCol=new ColumnDefinition{Width=new GridLength(2,GridUnitType.Star),MinWidth=290,MaxWidth=510};workspace.ColumnDefinitions.Add(leftCol);workspace.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(10)});workspace.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(3,GridUnitType.Star)});
             var left=new ScrollViewer{VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Content=connectionCard};workspace.Children.Add(left);
