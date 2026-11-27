@@ -24,18 +24,18 @@
    <Setter Property="FontSize" Value="13"/>
   </Style>
  </Window.Resources>
- <Grid Margin="26,20">
+ <Grid Margin="24,20">
   <Grid.RowDefinitions>
    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
    <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
   </Grid.RowDefinitions>
   <StackPanel Grid.Row="0" Margin="0,0,0,18">
-   <TextBlock Text="{x:Static loc:UiText.X060}" Foreground="{DynamicResource Tone_45DFE7}" FontWeight="Bold" FontSize="19"/>
+   <TextBlock Text="{x:Static loc:UiText.X060}" Foreground="{DynamicResource Tone_45DFE7}" FontWeight="SemiBold" FontSize="19"/>
    <TextBlock x:Name="InstalledVersion" Foreground="{DynamicResource Tone_91B2C7}" Margin="0,5,0,0"/>
   </StackPanel>
-  <Border Grid.Row="1" Padding="16" Background="{DynamicResource Tone_101215}" CornerRadius="13" BorderBrush="{DynamicResource Tone_2B4950}" BorderThickness="1" Margin="0,0,0,14">
+  <Border Grid.Row="1" Padding="16" Background="{DynamicResource Tone_101215}" CornerRadius="12" BorderBrush="{DynamicResource Tone_2B4950}" BorderThickness="1" Margin="0,0,0,12">
    <StackPanel>
-    <TextBlock Text="{x:Static loc:UiText.X061}" FontSize="11" Foreground="{DynamicResource Tone_93BFD0}"/>
+    <TextBlock Text="{x:Static loc:UiText.X061}" FontSize="12" Foreground="{DynamicResource Tone_93BFD0}"/>
     <TextBox x:Name="RepoBox" Margin="0,7,0,9" ToolTip="{x:Static loc:UiText.X062}"/>
     <DockPanel LastChildFill="False">
      <CheckBox DockPanel.Dock="Left" x:Name="AutoCheckBox" Content="{x:Static loc:UiText.X063}" VerticalAlignment="Center" Foreground="{DynamicResource Tone_E4F2F6}"/>
@@ -43,28 +43,28 @@
     </DockPanel>
    </StackPanel>
   </Border>
-  <Border Grid.Row="2" Background="{DynamicResource Tone_0B0D10}" BorderBrush="{DynamicResource Tone_256A79}" BorderThickness="1" CornerRadius="12" Padding="15" Margin="0,0,0,12">
+  <Border Grid.Row="2" Background="{DynamicResource Tone_0B0D10}" BorderBrush="{DynamicResource Tone_256A79}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
    <StackPanel>
     <TextBlock x:Name="StatusText" Text="{x:Static loc:UiText.X065}" Foreground="#63E3D4" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
     <ProgressBar x:Name="InstallProgress" Height="9" Minimum="0" Maximum="100" Margin="0,8,0,0" Visibility="Collapsed"/>
-    <TextBlock Text="{x:Static loc:UiText.X066}" Foreground="{DynamicResource Tone_9CB5C8}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
+    <TextBlock Text="{x:Static loc:UiText.X066}" Foreground="{DynamicResource Tone_9CB5C8}" FontSize="12" Margin="0,6,0,0" TextWrapping="Wrap"/>
    </StackPanel>
   </Border>
   <StackPanel Grid.Row="3" Margin="0,0,0,9"><WrapPanel>
    <Button x:Name="CheckButton" ToolTip="{x:Static loc:UiText.HintCheck}" Content="{x:Static loc:UiText.X067}" Click="Check_Click"/>
-   <Button x:Name="InstallButton" ToolTip="{x:Static loc:UiText.HintInstall}" Content="{x:Static loc:UiText.X068}" Click="Install_Click" Visibility="Collapsed" Style="{StaticResource AccentButton}" Margin="0,0,9,6"/>
+   <Button x:Name="InstallButton" ToolTip="{x:Static loc:UiText.HintInstall}" Content="{x:Static loc:UiText.X068}" Click="Install_Click" Visibility="Collapsed" Style="{StaticResource AccentButton}" Margin="0,0,8,8"/>
    <Button x:Name="CancelInstallButton" ToolTip="{x:Static loc:UiText.HintCancel}" Content="{x:Static loc:UiText.X069}" Click="CancelInstall_Click" Visibility="Collapsed"/>
   </WrapPanel><WrapPanel Margin="0,3,0,0">
    <Button x:Name="OpenButton" ToolTip="{x:Static loc:UiText.HintRelease}" Content="{x:Static loc:UiText.X070}" Click="Open_Click"/>
    <Button x:Name="DismissButton" ToolTip="{x:Static loc:UiText.HintSkip}" Content="{x:Static loc:UiText.X071}" Click="Dismiss_Click" Visibility="Collapsed"/>
   </WrapPanel></StackPanel>
-  <Border Grid.Row="4" Background="{DynamicResource Tone_090B0E}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource Tone_253940}" Padding="15">
+  <Border Grid.Row="4" Background="{DynamicResource Tone_090B0E}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource Tone_253940}" Padding="16">
    <DockPanel>
-    <TextBlock DockPanel.Dock="Top" Text="{x:Static loc:UiText.X072}" Foreground="{DynamicResource Tone_48D9E5}" FontSize="12" FontWeight="Bold" Margin="0,0,0,10"/>
+    <TextBlock DockPanel.Dock="Top" Text="{x:Static loc:UiText.X072}" Foreground="{DynamicResource Tone_48D9E5}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,10"/>
     <ScrollViewer VerticalScrollBarVisibility="Auto"><TextBlock x:Name="ReleaseNotes" Text="{x:Static loc:UiText.X073}" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource Tone_C3D9E8}"/></ScrollViewer>
    </DockPanel>
   </Border>
-  <TextBlock Grid.Row="5" Margin="0,13,0,0" FontSize="10" Foreground="{DynamicResource Tone_7E9FB4}" TextWrapping="Wrap"
+  <TextBlock Grid.Row="5" Margin="0,13,0,0" FontSize="12" Foreground="{DynamicResource Tone_7E9FB4}" TextWrapping="Wrap"
    Text="{x:Static loc:UiText.X074}"/>
  </Grid>
 </Window>

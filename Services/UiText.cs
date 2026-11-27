@@ -71,12 +71,13 @@ public static class UiText
         return a >= 0 && b > a ? (russian ? notes[(b + ru.Length)..] : notes[(a + en.Length)..b]).Trim() : notes;
     }
     public static string X001 => T("Observer Control Center — Preview", "Observer Control Center — Предпросмотр");
-    public static string X002 => T("  //  CONTROL CENTER", "  //  ЦЕНТР УПРАВЛЕНИЯ");
+    public static string X002 => T("  Control Center", "  Центр управления");
+    public static string SettingsLabel => T("Settings","Настройки");
     public static string X003 => T("  BLACK GLASS", "  ЧЁРНОЕ СТЕКЛО");
     public static string X004 => T("WHO  →  WHERE  →  WHEN      /      NETWORK ANALYTICS", "КТО  →  КУДА  →  КОГДА      /      СЕТЕВАЯ АНАЛИТИКА");
     public static string X005 => T("●  LOCAL · READ-ONLY", "●  ЛОКАЛЬНО · ТОЛЬКО ЧТЕНИЕ");
-    public static string X006 => T("↻  UPDATES", "↻  ОБНОВЛЕНИЯ");
-    public static string X007 => T("◔  ISLAND", "◔  ОСТРОВОК");
+    public static string X006 => T("Updates", "Обновления");
+    public static string X007 => T("Island", "Островок");
     public static string X008 => T("PROJECT / 01", "ПРОЕКТ / 01");
     public static string X009 => T("Network Analytics", "Сетевая аналитика");
     public static string X010 => T("Local preview", "Локальный предпросмотр");
@@ -117,7 +118,7 @@ public static class UiText
     public static string X045 => T("TOP / TRAFFIC PROFILE", "TOP / ПРОФИЛЬ ТРАФИКА");
     public static string X046 => T("By volume, not speed", "По объёму, не по скорости");
     public static string X047 => T("Statistics reflect available sources only. Local/VPN flows may be missing.", "Статистика только из доступных источников. Локальные/VPN-потоки могут отсутствовать.");
-    public static string X048 => T("EVENTS / LOG", "СОБЫТИЯ / ЖУРНАЛ");
+    public static string X048 => T("Activity log", "События / журнал");
     public static string X049 => T("Select text and press Ctrl+C", "Выдели текст и нажми Ctrl+C");
     public static string X050 => T("⧉  COPY ALL", "⧉  КОПИРОВАТЬ ВСЁ");
     public static string X051 => T("Copy all log lines with timestamps", "Скопировать все строки журнала с отметками времени");
@@ -129,7 +130,7 @@ public static class UiText
     public static string X057 => T("OBSERVER  •  AUTHORIZED NETWORKS ONLY", "OBSERVER  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ");
     public static string X058 => T("Resize window", "Изменить размер окна");
     public static string X059 => T("Observer · Updates", "Observer · Обновления");
-    public static string X060 => T("OBSERVER   //   RELEASE CENTER", "OBSERVER   //   ЦЕНТР ОБНОВЛЕНИЙ");
+    public static string X060 => T("Updates", "Обновления");
     public static string X061 => T("UPDATE SOURCE · GitHub Releases", "ИСТОЧНИК ОБНОВЛЕНИЙ · GitHub Releases");
     public static string X062 => T("owner/repo, e.g. example/observer", "owner/repo, например example/observer");
     public static string X063 => T("Check at startup and every minute (test mode)", "Проверять при запуске и каждую минуту (тестовый режим)");
@@ -141,7 +142,7 @@ public static class UiText
     public static string X069 => T("CANCEL", "ОТМЕНА");
     public static string X070 => T("OPEN GITHUB RELEASES", "ОТКРЫТЬ GITHUB RELEASES");
     public static string X071 => T("SKIP THIS VERSION", "НЕ НАПОМИНАТЬ ОБ ЭТОЙ ВЕРСИИ");
-    public static string X072 => T("WHAT'S NEW", "ЧТО НОВОГО");
+    public static string X072 => T("What’s new", "Что нового");
     public static string X073 => T("Release notes will appear after checking.", "Список изменений появится после проверки.");
     public static string X074 => T("SHA-256 is verified. The new EXE replaces the current file without a setup wizard. A backup allows recovery. Code signing is not yet available.", "Проверяется SHA-256. Новый EXE заменяет текущий файл без мастера установки. При ошибке запуска сохраняется возможность возврата к старой версии. Цифровая подпись пока отсутствует.");
     public static string X075 => T("Observer — update", "Observer — обновление");

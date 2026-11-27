@@ -1,0 +1,1 @@
+Publish the Observer 2.3.0 interface redesign after Windows tests and artifact validation.

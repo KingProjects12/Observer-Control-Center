@@ -59,6 +59,8 @@ internal static class UiSmoke
                 Require(main.ModuleSmoke(),"five embedded modules / shared state classic");
                 Click(FindButton(main,"ThemeSignalButton"));
                 Require(main.ModuleSmoke(),"five embedded modules / shared state signal");
+                Require(main.FindResource("WorkspaceSection") is Style,"shared section style");
+                Require(main.FindResource("CardGradient") is SolidColorBrush,"Signal surfaces are flat");
                 Click(FindButton(main,"ThemeClassicButton"));
             }
             finally { foreach(var w in windows.Reverse()) w.Close(); }

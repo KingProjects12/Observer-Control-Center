@@ -23,10 +23,10 @@ public sealed class KeeneticCollectorWindow : Window
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         Background = (Brush)FindResource("DialogBg");
         Foreground = (Brush)FindResource("DialogText"); FontFamily = new FontFamily("Segoe UI");
-        var root = new StackPanel { Margin = new Thickness(22) };
+        var root = new StackPanel { Margin = new Thickness(24) };
         var scroll = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         Content = scroll;
-        root.Children.Add(new TextBlock { Text = T("KEENETIC / LIVE NAT", "KEENETIC / ЖИВОЙ NAT"), FontSize = 21, FontWeight = FontWeights.Bold, Foreground = (Brush)FindResource("DialogAccent"), Margin = new Thickness(0,0,0,14) });
+        root.Children.Add(new TextBlock { Text = T("Keenetic NAT", "Keenetic NAT"), FontSize = 20, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("DialogAccent"), Margin = new Thickness(0,0,0,14) });
         TextBox Field(string name, string value)
         {
             root.Children.Add(new TextBlock { Text = name, Margin = new Thickness(0,5,0,4) });
@@ -45,7 +45,7 @@ public sealed class KeeneticCollectorWindow : Window
         root.Children.Add(_https);
         root.Children.Add(new TextBlock { Text = T("Authorized networks only. Read-only GET requests; POST /auth for login only. NAT may miss VPN/LAN flows. No router settings are changed.", "Только разрешённые сети. GET только для чтения, POST /auth только для входа. NAT может не видеть VPN/LAN. Настройки роутера не изменяются."), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0,0,0,10) });
         var buttons = new WrapPanel();
-        _collect = new Button { Content = T("CONNECT AND COLLECT NAT", "ПОДКЛЮЧИТЬСЯ И СОБРАТЬ NAT"), Style = (Style)FindResource("AccentButton"), Margin = new Thickness(0,0,8,8) };
+        _collect = new Button { Content = T("Connect and collect NAT", "Подключиться и собрать NAT"), Style = (Style)FindResource("AccentButton"), Margin = new Thickness(0,0,8,8) };
         _cancel = new Button { Content = T("CANCEL", "ОТМЕНА"), Style = (Style)FindResource("FlatButton"), IsEnabled = false };
         buttons.Children.Add(_collect); buttons.Children.Add(_cancel); root.Children.Add(buttons);
         _status = new TextBlock { Text = T("Ready", "Готово к сбору"), TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("DialogAccent") };

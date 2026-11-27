@@ -161,9 +161,9 @@ public partial class MainWindow : Window
         WorkspacePanel.Opacity = 1;
         WorkspacePanel.BeginAnimation(OpacityProperty, new DoubleAnimation
         {
-            From = 0.78,
+            From = 0.94,
             To = 1.0,
-            Duration = TimeSpan.FromMilliseconds(190),
+            Duration = TimeSpan.FromMilliseconds(120),
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
             FillBehavior = FillBehavior.Stop
         });
@@ -174,9 +174,9 @@ public partial class MainWindow : Window
             offset.Y = 0;
             offset.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation
             {
-                From = 8,
+                From = 2,
                 To = 0,
-                Duration = TimeSpan.FromMilliseconds(220),
+                Duration = TimeSpan.FromMilliseconds(120),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
                 FillBehavior = FillBehavior.Stop
             });

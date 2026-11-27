@@ -82,10 +82,10 @@ internal sealed class AccessAnalyzerPanel : UserControl
             var b=new Button{Content=text,Style=(Style)FindResource(accent?"AccentButton":"FlatButton"),Margin=new Thickness(0,0,8,6)};b.Click+=click;bar.Children.Add(b);return b;
         }
         _pick=Add(T("Select CSV","Выбрать CSV"),(_,_)=>Pick());
-        _analyze=Add(T("ANALYZE","АНАЛИЗИРОВАТЬ"),async(_,_)=>await Analyze(false),true);
+        _analyze=Add(T("Analyze","Анализировать"),async(_,_)=>await Analyze(false),true);
         _compare=Add(T("Compare periods","Сравнить периоды"),async(_,_)=>await Analyze(true));
         _check=Add(T("Check TCP","Проверить TCP"),async(_,_)=>await Check(),true);
-        _stop=Add(T("STOP","СТОП"),(_,_)=>_running?.Cancel());
+        _stop=Add(T("Stop","Стоп"),(_,_)=>_running?.Cancel());
         _export=Add(T("Export CSV / XLSX","Экспорт CSV / XLSX"),async(_,_)=>await Export());
         _open=Add(T("Open reports","Открыть отчёты"),(_,_)=>{if(_output!=null&&Directory.Exists(_output))Process.Start(new ProcessStartInfo(_output){UseShellExecute=true});});
         _files=new TextBox{IsReadOnly=true,AcceptsReturn=true,MinHeight=36,MaxHeight=72,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,5)};
@@ -95,7 +95,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
         var controls=new DockPanel{Margin=new Thickness(0,4,0,6)};top.Children.Add(controls);
         _view=new ComboBox{Width=205,ItemsSource=new[]{T("Office endpoints","IP / порт / протокол"),T("Source rules","Источники → офис"),T("Import audit","Аудит импорта"),T("Endpoint changes","Изменения назначений"),T("Source changes","Изменения источников")},SelectedIndex=0,Margin=new Thickness(0,0,8,0)};DockPanel.SetDock(_view,Dock.Left);controls.Children.Add(_view);
         _filter=new TextBox{ToolTip=T("Search all displayed columns","Поиск по всем столбцам"),Margin=new Thickness(0,0,0,0)};controls.Children.Add(_filter);
-        _grid=new DataGrid{IsReadOnly=true,AutoGenerateColumns=true,CanUserAddRows=false,SelectionMode=DataGridSelectionMode.Extended,FontSize=13,RowHeight=34,ColumnHeaderHeight=36};
+        _grid=new DataGrid{IsReadOnly=true,AutoGenerateColumns=true,CanUserAddRows=false,SelectionMode=DataGridSelectionMode.Extended,FontSize=14,RowHeight=36,ColumnHeaderHeight=36};
         _grid.AutoGeneratingColumn+=(_,e)=>{
             if(e.PropertyName is "TcpStatus" or "Change" or "Result")
             {
@@ -108,13 +108,16 @@ internal sealed class AccessAnalyzerPanel : UserControl
         if(embedded)
         {
             root.Children.Clear();
+            top.Children.Remove(bar);top.Children.Remove(controls);top.Children.Remove(_modeTitle);top.Children.Remove(_summary);top.Children.Remove(_status);
             _toolsExpander=new Expander{Header=T("Analysis settings and actions","Настройки и действия"),IsExpanded=true,Content=top};
             _resultsExpander=new Expander{Header=T("Network results","Результаты сети"),IsExpanded=true,Content=gridArea};
-            var workspace=new Grid();workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition{Height=new GridLength(0)});
-            var toolsCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Margin=new Thickness(0,0,0,7),Child=_toolsExpander};
-            var resultsCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Child=_resultsExpander};
-            workspace.Children.Add(toolsCard);Grid.SetRow(resultsCard,1);workspace.Children.Add(resultsCard);
-            void Reflow(){workspace.RowDefinitions[1].Height=_resultsExpander.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;workspace.RowDefinitions[2].Height=_resultsExpander.IsExpanded?new GridLength(0):new GridLength(1,GridUnitType.Star);}
+            var workspace=new Grid();workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition{Height=new GridLength(0)});
+            var toolsCard=new Border{Style=(Style)FindResource("WorkspaceSection"),Padding=new Thickness(8),Margin=new Thickness(0,0,0,8),Child=_toolsExpander};
+            var resultsCard=new Border{Style=(Style)FindResource("WorkspaceSection"),Padding=new Thickness(8),Child=_resultsExpander};
+            var actions=new StackPanel();actions.Children.Add(bar);actions.Children.Add(_summary);actions.Children.Add(_status);actions.Children.Add(controls);
+            var actionsCard=new Border{Style=(Style)FindResource("WorkspaceSection"),Padding=new Thickness(8),Margin=new Thickness(0,0,0,8),Child=actions};
+            workspace.Children.Add(toolsCard);Grid.SetRow(actionsCard,1);workspace.Children.Add(actionsCard);Grid.SetRow(resultsCard,2);workspace.Children.Add(resultsCard);
+            void Reflow(){workspace.RowDefinitions[2].Height=_resultsExpander.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;workspace.RowDefinitions[3].Height=_resultsExpander.IsExpanded?new GridLength(0):new GridLength(1,GridUnitType.Star);}
             _resultsExpander.Expanded+=(_,_)=>Reflow();_resultsExpander.Collapsed+=(_,_)=>Reflow();
             Reflow();Content=workspace;
         }

@@ -89,6 +89,8 @@ internal sealed class LegacyCollectorPanel : UserControl
     private bool _natPreviewExpanded=false,_trafficPreviewExpanded=true;
     private Expander? _previewSection;
     private Action? _reflowWorkspace;
+    private FrameworkElement? _embeddedActions;
+    internal bool EmbeddedActionsVisible(){if(_embeddedActions==null)return false;bool before=_connection.IsExpanded;_connection.IsExpanded=false;bool visible=_embeddedActions.Visibility==Visibility.Visible&&_embeddedActions.Parent is Grid;_connection.IsExpanded=before;return visible;}
     private System.Windows.Controls.RadioButton? _httpRadio,_httpsRadio;
     private readonly Button _start;
     private readonly TextBlock _addressSummary;
@@ -186,8 +188,8 @@ internal sealed class LegacyCollectorPanel : UserControl
             var b = new Button { Content = label, Style = (Style)FindResource(accent ? "AccentButton" : "FlatButton"), Margin = new Thickness(0,0,8,8), ToolTip=hint }; b.Click += handler; buttons.Children.Add(b); return b;
         }
         _start=Button(T("▶  Start NAT collection","▶  Начать сбор NAT"),async (_,_)=>await Run(_operation),true);_start.FontSize=15;_start.Padding=new Thickness(16,10,16,10);_commands.Add(_start);
-        _commands.Add(Button(T("VPN / CHECK TCP","VPN / ПРОВЕРИТЬ TCP"),async (_,_)=>await Run("probe"),false,T("Test the configured router port, not a VPN tunnel.","Проверка порта роутера, а не VPN-туннеля.")));
-        _commands.Add(Button(T("TOOLS ▾", "ИНСТРУМЕНТЫ ▾"), (sender,_) => {
+        _commands.Add(Button(T("Check router TCP","Проверить TCP роутера"),async (_,_)=>await Run("probe"),false,T("Test the configured router port, not a VPN tunnel.","Проверка порта роутера, а не VPN-туннеля.")));
+        _commands.Add(Button(T("Tools ▾", "Инструменты ▾"), (sender,_) => {
             var menu = new ContextMenu { PlacementTarget=(UIElement)sender, Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom };
             var importItem = new MenuItem { Header=T("Import central flow CSV", "Импорт CSV центрального шлюза") }; importItem.Click += async (_,_) => await Run("import"); menu.Items.Add(importItem);
             var natItem=new MenuItem{Header=T("Collect NAT","Собрать NAT")};natItem.Click+=async (_,_)=>await Run("nat");menu.Items.Add(natItem);
@@ -196,12 +198,12 @@ internal sealed class LegacyCollectorPanel : UserControl
             menu.IsOpen=true;
         }));
         _commands.Add(individual);_commands.Add(importList);
-        _retry=Button(T("RETRY INCOMPLETE", "ПОВТОРИТЬ ПРОБЛЕМНЫЕ"), async (_,_)=>await Run("retry"));_retry.IsEnabled=false;
+        _retry=Button(T("Retry incomplete", "Повторить проблемные"), async (_,_)=>await Run("retry"));_retry.IsEnabled=false;
         _stop = Button(T("STOP", "СТОП"), (_,_) => _running?.Cancel()); _stop.IsEnabled = false; _stop.ToolTip=T("Cancel collection and retain available results.","Остановить сбор, сохранить доступные результаты.");
         var statusArea=new StackPanel();_routerStatusArea=statusArea;
         _batchSummary=new TextBlock{Text=T("No collection started","Сбор ещё не запускался"),TextWrapping=TextWrapping.Wrap,Foreground = (Brush)FindResource("DialogAccent"),Margin=new Thickness(0,8,0,4)};statusArea.Children.Add(_batchSummary);
         _batchProgress=new ProgressBar{Minimum=0,Maximum=1,Height=6,Margin=new Thickness(0,3,0,8)};statusArea.Children.Add(_batchProgress);
-        _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=180,MinHeight=64,RowHeight=31,FontSize=13};
+        _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=180,MinHeight=64,RowHeight=36,FontSize=14};
         foreach(string key in new[]{"Router","Status","Samples","Office"}){var c=new DataGridTextColumn{Header=key switch{"Router"=>T("Router","Роутер"),"Status"=>T("Status","Статус"),"Samples"=>T("Snapshots","Снимки"),_=>T("Office","В офис")},Binding=new Binding(key),Width=new DataGridLength(1,DataGridLengthUnitType.Star)};if(key=="Status"){var st=new Style(typeof(TextBlock));st.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(key){Converter=new StatusBrushConverter()}));c.ElementStyle=st;}_batchGrid.Columns.Add(c);}statusArea.Children.Add(_batchGrid);
         var statusExpander=new Expander{Header=T("Router status","Статусы роутеров"),IsExpanded=!embedded,Content=statusArea,Margin=new Thickness(0,4,0,0)};section.Children.Add(statusExpander);_routerStatusArea=statusExpander;
         Group("Reports", "Отчёты", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
@@ -209,10 +211,10 @@ internal sealed class LegacyCollectorPanel : UserControl
         _view = new ComboBox { DisplayMemberPath = "Label",MaxWidth=420,HorizontalAlignment=HorizontalAlignment.Left,MinWidth=230 }; section.Children.Add(_view);
         _view.SelectionChanged += (_,_) => { if (_show != null) _show.IsEnabled = _running == null && _view.SelectedItem != null; RefreshPreview(); };
         var output = new WrapPanel { Margin = new Thickness(0,10,0,4) }; section.Children.Add(output); buttons = output;
-        _show = Button(T("SHOW IN OBSERVER", "ПОКАЗАТЬ В OBSERVER"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); CsvSelected?.Invoke(SelectedCsv); } }); _show.IsEnabled = false; _show.ToolTip=T("Open the selected CSV in the main table.","Показать выбранный CSV в главной таблице.");
-        _excel = Button(T("OPEN EXCEL", "ОТКРЫТЬ EXCEL"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false; _excel.ToolTip=T("Open the generated Excel workbook.","Открыть сформированный файл Excel.");
-        _reports = Button(T("OPEN REPORTS", "ОТКРЫТЬ ОТЧЁТЫ"), (_,_) => Open(_folder)); _reports.IsEnabled = false; _reports.ToolTip=T("Open the current report folder.","Открыть папку текущего отчёта.");
-        _access=Button(T("ANALYZE ACCESS", "АНАЛИЗ ДОСТУПОВ"),(_,_)=>{var csv=_folder==null?null:Path.Combine(_folder,"07_Office_To_Connections.csv");if(_embedded){NavigateAccess?.Invoke();}else{new AccessAnalyzerWindow(csv,_target.Text){Owner=DialogOwner}.ShowDialog();}});_access.IsEnabled=false;
+        _show = Button(T("Show in Observer", "Показать в Observer"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); CsvSelected?.Invoke(SelectedCsv); } }); _show.IsEnabled = false; _show.ToolTip=T("Open the selected CSV in the main table.","Показать выбранный CSV в главной таблице.");
+        _excel = Button(T("Open Excel", "Открыть Excel"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false; _excel.ToolTip=T("Open the generated Excel workbook.","Открыть сформированный файл Excel.");
+        _reports = Button(T("Open reports", "Открыть отчёты"), (_,_) => Open(_folder)); _reports.IsEnabled = false; _reports.ToolTip=T("Open the current report folder.","Открыть папку текущего отчёта.");
+        _access=Button(T("Analyze access", "Анализ доступов"),(_,_)=>{var csv=_folder==null?null:Path.Combine(_folder,"07_Office_To_Connections.csv");if(_embedded){NavigateAccess?.Invoke();}else{new AccessAnalyzerWindow(csv,_target.Text){Owner=DialogOwner}.ShowDialog();}});_access.IsEnabled=false;
         Group("05 / ACTIVITY", "05 / ЖУРНАЛ", "Progress and diagnostic details. Copy the log when troubleshooting.", "Прогресс и диагностика. При ошибке скопируйте журнал.");
         _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("DialogAccent") }; section.Children.Add(_status);
         _log = new RichTextBox { IsReadOnly = true, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = (Brush)FindResource("DialogLog"), Foreground = (Brush)FindResource("DialogText"), Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);
@@ -228,37 +230,44 @@ internal sealed class LegacyCollectorPanel : UserControl
             root.Children.Clear();
             _connection.Content=null;
             form.Children.Clear();
-            var settingsForm=new Grid();
-            settingsForm.ColumnDefinitions.Add(new ColumnDefinition());settingsForm.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(12)});settingsForm.ColumnDefinitions.Add(new ColumnDefinition());
+            var settingsForm=new Grid{Margin=new Thickness(4)};
+            settingsForm.ColumnDefinitions.Add(new ColumnDefinition());
+            settingsForm.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(16)});
+            settingsForm.ColumnDefinitions.Add(new ColumnDefinition());
             var leftFields=new StackPanel();leftFields.Children.Add(addressRow);leftFields.Children.Add(auth);leftFields.Children.Add(individual);settingsForm.Children.Add(leftFields);
             var rightFields=new StackPanel();rightFields.Children.Add(network);rightFields.Children.Add(protocolRow);rightFields.Children.Add(advanced);rightFields.Children.Add(periodRow);Grid.SetColumn(rightFields,2);settingsForm.Children.Add(rightFields);
-            var settingsBody=new Grid();
-            settingsBody.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(2,GridUnitType.Star)});settingsBody.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(12)});settingsBody.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1,GridUnitType.Star)});
-            settingsBody.Children.Add(settingsForm);Grid.SetColumn(actionCard,2);actionCard.Padding=new Thickness(9);actionCard.Margin=new Thickness(0);settingsBody.Children.Add(actionCard);
-            _connection.Content=settingsBody;connectionCard.Child=_connection;connectionCard.Padding=new Thickness(7);connectionCard.Margin=new Thickness(0,0,0,7);
+            _connection.Content=settingsForm;connectionCard.Child=_connection;
+            connectionCard.Style=(Style)FindResource("WorkspaceSection");connectionCard.Padding=new Thickness(8);connectionCard.Margin=new Thickness(0,0,0,8);
+            var actionBody=(StackPanel)actionCard.Child;
+            var commandBar=(WrapPanel)actionBody.Children[2];
+            actionBody.Children.Remove(commandBar);
+            commandBar.Margin=new Thickness(0);
+            commandBar.SetBinding(FrameworkElement.ToolTipProperty,new Binding("Text"){Source=_modeHint});
+            actionCard.Child=commandBar;actionCard.Style=(Style)FindResource("WorkspaceSection");actionCard.Padding=new Thickness(8,4,8,0);actionCard.Margin=new Thickness(0,0,0,8);
+            _embeddedActions=actionCard;
             statusExpander.Content=null;statusArea.Children.Remove(_batchGrid);
             var statusBody=new Grid();statusBody.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});statusBody.RowDefinitions.Add(new RowDefinition());
             statusBody.Children.Add(statusArea);_batchGrid.MaxHeight=double.PositiveInfinity;_batchGrid.MinHeight=0;Grid.SetRow(_batchGrid,1);statusBody.Children.Add(_batchGrid);
             statusExpander.Content=statusBody;statusExpander.IsExpanded=true;statusExpander.Margin=new Thickness(0);
-            var statusCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Margin=new Thickness(0,0,0,7),Child=statusExpander};
-            var reportBody=(StackPanel)reportCard.Child;reportCard.Child=null;reportBody.Children.RemoveAt(0);
+            var statusCard=new Border{Style=(Style)FindResource("WorkspaceSection"),Padding=new Thickness(8),Margin=new Thickness(0,0,0,8),Child=statusExpander};
+            var reportBody=(StackPanel)reportCard.Child;reportCard.Child=null;reportBody.Children.RemoveAt(0);reportBody.Children.RemoveAt(0);
             var reportTools=new Expander{Header=T("Report options and export","Параметры отчёта и экспорт"),IsExpanded=false,Content=reportBody,Margin=new Thickness(0,0,0,5)};
             var previewRoot=new DockPanel();
             DockPanel.SetDock(reportTools,Dock.Top);previewRoot.Children.Add(reportTools);
             _previewHint=new TextBlock{Text=T("No report yet — run collection to see actual data.","Отчёта пока нет — запустите сбор, чтобы увидеть данные."),TextWrapping=TextWrapping.Wrap,FontSize=13,Margin=new Thickness(0,0,0,5)};_previewHint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");DockPanel.SetDock(_previewHint,Dock.Top);previewRoot.Children.Add(_previewHint);
-            _preview=new DataGrid{AutoGenerateColumns=true,IsReadOnly=true,CanUserAddRows=false,FontSize=13,RowHeight=32,ColumnHeaderHeight=35};previewRoot.Children.Add(_preview);
+            _preview=new DataGrid{AutoGenerateColumns=true,IsReadOnly=true,CanUserAddRows=false,FontSize=14,RowHeight=36,ColumnHeaderHeight=36};previewRoot.Children.Add(_preview);
             _previewSection=new Expander{Header=T("Data and reports","Данные и отчёты"),IsExpanded=traffic,Content=previewRoot};
-            var previewCard=new Border{Style=(Style)FindResource("CardBorder"),Padding=new Thickness(7),Child=_previewSection};
-            var workspace=new Grid{Margin=new Thickness(2)};
-            workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition{Height=new GridLength(0)});
-            workspace.Children.Add(connectionCard);Grid.SetRow(statusCard,1);workspace.Children.Add(statusCard);Grid.SetRow(previewCard,2);workspace.Children.Add(previewCard);
+            var previewCard=new Border{Style=(Style)FindResource("WorkspaceSection"),Padding=new Thickness(8),Child=_previewSection};
+            var workspace=new Grid();
+            workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition{Height=new GridLength(0)});
+            workspace.Children.Add(connectionCard);Grid.SetRow(actionCard,1);workspace.Children.Add(actionCard);Grid.SetRow(statusCard,2);workspace.Children.Add(statusCard);Grid.SetRow(previewCard,3);workspace.Children.Add(previewCard);
             void Reflow()
             {
                 bool showStatus=statusExpander.Visibility==Visibility.Visible;
                 statusCard.Visibility=showStatus?Visibility.Visible:Visibility.Collapsed;
-                workspace.RowDefinitions[1].Height=!showStatus?new GridLength(0):statusExpander.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
-                workspace.RowDefinitions[2].Height=_previewSection.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
-                workspace.RowDefinitions[3].Height=(!showStatus||!statusExpander.IsExpanded)&&!_previewSection.IsExpanded?new GridLength(1,GridUnitType.Star):new GridLength(0);
+                workspace.RowDefinitions[2].Height=!showStatus?new GridLength(0):statusExpander.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
+                workspace.RowDefinitions[3].Height=_previewSection.IsExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
+                workspace.RowDefinitions[4].Height=(!showStatus||!statusExpander.IsExpanded)&&!_previewSection.IsExpanded?new GridLength(1,GridUnitType.Star):new GridLength(0);
             }
             _reflowWorkspace=Reflow;
             statusExpander.Expanded+=(_,_)=>Reflow();statusExpander.Collapsed+=(_,_)=>Reflow();

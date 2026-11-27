@@ -20,7 +20,7 @@ public partial class MainWindow
     private Button? _retryIssues;
     private string _module="";
     private string? _trafficReport,_networkReport;
-    private bool _tableExpanded=true,_logExpanded=true,_moduleExpanded=true;
+    private bool _tableExpanded=true,_logExpanded=false,_moduleExpanded=true;
     private readonly Dictionary<string,bool> _moduleExpansion=new();
     private readonly DispatcherTimer _moduleTimer=new(){Interval=TimeSpan.FromSeconds(1)};
     private DateTime? _moduleStarted;
@@ -47,13 +47,13 @@ public partial class MainWindow
             ("issues","M16,3 L30,28 L2,28 Z M16,12 L16,19 M16,23 L16,24","Issues","Проблемы","Errors and timeouts","Ошибки и предупреждения")};
         foreach(var (id,geometry,en,ru,subEn,subRu) in definitions)
         {
-            var b=new Button{Style=(Style)FindResource("ModuleTileButton"),Margin=new Thickness(0,0,id=="issues"?0:9,0),Padding=new Thickness(14,10,14,10),MinHeight=82,ToolTip=T(subEn,subRu)};
+            var b=new Button{Style=(Style)FindResource("ModuleTileButton"),Margin=new Thickness(0,0,id=="issues"?0:8,0),Padding=new Thickness(12,12,12,12),MinHeight=80,ToolTip=T(subEn,subRu)};
             b.SetResourceReference(Control.BackgroundProperty,"Module_"+id+"_Bg");b.SetResourceReference(Control.BorderBrushProperty,"Module_"+id+"_Fg");
-            var row=new DockPanel{LastChildFill=true};var icon=Glyph(geometry,"Module_"+id+"_Fg",36);icon.Margin=new Thickness(0,0,12,0);DockPanel.SetDock(icon,Dock.Left);row.Children.Add(icon);
+            var row=new DockPanel{LastChildFill=true};var icon=Glyph(geometry,"Module_"+id+"_Fg",24);icon.Margin=new Thickness(0,0,8,0);DockPanel.SetDock(icon,Dock.Left);row.Children.Add(icon);
             var content=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
-            var title=new TextBlock{Text=T(en,ru),FontSize=17,FontWeight=FontWeights.SemiBold,TextTrimming=TextTrimming.CharacterEllipsis};title.SetResourceReference(TextBlock.ForegroundProperty,"TextMain");content.Children.Add(title);
+            var title=new TextBlock{Text=T(en,ru),FontSize=16,FontWeight=FontWeights.SemiBold,TextTrimming=TextTrimming.CharacterEllipsis};title.SetResourceReference(TextBlock.ForegroundProperty,"TextMain");content.Children.Add(title);
             var hint=new TextBlock{Text=T(subEn,subRu),FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(0,4,0,0)};hint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");content.Children.Add(hint);row.Children.Add(content);
-            var arrow=new TextBlock{Text="›",FontSize=25,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(8,0,0,0)};
+            var arrow=new TextBlock{Text="›",FontSize=20,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(8,0,0,0)};
             arrow.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");DockPanel.SetDock(arrow,Dock.Right);row.Children.Insert(1,arrow);
             b.Content=row;b.Click+=(_,_)=>{if(_module==id)ToggleModule();else ShowModule(id);};ModuleTiles.Children.Add(b);_moduleButtons.Add(id,b);_moduleTitles[id]=T(en,ru);
         }
@@ -63,9 +63,9 @@ public partial class MainWindow
         {
             var (id,label)=metrics[i];var panel=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
             panel.Children.Add(new TextBlock{Text=label,FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis});
-            var value=new TextBlock{Text="—",FontSize=25,FontWeight=FontWeights.Bold,Margin=new Thickness(0,3,0,0)};value.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");panel.Children.Add(value);_sessionValues[i]=value;
+            var value=new TextBlock{Text="—",FontSize=24,FontWeight=FontWeights.SemiBold,Margin=new Thickness(0,4,0,0)};value.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");panel.Children.Add(value);_sessionValues[i]=value;
             var metric=new DockPanel{Margin=new Thickness(6,2,5,2)};
-            var icon=Glyph(definitions.First(d=>d.Item1==id).Item2,"Module_"+id+"_Fg",29);icon.Margin=new Thickness(0,0,10,0);DockPanel.SetDock(icon,Dock.Left);metric.Children.Add(icon);metric.Children.Add(panel);SessionMetrics.Children.Add(metric);
+            var icon=Glyph(definitions.First(d=>d.Item1==id).Item2,"Module_"+id+"_Fg",29);icon.Margin=new Thickness(0,0,10,0);DockPanel.SetDock(icon,Dock.Left);metric.Children.Add(panel);SessionMetrics.Children.Add(metric);
         }
         TrafficStatusColumn.Header=T("Status","Статус");
         _collector=new LegacyCollectorPanel(RouterIP.Text,vpn:true,embedded:true,offline:_offlineUiCheck);
@@ -92,7 +92,7 @@ public partial class MainWindow
         }
         issueTable.Children.Add(_issuesGrid);
         _issuesEmpty=new TextBlock{FontSize=15,TextWrapping=TextWrapping.Wrap,HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center,TextAlignment=TextAlignment.Center,IsHitTestVisible=false,Margin=new Thickness(20)};_issuesEmpty.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");issueTable.Children.Add(_issuesEmpty);
-        ModuleStop.Content=T("Stop","Стоп");ModuleCollapse.Content="⌃";
+        ModuleStop.Content=T("Stop","Стоп");ModuleCollapse.Content="⌃";LogToggle.Content=_logExpanded?"⌃":"⌄";
         _moduleTimer.Tick+=(_,_)=>UpdateModuleSummary();_moduleTimer.Start();UpdateModuleSummary();
     }
     private void ModuleLog(string message){_lastModuleLog=message;AddLog(message);UpdateModuleSummary();}
@@ -113,7 +113,7 @@ public partial class MainWindow
         else{_analyzer.SetTcpMode(id=="tcp");ModuleHost.Content=_analyzer;}
         ReflowPanels();
         UpdateModuleSummary();
-        if(IsLoaded&&SystemParameters.ClientAreaAnimation)ModuleSurface.BeginAnimation(OpacityProperty,new DoubleAnimation(.82,1,TimeSpan.FromMilliseconds(150)){FillBehavior=FillBehavior.Stop});
+        if(IsLoaded&&SystemParameters.ClientAreaAnimation)ModuleSurface.BeginAnimation(OpacityProperty,new DoubleAnimation(.94,1,TimeSpan.FromMilliseconds(120)){FillBehavior=FillBehavior.Stop});
     }
     private void DisplayLegacyReport()
     {
@@ -181,8 +181,8 @@ public partial class MainWindow
     {
         var menu=new ContextMenu{PlacementTarget=(UIElement)sender,Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom};
         void Item(string label,RoutedEventHandler handler){var item=new MenuItem{Header=label};item.Click+=handler;menu.Items.Add(item);}
-        var themes=new MenuItem{Header=T("Appearance","Оформление")};menu.Items.Add(themes);
-        foreach(bool signal in new[]{true,false}){var theme=new MenuItem{Header=signal?"Signal":"Black Liquid Glass",IsCheckable=true,IsChecked=AppearanceTheme.IsSignal==signal};theme.Click+=(_,_)=>ChangeAppearance(signal);themes.Items.Add(theme);}
+        var themes=new MenuItem{Header=T("Appearance","Оформление"),IsEnabled=false};menu.Items.Add(themes);
+        foreach(bool signal in new[]{true,false}){var theme=new MenuItem{Header=signal?"Signal":"Black Liquid Glass",IsCheckable=true,IsChecked=AppearanceTheme.IsSignal==signal};theme.Click+=(_,_)=>ChangeAppearance(signal);menu.Items.Add(theme);}
         Item(T("Change accent","Сменить акцент"),Theme_Click);Item(T("Glass opacity","Прозрачность стекла"),Glass_Click);
         menu.Items.Add(new Separator());
         Item(T("Module selection","Выбор модуля"),Overview_Click);Item(T("Import CSV","Импорт CSV"),Import_Click);Item(T("Reports","Отчёты"),Reports_Click);
@@ -227,6 +227,7 @@ public partial class MainWindow
         ShowPage("overview");
         if(LogPanel.Visibility!=Visibility.Collapsed||OldReportPanel.Visibility!=Visibility.Collapsed||SessionPanel.Visibility!=Visibility.Collapsed||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
         ShowModule("routers");
+        if(!_collector.EmbeddedActionsVisible())return false;
         bool expanded=_logExpanded;LogToggle_Click(this,new RoutedEventArgs());
         if(LogList.Visibility!=(expanded?Visibility.Collapsed:Visibility.Visible)||ConsoleRow.Height.IsAuto!=expanded)return false;
         LogToggle_Click(this,new RoutedEventArgs());
@@ -237,15 +238,17 @@ public partial class MainWindow
             if((id=="routers"||id=="traffic")&&!ReferenceEquals(ModuleHost.Content,_collector))return false;
             if((id=="connections"||id=="tcp")&&!ReferenceEquals(ModuleHost.Content,_analyzer))return false;
         }
+        if(!_logExpanded)LogToggle_Click(this,new RoutedEventArgs());
         ModuleCollapse_Click(this,new RoutedEventArgs());
         if(!WorkRow.Height.IsAuto||ModuleHost.Visibility!=Visibility.Collapsed)return false;
         ShowModule("tcp");ShowModule("routers");
         if(ModuleHost.Visibility!=Visibility.Collapsed||!WorkRow.Height.IsAuto)return false;
         ModuleCollapse_Click(this,new RoutedEventArgs());
         if(!WorkRow.Height.IsStar||ModuleHost.Visibility!=Visibility.Visible)return false;
+        if(!_logExpanded)LogToggle_Click(this,new RoutedEventArgs());
         LogToggle_Click(this,new RoutedEventArgs());
         if(!ConsoleRow.Height.IsAuto||!WorkRow.Height.IsStar)return false;
-        LogToggle_Click(this,new RoutedEventArgs());
+        if(expanded)LogToggle_Click(this,new RoutedEventArgs());
         ShowPage("overview");
         return !ModuleStop.IsEnabled&&_moduleButtons.Count==5&&LogPanel.Visibility==Visibility.Collapsed&&OldReportPanel.Visibility==Visibility.Collapsed;
     }

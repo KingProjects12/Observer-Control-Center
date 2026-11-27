@@ -27,7 +27,7 @@
         </Border>
       </Grid>
       <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="1,0,0,0">
-        <TextBlock Text="OBSERVER" Foreground="{DynamicResource Tone_F3F9FF}" FontWeight="Bold" FontSize="13"/>
+        <TextBlock Text="OBSERVER" Foreground="{DynamicResource Tone_F3F9FF}" FontWeight="SemiBold" FontSize="13"/>
         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
           <Ellipse Width="6" Height="6" Fill="#46E8BE" VerticalAlignment="Center"
                    Margin="0,0,6,0">
@@ -43,14 +43,14 @@
             </Ellipse.Triggers>
           </Ellipse>
           <TextBlock x:Name="StatusText" Text="{x:Static loc:UiText.X082}"
-                     Foreground="#77DBD4" FontSize="10" VerticalAlignment="Center"/>
+                     Foreground="#77DBD4" FontSize="12" VerticalAlignment="Center"/>
         </StackPanel>
       </StackPanel>
       <Border Grid.Column="2" Background="{DynamicResource Tone_2B1A222D}" BorderBrush="{DynamicResource Tone_365B6378}"
               CornerRadius="11" BorderThickness="1" Padding="11,8" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal">
           <TextBlock x:Name="CountText" Text="{x:Static loc:UiText.X083}" Foreground="{DynamicResource Tone_DBCCFA}"
-                     VerticalAlignment="Center" FontWeight="SemiBold" FontSize="11"/>
+                     VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12"/>
           <TextBlock Text="  ↗" Foreground="{DynamicResource Tone_B592FF}" FontSize="12"/>
         </StackPanel>
       </Border>

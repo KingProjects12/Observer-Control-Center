@@ -25,7 +25,7 @@ internal sealed class WorkspaceGuideWindow : Window
         DarkTitleBar.Apply(this);
         var root=new StackPanel{Margin=new Thickness(24)};
         Content=new ScrollViewer{Content=root,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};
-        root.Children.Add(new TextBlock{Text=T("WORKSPACE / QUICK GUIDE","РАБОЧАЯ ОБЛАСТЬ / СПРАВКА"),FontSize=22,FontWeight=FontWeights.Bold,Foreground=(Brush)FindResource("Accent"),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,14)});
+        root.Children.Add(new TextBlock{Text=T("Workspace guide","Справка по рабочей области"),FontSize=20,FontWeight=FontWeights.SemiBold,Foreground=(Brush)FindResource("Accent"),TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,12)});
         void Group(string en,string ru,params (string En,string Ru,string DescEn,string DescRu)[] rows)
         {
             var stack=new StackPanel();root.Children.Add(new Border{Style=(Style)FindResource("CardBorder"),Child=stack,Margin=new Thickness(0,0,0,12)});
