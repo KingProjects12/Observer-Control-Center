@@ -1,0 +1,1 @@
+Publish Observer 2.2.3 after Windows tests and artifact validation.
