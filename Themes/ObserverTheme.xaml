@@ -41,10 +41,10 @@
     </Setter.Value></Setter>
   </Style>
   <Style x:Key="CardBorder" TargetType="Border">
-    <Setter Property="Background" Value="{DynamicResource CardGradient}"/>
+    <Setter Property="Background" Value="{DynamicResource PanelBg}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource Stroke}"/>
     <Setter Property="BorderThickness" Value="1"/>
-    <Setter Property="CornerRadius" Value="12"/>
+    <Setter Property="CornerRadius" Value="6"/>
     <Setter Property="Padding" Value="12"/>
   </Style>
 
@@ -114,15 +114,15 @@
   <Style x:Key="ModuleTileButton" TargetType="Button" BasedOn="{StaticResource FlatButton}">
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-      <Border x:Name="TileSurface" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="12">
+      <Border x:Name="TileSurface" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="6">
         <Grid>
           <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-          <Border x:Name="ActiveLine" Height="3" VerticalAlignment="Bottom" CornerRadius="2" Background="{TemplateBinding BorderBrush}" Opacity="0" Margin="12,0,12,0"/>
+          <Border x:Name="ActiveLine" Width="3" HorizontalAlignment="Left" CornerRadius="1" Background="{TemplateBinding BorderBrush}" Opacity="0" Margin="0,9,0,9"/>
         </Grid>
       </Border>
       <ControlTemplate.Triggers>
         <Trigger Property="Tag" Value="selected"><Setter TargetName="ActiveLine" Property="Opacity" Value="1"/><Setter TargetName="TileSurface" Property="BorderBrush" Value="{DynamicResource TextSecondary}"/></Trigger>
-        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="TileSurface" Property="Opacity" Value="0.85"/></Trigger>
+        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="TileSurface" Property="Background" Value="{DynamicResource PanelBg2}"/></Trigger>
         <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="TileSurface" Property="BorderBrush" Value="{DynamicResource Accent}"/><Setter TargetName="TileSurface" Property="BorderThickness" Value="2"/></Trigger>
         <Trigger Property="IsPressed" Value="True"><Setter TargetName="TileSurface" Property="Opacity" Value="0.72"/></Trigger>
         <Trigger Property="IsEnabled" Value="False"><Setter TargetName="TileSurface" Property="Opacity" Value="0.5"/></Trigger>

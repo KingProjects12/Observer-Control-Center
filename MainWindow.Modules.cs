@@ -40,16 +40,16 @@ public partial class MainWindow
         LogCount.Text=_consoleItems.Count+" "+T("events","событий");
         NavOverview.Content=T("Home","Главная");
         var definitions=new[]{
-            ("routers","M2,16 L2,25 L30,25 L30,16 Z M7,16 L7,5 M25,16 L25,5 M5,4 A2,2 0 1 0 9,4 A2,2 0 1 0 5,4 M23,4 A2,2 0 1 0 27,4 A2,2 0 1 0 23,4 M7,21 L9,21 M13,21 L15,21 M19,21 L21,21","Routers","Роутеры","Collection and analysis","Сбор и анализ устройств"),
-            ("connections","M16,7 L6,24 L26,24 Z M12,5 A4,4 0 1 0 20,5 A4,4 0 1 0 12,5 M2,25 A4,4 0 1 0 10,25 A4,4 0 1 0 2,25 M22,25 A4,4 0 1 0 30,25 A4,4 0 1 0 22,25","Connections","Соединения","NAT and access","Доступы, NAT и маршруты"),
+            ("routers","M2,16 L2,25 L30,25 L30,16 Z M7,16 L7,5 M25,16 L25,5 M5,4 A2,2 0 1 0 9,4 A2,2 0 1 0 5,4 M23,4 A2,2 0 1 0 27,4 A2,2 0 1 0 23,4 M7,21 L9,21 M13,21 L15,21 M19,21 L21,21","Routers","Роутеры","Collect NAT snapshots","Снимки NAT с роутеров"),
+            ("connections","M16,7 L6,24 L26,24 Z M12,5 A4,4 0 1 0 20,5 A4,4 0 1 0 12,5 M2,25 A4,4 0 1 0 10,25 A4,4 0 1 0 2,25 M22,25 A4,4 0 1 0 30,25 A4,4 0 1 0 22,25","Connections","Соединения","Review network access","Анализ доступа к сети"),
             ("tcp","M16,2 L28,7 L26,20 Q23,28 16,31 Q9,28 6,20 L4,7 Z M16,11 L16,20 M12,16 L20,16","TCP","TCP","Observed port checks","Проверка портов и сервисов"),
-            ("traffic","M4,27 L4,18 L9,18 L9,27 Z M13,27 L13,11 L18,11 L18,27 Z M22,27 L22,3 L27,3 L27,27 Z","Traffic","Трафик","TOP Traffic","Анализ и статистика"),
+            ("traffic","M4,27 L4,18 L9,18 L9,27 Z M13,27 L13,11 L18,11 L18,27 Z M22,27 L22,3 L27,3 L27,27 Z","Traffic","Трафик","Compare device traffic","Трафик по устройствам"),
             ("issues","M16,3 L30,28 L2,28 Z M16,12 L16,19 M16,23 L16,24","Issues","Проблемы","Errors and timeouts","Ошибки и предупреждения")};
         foreach(var (id,geometry,en,ru,subEn,subRu) in definitions)
         {
-            var b=new Button{Style=(Style)FindResource("ModuleTileButton"),Margin=new Thickness(0,0,id=="issues"?0:8,0),Padding=new Thickness(12,12,12,12),MinHeight=80,ToolTip=T(subEn,subRu)};
-            b.SetResourceReference(Control.BackgroundProperty,"Module_"+id+"_Bg");b.SetResourceReference(Control.BorderBrushProperty,"Module_"+id+"_Fg");
-            var row=new DockPanel{LastChildFill=true};var icon=Glyph(geometry,"Module_"+id+"_Fg",24);icon.Margin=new Thickness(0,0,8,0);DockPanel.SetDock(icon,Dock.Left);row.Children.Add(icon);
+            var b=new Button{Style=(Style)FindResource("ModuleTileButton"),Margin=new Thickness(0,0,id=="issues"?0:8,0),Padding=new Thickness(12,12,12,12),MinHeight=62,ToolTip=T(subEn,subRu)};
+            b.SetResourceReference(Control.BackgroundProperty,"PanelBg");b.SetResourceReference(Control.BorderBrushProperty,"Module_"+id+"_Fg");
+            var row=new DockPanel{LastChildFill=true};var icon=Glyph(geometry,"TextSecondary",22);icon.Margin=new Thickness(0,0,12,0);DockPanel.SetDock(icon,Dock.Left);row.Children.Add(icon);
             var content=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
             var title=new TextBlock{Text=T(en,ru),FontSize=16,FontWeight=FontWeights.SemiBold,TextTrimming=TextTrimming.CharacterEllipsis};title.SetResourceReference(TextBlock.ForegroundProperty,"TextMain");content.Children.Add(title);
             var hint=new TextBlock{Text=T(subEn,subRu),FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(0,4,0,0)};hint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");content.Children.Add(hint);row.Children.Add(content);
@@ -146,6 +146,13 @@ public partial class MainWindow
     private void ReflowPanels()
     {
         bool home=_module==""&&_page=="overview";
+        // The launch menu becomes a compact navigation strip inside a module.
+        ModuleTiles.Columns = home ? 1 : 5;
+        ModuleTiles.MaxWidth = home ? 620 : double.PositiveInfinity;
+        ModuleTiles.VerticalAlignment = home ? VerticalAlignment.Center : VerticalAlignment.Top;
+        Grid.SetRowSpan(ModuleTiles, home ? 5 : 1);
+        foreach (var (id, button) in _moduleButtons)
+            button.Margin = home ? new Thickness(0, 3, 0, 3) : new Thickness(0, 0, id == "issues" ? 0 : 6, 0);
         bool workExpanded=!home&&(_module!=""?_moduleExpanded:_tableExpanded);
         bool logExpanded=!home&&_logExpanded;
         WorkRow.Height=workExpanded?new GridLength(logExpanded?4:1,GridUnitType.Star):GridLength.Auto;

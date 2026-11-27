@@ -21,7 +21,7 @@
   </Grid.RowDefinitions>
 
   <!-- Custom chrome / header -->
-  <Border Grid.Row="0" BorderBrush="{DynamicResource Tone_1A303A}" BorderThickness="0,0,0,1" Background="{DynamicResource HeaderGradient}">
+  <Border Grid.Row="0" BorderBrush="{DynamicResource Tone_1A303A}" BorderThickness="0,0,0,1" Background="{DynamicResource WindowBg}">
     <Grid MouseLeftButtonDown="Header_MouseLeftButtonDown">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
@@ -37,10 +37,10 @@
           <TextBlock Text="{x:Static loc:UiText.X002}" Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}" FontWeight="Normal" FontSize="14"/>
           <TextBlock x:Name="HeaderVersionText" Text="{x:Static loc:UiText.X003}" Margin="12,6,0,0" Foreground="{DynamicResource TextSecondary}" FontSize="12"/>
         </StackPanel>
-        <TextBlock Text="{x:Static loc:UiText.X004}" FontSize="10" Foreground="{DynamicResource Tone_92B0C3}" Margin="0,4,0,0"/>
+
       </StackPanel>
       <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0,14,0" VerticalAlignment="Center">
-        <Border BorderBrush="{DynamicResource Tone_206C6F}" Background="{DynamicResource Tone_113C41}" CornerRadius="11" Padding="12,8" Margin="0,0,12,0">
+        <Border Visibility="Collapsed" BorderBrush="{DynamicResource Tone_206C6F}" Background="{DynamicResource Tone_113C41}" CornerRadius="11" Padding="12,8" Margin="0,0,12,0">
           <TextBlock Text="{x:Static loc:UiText.X005}" FontSize="10" FontWeight="SemiBold" Foreground="#70E5D7"/>
         </Border>
         <Button x:Name="BtnUpdates" Content="{x:Static loc:UiText.X006}" Style="{StaticResource FlatButton}" Click="Updates_Click" ToolTip="{x:Static loc:UiText.HintUpdates}" Margin="0,0,8,0"/>
