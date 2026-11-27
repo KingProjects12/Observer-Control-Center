@@ -44,52 +44,17 @@ internal static class UiSmoke
                 Layout(update); Require(progress.Value==93,"progress");
                 var nav=FindButton(main,"NavOverview");
                 var banner=(Border)main.FindName("SignalBanner");
-                Require(banner.Visibility==Visibility.Visible && nav.Margin.Bottom==9,"classic banner and spacing");
+                Require(banner.Visibility==Visibility.Visible,"classic banner and spacing");
                 var before=((DataGrid)main.FindName("TrafficGrid")).ItemsSource;
                 Click(FindButton(main,"ThemeSignalButton"));
                 foreach(var w in windows)Layout(w);
-                Require(AppearanceTheme.IsSignal && banner.Visibility==Visibility.Visible && nav.Margin.Bottom==9,"signal theme and spacing");
+                Require(AppearanceTheme.IsSignal && banner.Visibility==Visibility.Visible,"signal theme and spacing");
                 Require((FindButton(main,"ThemeSignalButton").Tag as string)=="selected","signal selection");
                 Require(ReferenceEquals(before,((DataGrid)main.FindName("TrafficGrid")).ItemsSource),"theme preserves data binding");
                 Require(((SolidColorBrush)main.FindResource("Accent")).Color==Color.FromRgb(105,223,255),"signal accent");
                 Click(FindButton(main,"ThemeClassicButton"));Layout(main);
-                Require(!AppearanceTheme.IsSignal && banner.Visibility==Visibility.Visible && nav.Margin.Bottom==9,"classic restored");
+                Require(!AppearanceTheme.IsSignal && banner.Visibility==Visibility.Visible,"classic restored");
                 Require(((SolidColorBrush)main.FindResource("Accent")).Color==Color.FromRgb(61,231,234),"classic accent restored");
-                foreach(bool signal in new[]{false,true})
-                {
-                    Click(FindButton(main,signal?"ThemeSignalButton":"ThemeClassicButton"));
-                    foreach(string name in new[]{"NavAccess","NavNat","NavVpn","NavCollectTraffic","NavReports","NavImport","NavTools","NavHelp"})
-                    {
-                        var action=FindButton(main,name);
-                        var visibility=action.Visibility;action.Visibility=Visibility.Visible;
-                        // An offline window is never shown; a clipped sidebar child may not have its template realized by layout.
-                        action.ApplyTemplate();
-                        using(main.BeginNavigationAction(action))
-                        {
-                            Layout(main);
-                            Require((action.Tag as string)=="selected" && nav.Tag==null,"temporary selection "+name);
-                            action.ApplyTemplate();
-                            var halo=action.Template.FindName("SignalSelection",action) as Border;
-                            Require(halo!=null,"selection template part "+name);
-                            Require((double)halo!.GetAnimationBaseValue(UIElement.OpacityProperty)==1d,"selected overlay opacity "+name);
-                            action.IsEnabled=false;
-                            Require((double)halo.GetAnimationBaseValue(UIElement.OpacityProperty)==1d,"modal owner disabled overlay "+name);
-                            action.IsEnabled=true;
-                            Require(action.Margin.Bottom==9,"spacing "+name);
-                        }
-                        Require((nav.Tag as string)=="selected" && action.Tag==null,"selection restored "+name);
-                        var inactive=(Border)action.Template.FindName("SignalSelection",action);
-                        Require((double)inactive.GetAnimationBaseValue(UIElement.OpacityProperty)==0d,"inactive overlay opacity "+name);
-                        action.Visibility=visibility;
-                    }
-                    var menu=main.BeginNavigationAction(FindButton(main,"NavTools"));
-                    using(main.BeginNavigationAction(FindButton(main,"NavHelp")))
-                    {
-                        menu.Dispose();
-                        Require((FindButton(main,"NavHelp").Tag as string)=="selected","nested selection retained");
-                    }
-                    Require((nav.Tag as string)=="selected","nested selection restored");
-                }
                 Click(FindButton(main,"ThemeClassicButton"));
                 Require(main.ModuleSmoke(),"five embedded modules / shared state classic");
                 Click(FindButton(main,"ThemeSignalButton"));

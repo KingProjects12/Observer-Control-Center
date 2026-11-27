@@ -53,14 +53,17 @@ public partial class MainWindow : Window
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         var file = ReportLocator.FindLatest("08_Top_Traffic.csv");
-        if (file != null) { LoadTraffic(file); ShowModule("routers"); }
+        if (file != null) LoadTraffic(file,false);
+        if(ReportLocator.FindLatest("07_Office_To_Connections.csv") is string nat) LoadConnections(nat);
+        ShowPage("overview");
         else AddLog(UiText.T("No local 08_Top_Traffic.csv. Click LOAD CSV.", "Нет локальных 08_Top_Traffic.csv. Нажми ЗАГРУЗИТЬ CSV."));
         await WindowMotion.FadeAsync(this, 1, 280);
     }
 
     private void AddLog(string message)
     {
-        var entry = new ConsoleEntry($"[{DateTime.Now:HH:mm:ss}] {message}", ConsoleEntry.Classify(message));
+        var category=ConsoleEntry.Classify(message);
+        var entry = new ConsoleEntry($"[{DateTime.Now:HH:mm:ss}] [{category}] {message}", category);
         _consoleItems.Add(entry);
         LogList.Document.Blocks.Add(new Paragraph(new Run(entry.Text) { Foreground = entry.Color })
         {
@@ -79,7 +82,7 @@ public partial class MainWindow : Window
         BottomStatus.Foreground=entry.Color;
     }
 
-    private void LoadTraffic(string file)
+    private void LoadTraffic(string file,bool navigate=true)
     {
         try
         {
@@ -106,7 +109,8 @@ public partial class MainWindow : Window
             PageSubtitle.Text = Path.GetFileName(Path.GetDirectoryName(file)) + "  •  " + (data.FirstOrDefault()?.Window ?? UiText.T("unknown window", "неизвестное окно"));
             _island?.SetSummary(data.Count, UiText.T("●  Local statistics loaded", "●  Локальная статистика загружена"));
             AddLog((UiText.IsRussian ? $"CSV IMPORT  //  {data.Count} устройств; {FormatBytes(bytes)}; источник={Path.GetFileName(file)}" : $"CSV IMPORT  //  {data.Count} devices; {FormatBytes(bytes)}; source={Path.GetFileName(file)}"));
-            ShowPage("traffic");
+            _trafficReport=file;
+            if(navigate)ShowPage("traffic");
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
         {
@@ -125,11 +129,12 @@ public partial class MainWindow : Window
     private void ShowPage(string page)
     {
         _page = page;
-        if(page=="overview")DisplayModule("routers");else DisplayLegacyReport();
+        DisplayLegacyReport();
         RefreshNavigationSelection();
         bool showConnections = page == "connections";
         TrafficGrid.Visibility = showConnections ? Visibility.Collapsed : Visibility.Visible;
         ConnectionsGrid.Visibility = showConnections ? Visibility.Visible : Visibility.Collapsed;
+        DashboardTableToggle.Content=showConnections?T("Top devices","Топ устройств"):T("Network results","Результаты сети");
         if (page == "connections")
         {
             PageTitle.Text = UiText.T("CONNECTIONS / WHO → WHERE", "СОЕДИНЕНИЯ / WHO → WHERE");
@@ -139,9 +144,10 @@ public partial class MainWindow : Window
         else
         {
             PageTitle.Text = page == "traffic" ? UiText.T("TOP TRAFFIC / NETWORK ANALYTICS", "ТОП ТРАФИКА / СЕТЕВАЯ АНАЛИТИКА") : UiText.T("NETWORK OVERVIEW", "ОБЗОР СЕТИ");
-            TableTitle.Text = UiText.T("TOP CONSUMERS", "ТОП ПОТРЕБИТЕЛЕЙ");
+            TableTitle.Text = UiText.T("Top devices", "Топ устройств");
             TableHint.Text = UiText.T("Volume for the selected Keenetic monitor window", "Объём за выбранное окно монитора Keenetic");
         }
+        UpdateDashboardTableVisibility();
         AnimateWorkspacePage();
     }
 
@@ -194,6 +200,7 @@ public partial class MainWindow : Window
         try
         {
             _connections = CsvTableReader.ReadTable(file);
+            _networkReport=file;
             ConnectionsGrid.ItemsSource = _connections.DefaultView;
             AddLog((UiText.IsRussian ? $"CONNECTIONS  //  {_connections.Rows.Count} строк; {Path.GetFileName(file)}" : $"CONNECTIONS  //  {_connections.Rows.Count} rows; {Path.GetFileName(file)}"));
         }
@@ -231,7 +238,7 @@ public partial class MainWindow : Window
             AddLog(UiText.T("REPORTS  //  report folder has not been created", "REPORTS  //  папка отчётов ещё не создана"));
             return;
         }
-        var folder = _reportPath.Length > 0 ? Path.GetDirectoryName(_reportPath) : ReportLocator.ResultsRoot;
+        var folder = _reportPath.Length > 0 && File.Exists(_reportPath) ? Path.GetDirectoryName(_reportPath) : ReportLocator.ResultsRoot;
         Process.Start(new ProcessStartInfo("explorer.exe")
         {
             Arguments = $"\"{folder}\"", UseShellExecute = true

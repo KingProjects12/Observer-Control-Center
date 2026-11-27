@@ -55,12 +55,19 @@ internal sealed class LegacyCollectorPanel : UserControl
     internal event Action<string>? LogLine;
     internal event Action? StateChanged;
     internal event Action<string,string>? NatReady;
+    internal event Action<string,bool>? ReportReady;
+    internal bool IsNatRunning=>IsBusy&&_runningOperation=="nat";
+    private string _runningOperation="";
+    private string _requestedMode="nat";
+    private readonly Dictionary<string,(string Folder,string? Excel,string? Selected)> _reportsByMode=new();
+    private string? _natFile;
+    internal string? NatFile=>_natFile;
     internal event Action? NavigateAccess;
     internal event Action<string>? CsvSelected;
     internal bool IsBusy => _running!=null;
     internal int Processed => _live.Values.Count(r=>r.Status is "COMPLETE" or "PARTIAL" or "CANCELLED" || r.Status.StartsWith("FAILED"));
     internal int RouterCount => _live.Count;
-    internal int OfficeCount => _lastBatch?.OfficeCount??0;
+    internal int OfficeCount => IsNatRunning?_live.Values.Sum(r=>int.TryParse(r.Office,out int n)?n:0):_lastBatch?.OfficeCount??0;
     internal int FailedCount => _live.Values.Count(r=>r.Status.StartsWith("FAILED"));
     internal int PartialCount => _live.Values.Count(r=>r.Status=="PARTIAL");
     internal object[] Issues => _live.Values.Where(r=>r.Status.StartsWith("FAILED")||r.Status is "PARTIAL" or "CANCELLED" or "NOT_STARTED").Select(r=>(object)new {r.Router,r.Status,r.Samples,r.Office}).ToArray();
@@ -82,11 +89,19 @@ internal sealed class LegacyCollectorPanel : UserControl
     private void SaveProtocol(){if(_offline)return;try{Directory.CreateDirectory(Path.GetDirectoryName(ProtocolPath)!);File.WriteAllText(ProtocolPath,_https.IsChecked==true?"https":"http");}catch(IOException){}catch(UnauthorizedAccessException){}}
     internal void SetMode(string operation,bool? vpn=null)
     {
+        _requestedMode=operation;
         if(IsBusy)return;
-        _operation=operation;
+        if(_operation!=operation)
+        {
+            if(_folder!=null)_reportsByMode[_operation]=(_folder,_excelPath,(_view.SelectedItem as View)?.File);
+            _operation=operation;
+            if(_reportsByMode.TryGetValue(operation,out var saved))
+                ApplyReportView(saved.Folder,saved.Excel,operation=="traffic",saved.Selected);
+            else ApplyReportView(null,null,false,null);
+        }
         if(vpn.HasValue)_vpn.IsChecked=vpn.Value;
         _start.Content=operation=="traffic"?T("▶  Collect traffic","▶  Собрать трафик"):operation=="probe"?T("▶  Check router TCP","▶  Проверить TCP роутера"):T("▶  Start NAT collection","▶  Начать сбор NAT");
-        if(operation=="traffic"&&_period.SelectedIndex==0)_period.SelectedIndex=3;
+        _operation=operation;
     }
     public LegacyCollectorPanel(string address, bool vpn = false, bool traffic = false,bool embedded=false,bool offline=false)
     {
@@ -166,7 +181,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         _show = Button(T("SHOW IN OBSERVER", "ПОКАЗАТЬ В OBSERVER"), (_,_) => { if (_view.SelectedItem is View v && _folder != null) { SelectedCsv = Path.Combine(_folder,v.File); CsvSelected?.Invoke(SelectedCsv); } }); _show.IsEnabled = false; _show.ToolTip=T("Open the selected CSV in the main table.","Показать выбранный CSV в главной таблице.");
         _excel = Button(T("OPEN EXCEL", "ОТКРЫТЬ EXCEL"), (_,_) => Open(_excelPath)); _excel.IsEnabled = false; _excel.ToolTip=T("Open the generated Excel workbook.","Открыть сформированный файл Excel.");
         _reports = Button(T("OPEN REPORTS", "ОТКРЫТЬ ОТЧЁТЫ"), (_,_) => Open(_folder)); _reports.IsEnabled = false; _reports.ToolTip=T("Open the current report folder.","Открыть папку текущего отчёта.");
-        _access=Button(T("ANALYZE ACCESS", "АНАЛИЗ ДОСТУПОВ"),(_,_)=>{var csv=_folder==null?null:Path.Combine(_folder,"07_Office_To_Connections.csv");if(_embedded){if(csv!=null)NatReady?.Invoke(csv,_target.Text);NavigateAccess?.Invoke();}else{new AccessAnalyzerWindow(csv,_target.Text){Owner=DialogOwner}.ShowDialog();}});_access.IsEnabled=false;
+        _access=Button(T("ANALYZE ACCESS", "АНАЛИЗ ДОСТУПОВ"),(_,_)=>{var csv=_folder==null?null:Path.Combine(_folder,"07_Office_To_Connections.csv");if(_embedded){NavigateAccess?.Invoke();}else{new AccessAnalyzerWindow(csv,_target.Text){Owner=DialogOwner}.ShowDialog();}});_access.IsEnabled=false;
         Group("05 / ACTIVITY", "05 / ЖУРНАЛ", "Progress and diagnostic details. Copy the log when troubleshooting.", "Прогресс и диагностика. При ошибке скопируйте журнал.");
         _status = new TextBlock { Text = T("Ready. Choose NAT for destinations; TOP Traffic for volume.", "Готово. NAT — адреса назначения; TOP Traffic — объём трафика."), TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("DialogAccent") }; section.Children.Add(_status);
         _log = new RichTextBox { IsReadOnly = true, MinHeight = 140, MaxHeight = 200, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Background = (Brush)FindResource("DialogLog"), Foreground = (Brush)FindResource("DialogText"), Margin = new Thickness(0,8,0,0) }; section.Children.Add(_log);
@@ -237,11 +252,23 @@ internal sealed class LegacyCollectorPanel : UserControl
     }
     private void SetReport(string folder, string? excel, string status, bool traffic)
     {
-        _folder = folder; _excelPath = excel;
-        var views = Views.Where(v=>File.Exists(Path.Combine(folder,v.File))).Select(v=>new View(v.File,T(v.En,v.Ru))).ToList();
-        _view.ItemsSource = views;
-        _view.SelectedItem = traffic ? views.FirstOrDefault(v=>v.File=="08_Top_Traffic.csv") : views.FirstOrDefault();
+        string mode=traffic?"traffic":"nat";
+        _reportsByMode[mode]=(folder,excel,null);
+        if(mode==_operation)ApplyReportView(folder,excel,traffic,null);
         Report(status);
+        var file=Path.Combine(folder,traffic?"08_Top_Traffic.csv":"07_Office_To_Connections.csv");
+        if(File.Exists(file))
+        {
+            if(!traffic){_natFile=file;NatReady?.Invoke(file,Engine.TargetSubnet);}
+            ReportReady?.Invoke(file,traffic);
+        }
+    }
+    private void ApplyReportView(string? folder,string? excel,bool traffic,string? selected)
+    {
+        _folder=folder;_excelPath=excel;
+        var views=folder==null?new List<View>():Views.Where(v=>File.Exists(Path.Combine(folder,v.File))).Select(v=>new View(v.File,T(v.En,v.Ru))).ToList();
+        _view.ItemsSource=views;_view.SelectedItem=views.FirstOrDefault(v=>v.File==selected)??(traffic?views.FirstOrDefault(v=>v.File=="08_Top_Traffic.csv"):views.FirstOrDefault());
+        _show.IsEnabled=!IsBusy&&_view.SelectedItem!=null;_excel.IsEnabled=!IsBusy&&File.Exists(_excelPath);_reports.IsEnabled=!IsBusy&&Directory.Exists(_folder);_access.IsEnabled=!IsBusy&&_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv"));
     }
     private async Task Run(string operation)
     {
@@ -270,7 +297,7 @@ internal sealed class LegacyCollectorPanel : UserControl
             if (operation == "import") { var dialog = new OpenFileDialog { Filter="CSV (*.csv)|*.csv", CheckFileExists=true }; if ((DialogOwner is Window owner?dialog.ShowDialog(owner):dialog.ShowDialog())!=true) return; import=dialog.FileName; }
         }
         catch(Exception ex) { Report(ex.Message); return; }
-        using var cts = new CancellationTokenSource(); _running=cts; _stop.IsEnabled=true; _connection.IsExpanded=false; StateChanged?.Invoke();
+        using var cts = new CancellationTokenSource(); _running=cts; _runningOperation=operation; _stop.IsEnabled=true; _connection.IsExpanded=false; StateChanged?.Invoke();
         foreach(var b in _commands) b.IsEnabled=false;
         _show.IsEnabled=_excel.IsEnabled=_reports.IsEnabled=_retry.IsEnabled=_access.IsEnabled=false;
         if(operation=="nat"){_live.Clear();if(prior!=null)foreach(var s in prior.Statuses)_live[s.Router]=new RouterLive{Router=s.Router,Status=s.Status,Office=s.OfficeRows};foreach(var a in routers)_live[a]=new RouterLive{Router=a};RefreshLive();}
@@ -301,7 +328,7 @@ internal sealed class LegacyCollectorPanel : UserControl
                 var single=result.Statuses.Length==1&&result.Complete==1?result.Statuses[0].ReportFolder:null;
                 SetReport(single??result.Folder,single==null?result.Excel:Path.Combine(single,"Keenetic_Network_Connections.xlsx"),T("Combined office rows: ","Общий отчёт в офис: ")+result.OfficeCount+$" | OK {result.Complete} | PARTIAL {result.Partial} | FAILED {result.Failed} | CANCELLED/NOT STARTED {result.Skipped}",false);
                 if(string.IsNullOrEmpty(result.Excel)) Report(T("Excel unavailable; CSV is saved.","Excel недоступен; CSV сохранён."));
-                if(_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv")))NatReady?.Invoke(Path.Combine(_folder,"07_Office_To_Connections.csv"),Engine.TargetSubnet);
+
             }
             else
             {
@@ -311,7 +338,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         }
         catch(OperationCanceledException) when(cts.IsCancellationRequested){Report("CANCELLED: "+T("Stopped by user.","Остановлено пользователем."));}
         catch(Exception ex){var kind=Engine.Classify(ex,cts.Token);Report(kind+": "+Engine.Friendly(ex,kind)+" | "+ex.Message);}
-        finally {secret="";_running=null; _stop.IsEnabled=false;foreach(var b in _commands)b.IsEnabled=true;_show.IsEnabled=_view.SelectedItem!=null;_excel.IsEnabled=File.Exists(_excelPath);_reports.IsEnabled=Directory.Exists(_folder);_retry.IsEnabled=_lastBatch?.Statuses.Any(s=>s.Status!="COMPLETE")==true;_access.IsEnabled=_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv"));_address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=true;StateChanged?.Invoke();}
+        finally {secret="";_running=null;_runningOperation=""; _stop.IsEnabled=false;foreach(var b in _commands)b.IsEnabled=true;_show.IsEnabled=_view.SelectedItem!=null;_excel.IsEnabled=File.Exists(_excelPath);_reports.IsEnabled=Directory.Exists(_folder);_retry.IsEnabled=_lastBatch?.Statuses.Any(s=>s.Status!="COMPLETE")==true;_access.IsEnabled=_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv"));_address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=true;SetMode(_requestedMode);StateChanged?.Invoke();}
     }
 }
 

@@ -15,7 +15,7 @@
  <Border x:Name="GlassShell" BorderBrush="{DynamicResource Tone_71516B74}" BorderThickness="1" Background="{DynamicResource WindowBg}">
  <Grid>
   <Grid.RowDefinitions>
-   <RowDefinition Height="87"/>
+   <RowDefinition Height="72"/>
    <RowDefinition Height="*"/>
    <RowDefinition Height="36"/>
   </Grid.RowDefinitions>
@@ -44,6 +44,7 @@
           <TextBlock Text="{x:Static loc:UiText.X005}" FontSize="10" FontWeight="SemiBold" Foreground="#70E5D7"/>
         </Border>
         <Button x:Name="BtnUpdates" Content="{x:Static loc:UiText.X006}" Style="{StaticResource FlatButton}" Click="Updates_Click" ToolTip="{x:Static loc:UiText.HintUpdates}" Margin="0,0,8,0"/>
+        <Button x:Name="BtnSettings" Content="⚙" Style="{StaticResource FlatButton}" Click="SettingsMenu_Click" Margin="0,0,8,0"/>
         <Button x:Name="BtnIsland" Content="{x:Static loc:UiText.X007}" Style="{StaticResource FlatButton}" Click="Island_Click" ToolTip="{x:Static loc:UiText.HintIsland}" Margin="0,0,8,0"/>
         <Button Content="—" Width="43" Style="{StaticResource FlatButton}" ToolTip="{x:Static loc:UiText.HintMinimize}" Click="Minimize_Click" Margin="0,0,5,0"/>
         <Button Content="▢" Width="43" Style="{StaticResource FlatButton}" ToolTip="{x:Static loc:UiText.HintMaximize}" Click="Maximize_Click" Margin="0,0,5,0"/>
@@ -56,11 +57,11 @@
   <Grid x:Name="WorkspacePanel" Grid.Row="1" Margin="13,13,13,10">
     <Grid.RenderTransform><TranslateTransform Y="0"/></Grid.RenderTransform>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="246"/>
-      <ColumnDefinition Width="13"/>
+      <ColumnDefinition Width="0"/>
+      <ColumnDefinition Width="0"/>
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
-    <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="12">
+    <Border x:Name="RetiredSidebar" Grid.Column="0" Visibility="Collapsed" Style="{StaticResource CardBorder}" Padding="12">
       <DockPanel LastChildFill="True">
         <StackPanel DockPanel.Dock="Bottom" Margin="5,12,5,3">
            <TextBlock Text="{x:Static loc:UiText.ThemeHeading}" Style="{StaticResource LabelSmall}" Margin="3,0,0,7"/>
@@ -113,11 +114,11 @@
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="*"/>
         <RowDefinition Height="Auto"/>
-        <RowDefinition Height="170"/>
+        <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
-      <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="13" Margin="0,0,0,10">
+      <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="0" Margin="0,0,0,10">
         <StackPanel>
-        <Border x:Name="SignalBanner" Background="{DynamicResource SignalHeroGradient}" CornerRadius="12" BorderBrush="{DynamicResource BrandLine}" BorderThickness="1" Padding="17,9" Margin="0,0,0,12">
+        <Border x:Name="SignalBanner" Background="{DynamicResource SignalHeroGradient}" CornerRadius="12" BorderBrush="{DynamicResource BrandLine}" BorderThickness="1" Padding="17,9" Margin="0">
           <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="155"/></Grid.ColumnDefinitions>
             <StackPanel VerticalAlignment="Center">
               <TextBlock Text="KINGPROJECTS / NETWORK TOOLS" Foreground="#A0AEC3" FontSize="10" FontWeight="SemiBold"/>
@@ -178,35 +179,45 @@
           <StackPanel><TextBlock Text="{x:Static loc:UiText.X036}" Style="{StaticResource LabelSmall}"/><TextBlock Text="CSV" Foreground="{DynamicResource Accent}" FontSize="26" FontWeight="SemiBold"/></StackPanel>
         </Border>
       </Grid>
+      <Border x:Name="SessionPanel" Grid.Row="2" Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,0,0,10">
+        <DockPanel>
+          <Button x:Name="SessionToggle" DockPanel.Dock="Right" Style="{StaticResource FlatButton}" Click="SessionToggle_Click" Content="⌃" VerticalAlignment="Center" Margin="8,0,0,0"/>
+          <StackPanel DockPanel.Dock="Left" Width="182" VerticalAlignment="Center" Margin="0,0,12,0">
+            <TextBlock x:Name="SessionTitle" FontSize="17" FontWeight="SemiBold"/>
+            <TextBlock x:Name="SessionHint" Style="{StaticResource LabelSmall}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+          </StackPanel>
+          <UniformGrid x:Name="SessionMetrics" Columns="4"/>
+        </DockPanel>
+      </Border>
       <Grid x:Name="OldReportPanel" Grid.Row="3" Visibility="Collapsed" Margin="0,0,0,10">
-        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="11"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="0"/><ColumnDefinition Width="0"/></Grid.ColumnDefinitions>
         <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="13">
           <Grid>
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
             <Grid Grid.Row="0" Margin="2,0,2,12">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="230"/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions>
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="210"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
               <StackPanel VerticalAlignment="Center">
-                <TextBlock x:Name="TableTitle" Text="{x:Static loc:UiText.X037}" FontSize="13" FontWeight="Bold"/>
+                <TextBlock x:Name="TableTitle" Text="{x:Static loc:UiText.X037}" FontSize="19" FontWeight="Bold"/>
                 <TextBlock x:Name="TableHint" Text="{x:Static loc:UiText.X038}" Style="{StaticResource LabelSmall}" Margin="0,3,0,0"/>
               </StackPanel>
               <TextBox Grid.Column="1" x:Name="SearchBox" Style="{StaticResource TextInput}" TextChanged="SearchBox_TextChanged"
                        ToolTip="{x:Static loc:UiText.X039}" Margin="5,0,8,0"/>
-              <Button Grid.Column="2" Content="{x:Static loc:UiText.X040}" Style="{StaticResource AccentButton}" Click="Import_Click"/>
+              <StackPanel Grid.Column="2" Orientation="Horizontal"><Button x:Name="DashboardTableToggle" Style="{StaticResource FlatButton}" Click="DashboardTableToggle_Click" Margin="0,0,8,0"/><Button Content="{x:Static loc:UiText.X040}" Style="{StaticResource FlatButton}" Click="Import_Click" Margin="0,0,8,0"/><Button x:Name="DashboardActions" Content="⋯" Style="{StaticResource FlatButton}" Click="DashboardActions_Click"/><Button x:Name="DashboardCollapse" Content="⌃" Style="{StaticResource FlatButton}" Click="DashboardCollapse_Click" Margin="8,0,0,0"/></StackPanel>
             </Grid>
-            <DataGrid Grid.Row="1" x:Name="TrafficGrid" AlternationCount="2" Visibility="Visible">
+            <DataGrid Grid.Row="1" x:Name="TrafficGrid" AlternationCount="2" Visibility="Visible" RowHeight="36" FontSize="13" GridLinesVisibility="Horizontal">
               <DataGrid.Columns>
                 <DataGridTextColumn Header="#" Width="44" Binding="{Binding Rank}"/>
                 <DataGridTextColumn Header="{x:Static loc:UiText.X041}" MinWidth="150" Width="*" Binding="{Binding Name}"/>
-                <DataGridTextColumn Header="IP" Width="125" Binding="{Binding IP}"/>
-                <DataGridTextColumn Header="{x:Static loc:UiText.X042}" Width="96" Binding="{Binding Download}"/>
-                <DataGridTextColumn Header="{x:Static loc:UiText.X043}" Width="96" Binding="{Binding Upload}"/>
-                <DataGridTextColumn Header="{x:Static loc:UiText.X044}" Width="96" Binding="{Binding Total}"/>
+                <DataGridTextColumn Header="IP" Width="*" Binding="{Binding IP}"/>
+                <DataGridTextColumn Header="{x:Static loc:UiText.X042}" Width="*" Binding="{Binding Download}"/>
+                <DataGridTextColumn Header="{x:Static loc:UiText.X043}" Width="*" Binding="{Binding Upload}"/>
+                <DataGridTextColumn Header="{x:Static loc:UiText.X044}" Width="*" Binding="{Binding Total}"/><DataGridTextColumn x:Name="TrafficStatusColumn" Width="*" Binding="{Binding Status}"/>
               </DataGrid.Columns>
             </DataGrid>
-            <DataGrid Grid.Row="1" x:Name="ConnectionsGrid" Visibility="Collapsed" AutoGenerateColumns="True" AlternationCount="2"/>
+            <DataGrid Grid.Row="1" x:Name="ConnectionsGrid" Visibility="Collapsed" AutoGenerateColumns="True" AlternationCount="2" RowHeight="36" FontSize="13" GridLinesVisibility="Horizontal"/>
           </Grid>
         </Border>
-        <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="14">
+        <Border Grid.Column="2" Visibility="Collapsed" Style="{StaticResource CardBorder}" Padding="14">
           <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
             <StackPanel>
               <TextBlock Text="{x:Static loc:UiText.X045}" FontSize="12" FontWeight="Bold"/>
@@ -231,33 +242,40 @@
           </Grid>
         </Border>
       </Grid>
-      <Border x:Name="ModuleSurface" Grid.Row="2" Grid.RowSpan="2" Style="{StaticResource CardBorder}" Padding="8" Margin="0,0,0,8">
-        <ContentControl x:Name="ModuleHost"/>
+      <Border x:Name="ModuleSurface" Grid.Row="3" Visibility="Collapsed" Style="{StaticResource CardBorder}" Padding="8" Margin="0,0,0,8">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top" Margin="5,0,5,8">
+            <Button x:Name="ModuleCollapse" DockPanel.Dock="Right" Style="{StaticResource FlatButton}" Click="ModuleCollapse_Click" Margin="8,0,0,0"/>
+            <TextBlock x:Name="ModuleHeading" FontSize="19" FontWeight="SemiBold" VerticalAlignment="Center"/>
+          </DockPanel>
+          <ContentControl x:Name="ModuleHost"/>
+        </DockPanel>
       </Border>
-      <Border Grid.Row="4" Style="{StaticResource CardBorder}" Padding="12,8" Margin="0,0,0,8">
+      <Border x:Name="OperationPanel" Grid.Row="4" Visibility="Collapsed" Style="{StaticResource CardBorder}" Padding="12,8" Margin="0,0,0,8">
         <StackPanel>
           <DockPanel><Button x:Name="ModuleStop" DockPanel.Dock="Right" Style="{StaticResource FlatButton}" Click="ModuleStop_Click" IsEnabled="False" Margin="8,0,0,0" Padding="9,5"/><TextBlock x:Name="ModuleSummary" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/></DockPanel>
           <ProgressBar x:Name="ModuleProgress" Height="7" Margin="0,7,0,3" Minimum="0" Maximum="1"/>
           <TextBlock x:Name="ModuleProgressText" Style="{StaticResource LabelSmall}" TextTrimming="CharacterEllipsis"/>
         </StackPanel>
       </Border>
-      <Border Grid.Row="5" Style="{StaticResource CardBorder}" Padding="12">
+      <Border x:Name="LogPanel" Grid.Row="5" Visibility="Collapsed" Style="{StaticResource CardBorder}" Padding="12">
         <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
           <Grid Margin="0,0,0,9">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <TextBlock Text="{x:Static loc:UiText.X048}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBlock Text="{x:Static loc:UiText.X048}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
               <TextBlock Text="{x:Static loc:UiText.X049}" Foreground="{DynamicResource TextSecondary}" FontSize="10" VerticalAlignment="Center" Margin="0,0,13,0"/>
+              <Button x:Name="LogToggle" Content="⌃" Style="{StaticResource FlatButton}" Click="LogToggle_Click" Margin="0,0,8,0"/>
               <Button Content="{x:Static loc:UiText.X050}" Style="{StaticResource FlatButton}" Click="CopyAllLogs_Click" ToolTip="{x:Static loc:UiText.X051}" Padding="9,5"/>
             </StackPanel>
           </Grid>
           <RichTextBox Grid.Row="1" x:Name="LogList" Background="{DynamicResource Tone_F506080B}" Foreground="{DynamicResource Tone_BBCBD8}"
-                       FontFamily="Consolas" FontSize="11" BorderThickness="0" Padding="7,4"
+                       FontFamily="Consolas" FontSize="14" Height="190" BorderThickness="0" Padding="7,4"
                        IsReadOnly="True" IsDocumentEnabled="False" AcceptsTab="False"
                        SelectionBrush="{DynamicResource Tone_4D458D98}" CaretBrush="{DynamicResource Tone_43D9DC}"
                        ScrollViewer.VerticalScrollBarVisibility="Auto"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto">
-             <FlowDocument PagePadding="0" FontFamily="Consolas" FontSize="11"
+             <FlowDocument PagePadding="0" FontFamily="Consolas" FontSize="14"
                            ColumnWidth="999999" TextAlignment="Left"/>
           </RichTextBox>
         </Grid>

@@ -25,15 +25,21 @@ internal sealed class AccessAnalyzerPanel : UserControl
     internal event Action<string>? LogLine;
     internal event Action? StateChanged;
     internal bool IsBusy=>_running!=null;
-    internal int? OpenTcp=>_analysis?.Endpoints.Count(r=>r.TcpStatus=="TCP OPEN");
+    internal int? OpenTcp=>_analysis==null||!_analysis.Endpoints.Any(r=>r.CheckedAt.Length>0&&r.Protocol=="TCP")?null:_analysis.Endpoints.Count(r=>r.TcpStatus=="TCP OPEN");
     internal void Stop()=>_running?.Cancel();
     internal void SetInput(string path,string target)
     {
         if(IsBusy||!File.Exists(path))return;
+        if(_paths.Count==1&&string.Equals(_paths[0],path,StringComparison.OrdinalIgnoreCase)&&_target.Text==target)return;
         _paths.Clear();_paths.Add(path);_target.Text=target;_analysis=null;_output=null;ShowPaths();RefreshGrid();SetBusy(false);
         Status(T("READY: current NAT CSV loaded.","READY: текущий CSV NAT загружен."));
     }
-    internal void SetTcpMode(bool tcp){if(_grid!=null)_view.SelectedIndex=0;}
+    private int _connectionsView;
+    private bool _tcpMode;
+    internal void SetTcpMode(bool tcp){if(_grid==null||_tcpMode==tcp)return;if(tcp){_connectionsView=_view.SelectedIndex;_view.SelectedIndex=0;}else _view.SelectedIndex=_connectionsView;_tcpMode=tcp;}
+    internal Task AnalyzeCurrentAsync()=>Analyze(false);
+    internal Task SaveCurrentAsync()=>Export();
+    internal bool HasAnalysis=>_analysis!=null;
     private Window? DialogOwner=>Window.GetWindow(this);
     public AccessAnalyzerPanel(string? initialFile=null,string? target=null)
     {
