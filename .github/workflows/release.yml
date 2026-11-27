@@ -94,7 +94,7 @@ jobs:
           $installer = Get-ChildItem 'dist/Observer-Control-Center-Setup-*.exe' | Select-Object -First 1
           if (!$installer) { throw 'Installer for release not found' }
           $notesFile = "docs/RELEASE_${tag}_PUBLIC_TEST.md"
-          $releaseNotes = if ((Test-Path $notesFile)) {
+          [string[]]$releaseNotes = if ((Test-Path $notesFile)) {
             @('--notes-file', $notesFile)
           } else {
             @('--generate-notes')
