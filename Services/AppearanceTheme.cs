@@ -9,7 +9,15 @@ internal static class AppearanceTheme
 {
     private const string RegistryPath = @"Software\KingProjects12\ObserverControlCenter";
     private static ResourceDictionary? _palette;
-    internal static bool IsSignal { get; private set; }
+    internal static bool IsSignal => Current.Id=="signal";
+    internal static ThemePreset Current {get;private set;}=ThemeCatalog.Get("classic");
+    internal static bool SnowEnabled {get;private set;}=true;
+    internal static void SetSnow(bool enabled,bool persist=false)
+    {
+        SnowEnabled=enabled;
+        if(persist)try { using var key=Registry.CurrentUser.CreateSubKey(RegistryPath);key?.SetValue("ThemeSnow",enabled?1:0,RegistryValueKind.DWord); }
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
+    }
     private static readonly (string Key,string Classic,string Signal)[] Colors =
     [
         ("WindowBg", "#FD0D0E10", "#FF10141B"),
@@ -142,13 +150,16 @@ internal static class AppearanceTheme
     }
     internal static void Initialize()
     {
-        bool signal=false;
-        try { using var key=Registry.CurrentUser.OpenSubKey(RegistryPath);signal=string.Equals(key?.GetValue("AppearanceTheme") as string,"signal",StringComparison.Ordinal); }
+        string? id=null;
+        try { using var key=Registry.CurrentUser.OpenSubKey(RegistryPath);id=key?.GetValue("AppearanceTheme") as string;SnowEnabled=key?.GetValue("ThemeSnow") is not int n || n!=0; }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
-        Apply(signal);
+        Apply(ThemeCatalog.Get(id).Id);
     }
-    internal static void Apply(bool signal,bool purple=false,int glassMode=0,bool persist=false)
+    internal static void Apply(bool signal,bool purple=false,int glassMode=0,bool persist=false)=>Apply(signal?"signal":"classic",purple,glassMode,persist);
+    internal static void Apply(string id,bool purple=false,int glassMode=0,bool persist=false)
     {
+        var preset=ThemeCatalog.Get(id);
+        bool signal=preset.Id=="signal",classicTheme=preset.Id=="classic",custom=!signal&&!classicTheme;
         var next=new ResourceDictionary();
         foreach(var (key,classic,alternate) in Colors) next[key]=BrushFor(signal?alternate:classic);
         next["NavSpacing"]=new Thickness(0,0,0,8);
@@ -166,12 +177,40 @@ internal static class AppearanceTheme
         foreach(int i in new[]{0,2,4,6})
             next["Kpi"+i+"Gradient"]=next["CardGradient"];
         next["Accent"]=BrushFor(purple?(signal?"#B3A0FF":"#B392FF"):(signal?"#69DFFF":"#3DE7EA"));
-        if(!signal) next["WindowBg"]=BrushFor(glassMode==1?"#F90D0E10":glassMode==2?"#FF0D0E10":"#FD0D0E10");
+        if(classicTheme) next["WindowBg"]=BrushFor(glassMode==1?"#F90D0E10":glassMode==2?"#FF0D0E10":"#FD0D0E10");
+        if(custom)
+        {
+            foreach(var (key,_,alternate) in Colors)
+            {
+                string value=alternate switch
+                {
+                    "#10141B"=>preset.Background,
+                    "#FF10141B"=>preset.Background,
+                    "#1A2431" or "#FF191E27"=>preset.Panel,
+                    "#253345" or "#FF222934"=>preset.Field,
+                    "#303945"=>preset.Stroke,
+                    "#69DFFF"=>preset.Accent,
+                    "#B3A0FF"=>preset.Secondary,
+                    _=>alternate
+                };
+                next[key]=BrushFor(value);
+            }
+            next["Accent"]=BrushFor(purple?preset.Secondary:preset.Accent);
+            next["DialogAccent"]=next["Accent"];
+            next["Accent2"]=BrushFor(preset.Secondary);
+            next["CardGradient"]=BrushFor(preset.Panel);
+            next["HeaderGradient"]=preset.Background==preset.End?BrushFor(preset.Background):Gradient(preset.Background,preset.Panel,preset.End);
+            next["IslandGradient"]=next["HeaderGradient"];
+            next["SignalHeroGradient"]=next["HeaderGradient"];
+            next["BrandLine"]=BrushFor(preset.Stroke);
+            next["BrandNode"]=BrushFor(preset.Panel);
+            foreach(int i in new[]{0,2,4,6})next["Kpi"+i+"Gradient"]=next["CardGradient"];
+        }
         var dictionaries=Application.Current.Resources.MergedDictionaries;
         if(_palette!=null&&dictionaries.Contains(_palette)) dictionaries[dictionaries.IndexOf(_palette)]=next;
         else dictionaries.Add(next);
-        _palette=next;IsSignal=signal;
-        if(persist)try { using var key=Registry.CurrentUser.CreateSubKey(RegistryPath);key?.SetValue("AppearanceTheme",signal?"signal":"classic",RegistryValueKind.String); }
+        _palette=next;Current=preset;
+        if(persist)try { using var key=Registry.CurrentUser.CreateSubKey(RegistryPath);key?.SetValue("AppearanceTheme",preset.Id,RegistryValueKind.String); }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
     }
 }

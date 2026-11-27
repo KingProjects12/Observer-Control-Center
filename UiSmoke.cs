@@ -14,6 +14,25 @@ internal static class UiSmoke
     private static Button FindButton(Window w,string name) =>
         w.FindName(name) as Button ?? throw new InvalidOperationException("Missing "+name);
     private static void Click(Button b)=>b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent,b));
+    private static void usingThemeGallery(MainWindow main,object? before)
+    {
+        bool snow=AppearanceTheme.SnowEnabled;
+        var gallery=new ThemeSettingsWindow(id=>AppearanceTheme.Apply(id),enabled=>AppearanceTheme.SetSnow(enabled));
+        try
+        {
+            Require(gallery.CardCount==18,"all theme cards");
+            foreach(var preset in ThemeCatalog.All)
+            {
+                gallery.Choose(preset.Id);Layout(gallery);Layout(main);
+                Require(AppearanceTheme.Current.Id==preset.Id,"theme selection "+preset.Id);
+                Require(((SolidColorBrush)main.FindResource("Accent")).Color==(Color)ColorConverter.ConvertFromString(preset.Accent)!,"theme accent "+preset.Id);
+                Require(ReferenceEquals(before,((DataGrid)main.FindName("TrafficGrid")).ItemsSource),"theme keeps data");
+            }
+            AppearanceTheme.SetSnow(false);Require(!AppearanceTheme.SnowEnabled,"snow disabled");
+            AppearanceTheme.SetSnow(true);Require(ThemeCatalog.Get("newyear").HasSnow&&ThemeCatalog.Get("winter").HasSnow,"season snow");
+        }
+        finally {gallery.Close();AppearanceTheme.SetSnow(snow);AppearanceTheme.Apply(true);}
+    }
     public static void Run()
     {
         foreach(string language in new[]{"english","russian"})
@@ -61,6 +80,7 @@ internal static class UiSmoke
                 Require(main.ModuleSmoke(),"five embedded modules / shared state signal");
                 Require(main.FindResource("WorkspaceSection") is Style,"shared section style");
                 Require(main.FindResource("CardGradient") is SolidColorBrush,"Signal surfaces are flat");
+                usingThemeGallery(main,before);
                 Click(FindButton(main,"ThemeClassicButton"));
             }
             finally { foreach(var w in windows.Reverse()) w.Close(); }

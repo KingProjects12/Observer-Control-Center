@@ -279,19 +279,31 @@ public partial class MainWindow : Window
     private void Theme_Click(object sender, RoutedEventArgs e)
     {
         _purple = !_purple;
-        AppearanceTheme.Apply(AppearanceTheme.IsSignal,_purple,_glassMode);
+        AppearanceTheme.Apply(AppearanceTheme.Current.Id,_purple,_glassMode);
         AddLog(UiText.T("THEME  //  accent: ", "THEME  //  акцент: ") + (_purple ? "lavender" : "cyan"));
     }
 
     private void RefreshThemeSelection()
     {
-        ThemeClassicButton.Tag=AppearanceTheme.IsSignal?null:"selected";
+        ThemeClassicButton.Tag=AppearanceTheme.Current.Id=="classic"?"selected":null;
         ThemeSignalButton.Tag=AppearanceTheme.IsSignal?"selected":null;
-        HeaderVersionText.Text=$"  v{GitHubReleaseClient.AppVersionText} "+(AppearanceTheme.IsSignal?"SIGNAL":UiText.T("BLACK GLASS","ЧЁРНОЕ СТЕКЛО"));
+        HeaderVersionText.Text=$"  v{GitHubReleaseClient.AppVersionText} "+AppearanceTheme.Current.Name;
+        HeaderSnow.SetSnowRequested(AppearanceTheme.Current.HasSnow&&AppearanceTheme.SnowEnabled&&!_offlineUiCheck);
     }
     private void ChangeAppearance(bool signal)
     {
         AppearanceTheme.Apply(signal,_purple,_glassMode,persist:!_offlineUiCheck);
+        RefreshThemeSelection();
+    }
+    private void SelectTheme(string id)
+    {
+        _purple=false;
+        AppearanceTheme.Apply(id,false,_glassMode,persist:!_offlineUiCheck);
+        RefreshThemeSelection();
+    }
+    private void SetThemeSnow(bool enabled)
+    {
+        AppearanceTheme.SetSnow(enabled,persist:!_offlineUiCheck);
         RefreshThemeSelection();
     }
     private void ClassicTheme_Click(object sender,RoutedEventArgs e)=>ChangeAppearance(false);
@@ -323,7 +335,7 @@ public partial class MainWindow : Window
             2 => ((byte)255, UiText.T("MATTE", "МАТОВО")),
             _ => ((byte)253, UiText.T("TRANSLUCENT", "ПРОЗРАЧНО"))
         };
-        AppearanceTheme.Apply(AppearanceTheme.IsSignal,_purple,_glassMode);
+        AppearanceTheme.Apply(AppearanceTheme.Current.Id,_purple,_glassMode);
         GlassModeButton.Content = UiText.T("✦   Glass: ", "✦   Стекло: ") + label;
         AddLog(UiText.T("SYSTEM  //  main window transparency: ", "SYSTEM  //  прозрачность основного окна: ") + label);
     }

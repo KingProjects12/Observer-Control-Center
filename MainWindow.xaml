@@ -1,6 +1,7 @@
 <Window x:Class="Observer.ControlCenter.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:Observer.ControlCenter"
  xmlns:loc="clr-namespace:Observer.ControlCenter.Services"
         Icon="/Assets/ObserverBrand.png" Title="{x:Static loc:UiText.X001}" Width="1440" Height="900"
         MinWidth="1040" MinHeight="675" WindowStartupLocation="CenterScreen"
@@ -21,13 +22,14 @@
   </Grid.RowDefinitions>
 
   <!-- Custom chrome / header -->
-  <Border Grid.Row="0" BorderBrush="{DynamicResource Tone_1A303A}" BorderThickness="0,0,0,1" Background="{DynamicResource WindowBg}">
+  <Border Grid.Row="0" BorderBrush="{DynamicResource Tone_1A303A}" BorderThickness="0,0,0,1" Background="{DynamicResource HeaderGradient}">
     <Grid MouseLeftButtonDown="Header_MouseLeftButtonDown">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
+      <ui:SnowLayer x:Name="HeaderSnow" Grid.ColumnSpan="3" IsHitTestVisible="False" ClipToBounds="True"/>
       <Border Width="44" Height="44" CornerRadius="8" BorderBrush="{DynamicResource Tone_257D8C}" BorderThickness="1" Margin="16,0,12,0" Background="{DynamicResource Tone_080C12}">
         <Grid><Image Source="/Assets/ObserverBrand.png" Margin="4" Stretch="UniformToFill"/></Grid>
       </Border>

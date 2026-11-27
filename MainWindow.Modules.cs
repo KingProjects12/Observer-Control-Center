@@ -188,9 +188,9 @@ public partial class MainWindow
     {
         var menu=new ContextMenu{PlacementTarget=(UIElement)sender,Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom};
         void Item(string label,RoutedEventHandler handler){var item=new MenuItem{Header=label};item.Click+=handler;menu.Items.Add(item);}
-        var themes=new MenuItem{Header=T("Appearance","Оформление"),IsEnabled=false};menu.Items.Add(themes);
-        foreach(bool signal in new[]{true,false}){var theme=new MenuItem{Header=signal?"Signal":"Black Liquid Glass",IsCheckable=true,IsChecked=AppearanceTheme.IsSignal==signal};theme.Click+=(_,_)=>ChangeAppearance(signal);menu.Items.Add(theme);}
-        Item(T("Change accent","Сменить акцент"),Theme_Click);Item(T("Glass opacity","Прозрачность стекла"),Glass_Click);
+        Item(T("Themes…","Темы…"),(_,_)=>new ThemeSettingsWindow(SelectTheme,SetThemeSnow){Owner=this}.ShowDialog());
+        Item(T("Change accent","Сменить акцент"),Theme_Click);
+        if(AppearanceTheme.Current.Id=="classic")Item(T("Glass opacity","Прозрачность стекла"),Glass_Click);
         menu.Items.Add(new Separator());
         Item(T("Module selection","Выбор модуля"),Overview_Click);Item(T("Import CSV","Импорт CSV"),Import_Click);Item(T("Reports","Отчёты"),Reports_Click);
         Item(T("Check router TCP 80/443","Проверка TCP роутера 80/443"),RouterCheck_Click);
