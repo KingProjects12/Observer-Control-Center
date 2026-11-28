@@ -1,0 +1,1 @@
+Publish Observer 2.6.0 after Windows build, installer and offline tests pass.
