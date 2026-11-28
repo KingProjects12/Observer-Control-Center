@@ -80,8 +80,12 @@ public partial class MiniIslandWindow : Window
         if (_updateVersion != null && !busy) { SetUpdateAvailable(_updateVersion); return; }
         StatusText.Text = operation.Length == 0 ? UiText.T("Ready","Готово") : operation;
         CountText.Text = detail;
+        CountText.ToolTip = detail;
+        StatusText.ToolTip = StatusText.Text;
         CountText.SetResourceReference(ForegroundProperty, busy ? "Accent" :
-            detail == UiText.T("Complete","Завершено") || detail == "COMPLETE" ? "Positive" : "TextMain");
+            detail == UiText.T("Complete","Завершено") || detail == "COMPLETE" ? "Positive" :
+            detail.StartsWith(UiText.T("Incomplete","Неполный сбор"), StringComparison.OrdinalIgnoreCase) ||
+            detail is "PARTIAL" or "ERROR" || detail == UiText.T("Failed","Ошибка") ? "Module_issues_Fg" : "TextMain");
     }
 
     public void SetUpdateAvailable(string version)
@@ -90,6 +94,8 @@ public partial class MiniIslandWindow : Window
         if (_busy) return;
         StatusText.Text = UiText.T("NEW VERSION AVAILABLE", "ДОСТУПНА НОВАЯ ВЕРСИЯ");
         CountText.Text = version;
+        CountText.ToolTip = version;
+        StatusText.ToolTip = StatusText.Text;
         CountText.SetResourceReference(ForegroundProperty,"Accent");
     }
 

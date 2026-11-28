@@ -106,7 +106,7 @@ public partial class UpdateCenterWindow : Window
             downloaded = await UpdateInstaller.DownloadAsync(asset, progress, cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
             StatusText.Text = UiText.T("SHA-256 verified. Restarting Observer…", "SHA-256 совпадает. Перезапускаю Observer…");
-            StatusText.Foreground=System.Windows.Media.Brushes.LightGreen;
+            StatusText.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty,"Positive");
             CancelInstallButton.IsEnabled = false;
             if (_main.HasActiveOperation)
                 throw new InvalidOperationException(UiText.T("An operation is running. Retry after it finishes.","Идёт операция. Повторите обновление после её завершения."));
@@ -117,7 +117,7 @@ public partial class UpdateCenterWindow : Window
         catch (Exception ex)
         {
             if (!_installLaunching && downloaded != null) UpdateInstaller.TryDelete(Path.GetDirectoryName(downloaded.Path)!);
-            StatusText.Foreground=ex is OperationCanceledException?System.Windows.Media.Brushes.Goldenrod:System.Windows.Media.Brushes.Salmon;
+            StatusText.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, ex is OperationCanceledException ? "TextSecondary" : "Module_issues_Fg");
             StatusText.Text = ex is OperationCanceledException
                 ? UiText.T("Download cancelled or timed out.", "Загрузка отменена или превышено время ожидания.")
                 : UiText.T("Update failed: ", "Обновление не выполнено: ") + ex.Message;
