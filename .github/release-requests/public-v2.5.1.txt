@@ -1,0 +1,1 @@
+Publish Observer 2.5.1 after Windows tests and theme catalog cleanup.

@@ -20,13 +20,16 @@ internal static class UiSmoke
         var gallery=new ThemeSettingsWindow(id=>AppearanceTheme.Apply(id),enabled=>AppearanceTheme.SetSnow(enabled));
         try
         {
-            Require(gallery.CardCount==42,"all theme cards");
-            Require(ThemeCatalog.All.Select(p=>p.Id).Distinct().Count()==42,"unique theme ids");
+            Require(gallery.CardCount==26,"all theme cards");
+            Require(ThemeCatalog.All.Select(p=>p.Id).Distinct().Count()==26,"unique theme ids");
+            gallery.SetFilter(1,"");Require(gallery.VisibleCardCount==2,"core themes filter");
             gallery.SetFilter(2,"");Require(gallery.VisibleCardCount==6,"studio filter");
+            gallery.SetFilter(3,"");Require(gallery.VisibleCardCount==10,"worlds filter");
+            gallery.SetFilter(4,"");Require(gallery.VisibleCardCount==8,"lab filter");
             gallery.SetFilter(0,"Сакура");Require(gallery.VisibleCardCount==1,"Russian search");
             gallery.SetFilter(0,"Tokyo");Require(gallery.VisibleCardCount==1,"English search");
             gallery.SetFilter(0,"no-such-theme");Require(gallery.VisibleCardCount==0,"empty search");
-            gallery.SetFilter(0,"");Require(gallery.VisibleCardCount==42,"reset filters");
+            gallery.SetFilter(0,"");Require(gallery.VisibleCardCount==26,"reset filters");
             foreach(var preset in ThemeCatalog.All)
             {
                 gallery.Choose(preset.Id);Layout(gallery);Layout(main);
@@ -36,7 +39,14 @@ internal static class UiSmoke
                 if(preset.Collection!="original")Require(main.FindResource("HeaderGradient") is DrawingBrush,"live theme artwork "+preset.Id);
             }
             AppearanceTheme.SetSnow(false);Require(!AppearanceTheme.SnowEnabled,"snow disabled");
-            AppearanceTheme.SetSnow(true);Require(ThemeCatalog.Get("newyear").HasSnow&&ThemeCatalog.Get("winter").HasSnow,"season snow");
+            AppearanceTheme.SetSnow(true);Require(!ThemeCatalog.All.Any(p=>p.HasSnow),"no seasonal themes in current gallery");
+            foreach(string removedId in new[]{"spring","summer","autumn","winter","newyear","midnight","graphite","ocean","forest","sunset","rose","lavender","aurora","nebula","ember","arctic"})
+            {
+                Require(!ThemeCatalog.All.Any(p=>p.Id==removedId),"removed theme "+removedId);
+                Require(ThemeCatalog.Get(removedId).Id=="classic","removed preference fallback "+removedId);
+            }
+            Require(gallery.FindName("EffectsTab") is TabItem effects&&effects.Visibility==Visibility.Collapsed,"seasonal effects hidden");
+            AppearanceTheme.Apply("winter");Require(AppearanceTheme.Current.Id=="classic","old theme safely restored to core");
         }
         finally {gallery.Close();AppearanceTheme.SetSnow(snow);AppearanceTheme.Apply(true);}
     }

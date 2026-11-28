@@ -22,6 +22,7 @@ public partial class ThemeSettingsWindow : Window
         Title=Heading.Text=T("Appearance settings","Настройки оформления");
         Description.Text=T("Choose a theme. Changes apply immediately; your workspace and results stay intact.","Выберите тему. Оформление изменится сразу, рабочие данные сохранятся.");
         ThemesTab.Header=T("Themes","Темы");EffectsTab.Header=T("Effects","Эффекты");
+        EffectsTab.Visibility=ThemeCatalog.All.Any(p=>p.HasSnow)?Visibility.Visible:Visibility.Collapsed;
         EffectsHeading.Text=T("Seasonal effects","Сезонные эффекты");
         SnowOption.Content=T("Falling snow in Winter and New Year","Падающие снежинки в темах «Зима» и «Новый год»");
         SnowOption.IsChecked=AppearanceTheme.SnowEnabled;
@@ -38,7 +39,7 @@ public partial class ThemeSettingsWindow : Window
         }
         CollectionLabel.Text=T("Collection","Коллекция");
         SearchLabel.Text=T("Search themes","Поиск тем");
-        CollectionFilter.ItemsSource=new[]{T("All themes","Все темы"),T("Original collection","Исходная коллекция"),T("Studio / technical","Студия / техника"),T("Worlds / atmosphere","Миры / атмосфера"),T("Lab / experimental","Лаборатория / эксперимент")};
+        CollectionFilter.ItemsSource=new[]{T("All themes","Все темы"),T("Core themes","Основные темы"),T("Studio / technical","Студия / техника"),T("Worlds / atmosphere","Миры / атмосфера"),T("Lab / experimental","Лаборатория / эксперимент")};
         CollectionFilter.SelectedIndex=0;
         CollectionFilter.SelectionChanged+=(_,_)=>RefreshFilter();
         ThemeSearch.TextChanged+=(_,_)=>RefreshFilter();
@@ -79,22 +80,9 @@ public partial class ThemeSettingsWindow : Window
         var rng=new Random(18);
         switch(p.Art)
         {
-            case "spring":
-                for(int i=0;i<16;i++){double x=i%2==0?rng.Next(2,40):rng.Next(144,180),y=rng.Next(24,76);Line(x+3,y+5,x+3,84,p.Accent,.7);for(int k=0;k<5;k++)Dot(x+3+4*Math.Cos(k*1.257),y+3+4*Math.Sin(k*1.257),6,i%3==0?"#F6D580":p.Secondary);Dot(x+4,y+4,4,"#FFF0C2");}
-                break;
-            case "summer":
-                Dot(12,20,25,"#F6D580");Shape("M0,48 Q48,40 95,50 T184,44 L184,84 L0,84 Z","#287891");Shape("M0,70 Q85,57 184,64 L184,84 L0,84 Z","#C4A66D");Shape("M134,34 L174,34 Q154,7 134,34 Z","#EFA19B");Line(154,32,154,66,"#FFF4DB");break;
-            case "autumn":
-                for(int i=0;i<22;i++){double x=rng.Next(0,180),y=rng.Next(8,78);var leaf=new Ellipse{Width=12,Height=5,Fill=B(i%2==0?p.Accent:p.Secondary),Opacity=.7,RenderTransform=new RotateTransform(rng.Next(-70,70),6,2.5)};Canvas.SetLeft(leaf,x);Canvas.SetTop(leaf,y);c.Children.Add(leaf);}break;
-            case "winter":case "newyear":
-                Shape("M0,74 Q38,62 75,76 T184,69 L184,84 L0,84 Z","#BCD6E8",.85);
-                for(int i=0;i<30;i++)Dot(rng.Next(1,180),rng.Next(3,73),rng.Next(2,5),"#EFF8FF",.7);
-                if(p.Art=="newyear"){Shape("M158,16 L143,44 L151,44 L137,65 L179,65 L165,44 L173,44 Z","#247B58");Rect(156,65,5,11,"#795346");Dot(156,13,6,"#FFD98C");Dot(149,45,4,"#F8D58C");Dot(165,55,4,"#F5A5AD");Dot(155,58,4,"#E1F9E7");}break;
             case "wave":case "signal":case "glass":
                 Shape("M0,60 Q40,10 95,48 T184,25 L184,43 Q145,80 95,61 T0,76 Z",p.Accent,.22);
                 Shape("M0,25 Q52,75 110,33 T184,50 L184,62 Q145,44 110,48 T0,42 Z",p.Secondary,.22);break;
-            case "stars":
-                for(int i=0;i<36;i++)Dot(rng.Next(1,180),rng.Next(3,80),rng.Next(1,4),i%2==0?p.Accent:p.Secondary,.65);break;
         }
         if(p.Collection!="original")
         {
