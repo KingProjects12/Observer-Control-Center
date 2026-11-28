@@ -200,10 +200,21 @@ internal static class AppearanceTheme
             next["Accent2"]=BrushFor(preset.Secondary);
             next["CardGradient"]=BrushFor(preset.Panel);
             next["HeaderGradient"]=preset.Background==preset.End?BrushFor(preset.Background):Gradient(preset.Background,preset.Panel,preset.End);
+            if(preset.Collection!="original") next["HeaderGradient"]=ThemeArtwork.Header(preset);
             next["IslandGradient"]=next["HeaderGradient"];
             next["SignalHeroGradient"]=next["HeaderGradient"];
             next["BrandLine"]=BrushFor(preset.Stroke);
             next["BrandNode"]=BrushFor(preset.Panel);
+            if(preset.Collection!="original")
+            {
+                foreach(string moduleId in new[]{"routers","connections","tcp","traffic","issues"})
+                {
+                    var fg=((SolidColorBrush)next["Module_"+moduleId+"_Fg"]).Color;
+                    var bg=Parse(preset.Panel);
+                    static byte Blend(byte x,byte y)=>(byte)(x*.85+y*.15);
+                    var mixed=new SolidColorBrush(Color.FromRgb(Blend(bg.R,fg.R),Blend(bg.G,fg.G),Blend(bg.B,fg.B)));mixed.Freeze();next["Module_"+moduleId+"_Bg"]=mixed;
+                }
+            }
             foreach(int i in new[]{0,2,4,6})next["Kpi"+i+"Gradient"]=next["CardGradient"];
         }
         var dictionaries=Application.Current.Resources.MergedDictionaries;

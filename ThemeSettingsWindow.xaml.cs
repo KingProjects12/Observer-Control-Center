@@ -13,6 +13,8 @@ public partial class ThemeSettingsWindow : Window
     private readonly Action<string> _select;
     private readonly Dictionary<string,Button> _cards=new();
     internal int CardCount=>_cards.Count;
+    internal int VisibleCardCount=>_cards.Values.Count(card=>card.Visibility==Visibility.Visible);
+    private static readonly string[] Collections={"all","original","studio","worlds","lab"};
     private static string T(string en,string ru)=>UiText.T(en,ru);
     internal ThemeSettingsWindow(Action<string> select,Action<bool> snow)
     {
@@ -34,7 +36,25 @@ public partial class ThemeSettingsWindow : Window
             var card=new Button{Style=(Style)FindResource("FlatButton"),Padding=new Thickness(8),Margin=new Thickness(4),Content=stack,HorizontalContentAlignment=HorizontalAlignment.Stretch,VerticalContentAlignment=VerticalAlignment.Center,MinHeight=124,ToolTip=preset.Name};
             AutomationProperties.SetName(card,preset.Name);card.Click+=(_,_)=>Choose(preset.Id);_cards.Add(preset.Id,card);Gallery.Children.Add(card);
         }
-        RefreshSelection();
+        CollectionLabel.Text=T("Collection","Коллекция");
+        SearchLabel.Text=T("Search themes","Поиск тем");
+        CollectionFilter.ItemsSource=new[]{T("All themes","Все темы"),T("Original collection","Исходная коллекция"),T("Studio / technical","Студия / техника"),T("Worlds / atmosphere","Миры / атмосфера"),T("Lab / experimental","Лаборатория / эксперимент")};
+        CollectionFilter.SelectedIndex=0;
+        CollectionFilter.SelectionChanged+=(_,_)=>RefreshFilter();
+        ThemeSearch.TextChanged+=(_,_)=>RefreshFilter();
+        RefreshFilter();RefreshSelection();
+    }
+    internal void SetFilter(int index,string query){CollectionFilter.SelectedIndex=index;ThemeSearch.Text=query;RefreshFilter();}
+    private void RefreshFilter()
+    {
+        int index=Math.Clamp(CollectionFilter.SelectedIndex,0,Collections.Length-1);
+        string q=ThemeSearch.Text.Trim();
+        foreach(var preset in ThemeCatalog.All)
+        {
+            bool show=(index==0||preset.Collection==Collections[index])&&(q.Length==0||preset.En.Contains(q,StringComparison.OrdinalIgnoreCase)||preset.Ru.Contains(q,StringComparison.OrdinalIgnoreCase)||preset.Id.Contains(q,StringComparison.OrdinalIgnoreCase));
+            _cards[preset.Id].Visibility=show?Visibility.Visible:Visibility.Collapsed;
+        }
+        ResultsLabel.Text=VisibleCardCount==0?T("No matching themes","Темы не найдены"):T("Themes: ","Темы: ")+VisibleCardCount+" / "+CardCount;
     }
     internal void Choose(string id){_select(id);RefreshSelection();}
     private void RefreshSelection()
@@ -75,6 +95,33 @@ public partial class ThemeSettingsWindow : Window
                 Shape("M0,25 Q52,75 110,33 T184,50 L184,62 Q145,44 110,48 T0,42 Z",p.Secondary,.22);break;
             case "stars":
                 for(int i=0;i<36;i++)Dot(rng.Next(1,180),rng.Next(3,80),rng.Next(1,4),i%2==0?p.Accent:p.Secondary,.65);break;
+        }
+        if(p.Collection!="original")
+        {
+            // Match the live header artwork while keeping the preview readable.
+            switch(p.Art)
+            {
+                case "grid":case "carbon":case "scan":
+                    for(int x=0;x<184;x+=12)Line(x,0,p.Art=="carbon"?x+60:x,84,p.Secondary,.28);
+                    for(int y=0;y<84;y+=p.Art=="scan"?5:12)Line(0,y,184,y,p.Accent,.18);break;
+                case "circuit":
+                    for(int i=0;i<8;i++){int x=4+i*24,y=8+i%4*13;Line(x,0,x,y,p.Accent,.65);Line(x,y,x+14,y,p.Secondary,.65);Dot(x+12,y-2,4,p.Accent,.8);}break;
+                case "facets":
+                    Shape("M0,0 L70,0 L0,64 Z M70,0 L118,84 L0,64 Z",p.Accent,.23);Shape("M70,0 L184,0 L118,84 Z M118,84 L184,0 L184,84 Z",p.Secondary,.24);break;
+                case "rings":case "orbit":case "eclipse":
+                    for(int i=0;i<4;i++){double r=12+i*9;var ring=new Ellipse{Width=r*2,Height=r*2,Stroke=B(i%2==0?p.Accent:p.Secondary),StrokeThickness=1.4,Opacity=.45};Canvas.SetLeft(ring,145-r);Canvas.SetTop(ring,42-r);c.Children.Add(ring);}
+                    if(p.Art=="eclipse")Dot(130,26,30,p.Background);if(p.Art=="orbit"){var orbit=new Ellipse{Width=80,Height=19,Stroke=B(p.Accent),Opacity=.7,RenderTransform=new RotateTransform(-24,40,9)};Canvas.SetLeft(orbit,105);Canvas.SetTop(orbit,33);c.Children.Add(orbit);}break;
+                case "petals":case "bubbles":case "rain":
+                    for(int i=0;i<27;i++){int x=rng.Next(0,180),y=rng.Next(0,80);if(p.Art=="rain")Line(x,y,x-6,y+10,p.Accent,.45);else if(p.Art=="petals"){var petal=new Ellipse{Width=8,Height=4,Fill=B(p.Accent),Opacity=.6,RenderTransform=new RotateTransform(rng.Next(180),4,2)};Canvas.SetLeft(petal,x);Canvas.SetTop(petal,y);c.Children.Add(petal);}else {var bubble=new Ellipse{Width=5+i%8,Height=5+i%8,Stroke=B(p.Secondary),Opacity=.55};Canvas.SetLeft(bubble,x);Canvas.SetTop(bubble,y);c.Children.Add(bubble);}}break;
+                case "city":
+                    for(int i=0;i<12;i++){int h=15+(i*17)%47;Rect(i*16,84-h,13,h,i%2==0?p.Field:p.Stroke,1,.9);for(int k=0;k<h/9;k++)Rect(i*16+3,88-h+k*9,3,3,p.Accent,0,.7);}break;
+                case "dunes":
+                    Shape("M0,84 Q38,20 97,53 Q140,72 184,31 L184,84 Z",p.Secondary,.45);Shape("M0,84 Q77,48 110,66 Q158,79 184,55 L184,84 Z",p.Accent,.38);break;
+                case "mountain":
+                    Dot(140,9,19,p.Accent,.8);Shape("M0,84 L36,31 L62,58 L102,14 L148,64 L169,30 L184,84 Z",p.Secondary,.42);Shape("M0,84 L52,55 L76,73 L129,36 L184,84 Z",p.Field);break;
+                case "fault":
+                    Shape("M0,0 L71,0 L55,24 L100,48 L64,84 L0,84 Z",p.Secondary,.2);Shape("M73,0 L76,0 L60,24 L105,48 L69,84 L64,84 L100,48 L55,24 Z",p.Accent,.8);break;
+            }
         }
         // Island-shaped label and miniature app surfaces show the actual palette.
         Rect(62,7,60,15,"#080B10",8,.94);Dot(70,12,5,p.Accent);Rect(82,13,25,3,p.Secondary,1,.9);

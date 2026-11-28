@@ -1,0 +1,1 @@
+Publish Observer 2.5.0 after Windows build, offline tests and theme gallery smoke tests.

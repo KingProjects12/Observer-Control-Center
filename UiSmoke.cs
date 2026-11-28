@@ -20,13 +20,20 @@ internal static class UiSmoke
         var gallery=new ThemeSettingsWindow(id=>AppearanceTheme.Apply(id),enabled=>AppearanceTheme.SetSnow(enabled));
         try
         {
-            Require(gallery.CardCount==18,"all theme cards");
+            Require(gallery.CardCount==42,"all theme cards");
+            Require(ThemeCatalog.All.Select(p=>p.Id).Distinct().Count()==42,"unique theme ids");
+            gallery.SetFilter(2,"");Require(gallery.VisibleCardCount==6,"studio filter");
+            gallery.SetFilter(0,"Сакура");Require(gallery.VisibleCardCount==1,"Russian search");
+            gallery.SetFilter(0,"Tokyo");Require(gallery.VisibleCardCount==1,"English search");
+            gallery.SetFilter(0,"no-such-theme");Require(gallery.VisibleCardCount==0,"empty search");
+            gallery.SetFilter(0,"");Require(gallery.VisibleCardCount==42,"reset filters");
             foreach(var preset in ThemeCatalog.All)
             {
                 gallery.Choose(preset.Id);Layout(gallery);Layout(main);
                 Require(AppearanceTheme.Current.Id==preset.Id,"theme selection "+preset.Id);
                 Require(((SolidColorBrush)main.FindResource("Accent")).Color==(Color)ColorConverter.ConvertFromString(preset.Accent)!,"theme accent "+preset.Id);
                 Require(ReferenceEquals(before,((DataGrid)main.FindName("TrafficGrid")).ItemsSource),"theme keeps data");
+                if(preset.Collection!="original")Require(main.FindResource("HeaderGradient") is DrawingBrush,"live theme artwork "+preset.Id);
             }
             AppearanceTheme.SetSnow(false);Require(!AppearanceTheme.SnowEnabled,"snow disabled");
             AppearanceTheme.SetSnow(true);Require(ThemeCatalog.Get("newyear").HasSnow&&ThemeCatalog.Get("winter").HasSnow,"season snow");
