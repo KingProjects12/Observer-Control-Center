@@ -10,6 +10,7 @@ public partial class MainWindow
 {
     private LegacyCollectorPanel? _collector;
     private AccessAnalyzerPanel? _analyzer;
+    private readonly List<(Button Button, TextBlock Hint, TextBlock Arrow)> _navigationTiles = new();
     private readonly Dictionary<string,Button> _moduleButtons=new();
     private readonly Dictionary<string,string> _moduleTitles=new();
     private readonly TextBlock[] _sessionValues=new TextBlock[4];
@@ -55,6 +56,7 @@ public partial class MainWindow
             var hint=new TextBlock{Text=T(subEn,subRu),FontSize=12,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(0,4,0,0)};hint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");content.Children.Add(hint);row.Children.Add(content);
             var arrow=new TextBlock{Text="›",FontSize=20,VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(8,0,0,0)};
             arrow.SetResourceReference(TextBlock.ForegroundProperty,"Module_"+id+"_Fg");DockPanel.SetDock(arrow,Dock.Right);row.Children.Insert(1,arrow);
+            _navigationTiles.Add((b,hint,arrow));
             b.Content=row;b.Click+=(_,_)=>{if(_module==id)ToggleModule();else ShowModule(id);};ModuleTiles.Children.Add(b);_moduleButtons.Add(id,b);_moduleTitles[id]=T(en,ru);
         }
         SessionTitle.Text=T("Session results","Результаты сессии");SessionHint.Text=T("Actual observations","Фактические наблюдения");
@@ -147,6 +149,14 @@ public partial class MainWindow
     {
         bool home=_module==""&&_page=="overview";
         // The launch menu becomes a compact navigation strip inside a module.
+        HomeButton.Content = T("Modules", "Модули");
+        HomeButton.Visibility = home ? Visibility.Collapsed : Visibility.Visible;
+        foreach (var (button, hint, arrow) in _navigationTiles)
+        {
+            hint.Visibility = arrow.Visibility = home ? Visibility.Visible : Visibility.Collapsed;
+            button.Padding = home ? new Thickness(16,8,16,8) : new Thickness(12,4,8,4);
+            button.MinHeight = home ? 64 : 44;
+        }
         ModuleTiles.Columns = home ? 1 : 5;
         ModuleTiles.MaxWidth = home ? 620 : double.PositiveInfinity;
         ModuleTiles.VerticalAlignment = home ? VerticalAlignment.Center : VerticalAlignment.Top;
@@ -155,7 +165,7 @@ public partial class MainWindow
             button.Margin = home ? new Thickness(0, 3, 0, 3) : new Thickness(0, 0, id == "issues" ? 0 : 6, 0);
         bool workExpanded=!home&&(_module!=""?_moduleExpanded:_tableExpanded);
         bool logExpanded=!home&&_logExpanded;
-        WorkRow.Height=workExpanded?new GridLength(logExpanded?4:1,GridUnitType.Star):GridLength.Auto;
+        WorkRow.Height=workExpanded?new GridLength(logExpanded?2.5:1,GridUnitType.Star):GridLength.Auto;
         ConsoleRow.Height=logExpanded?new GridLength(1,GridUnitType.Star):GridLength.Auto;
         // Keep collapsed cards at header height even when no other content is expanded.
         if(!workExpanded&&!logExpanded)ConsoleRow.Height=new GridLength(1,GridUnitType.Star);
@@ -165,7 +175,7 @@ public partial class MainWindow
     }
     private void DashboardTableToggle_Click(object sender,RoutedEventArgs e){_tableExpanded=true;if(_page=="connections")ShowPage("overview");else Connections_Click(sender,e);}
     private void DashboardExport_Click(object sender,RoutedEventArgs e)=>ExportDashboard();
-    private void ClearDashboardLog_Click(object sender,RoutedEventArgs e){_consoleItems.Clear();LogList.Document.Blocks.Clear();LogCount.Text="0 "+T("events","событий");}
+    private void ClearDashboardLog_Click(object sender,RoutedEventArgs e){_consoleItems.Clear();LogCount.Text="0 "+T("events","событий");}
     private void DashboardActions_Click(object sender,RoutedEventArgs e)
     {
         var menu=new ContextMenu{PlacementTarget=(UIElement)sender,Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom};
@@ -197,11 +207,26 @@ public partial class MainWindow
         Item(T("Help / F1","Справка / F1"),Help_Click);
         menu.IsOpen=true;
     }
+    private string _islandOperation = "";
+    private string _islandDetail = "";
+    private bool _lastWasCollection;
     private void UpdateModuleSummary()
     {
         if(_collector==null||_analyzer==null)return;
         bool collect=_collector.IsBusy,analyze=_analyzer.IsBusy,busy=collect||analyze;
         _collector.IsEnabled=!analyze;_analyzer.IsEnabled=!collect;
+        if (busy)
+        {
+            _lastWasCollection = collect;
+            _islandOperation = collect ? _collector.OperationName : _analyzer.OperationName;
+            _islandDetail = collect && _collector.IsNatRunning && _collector.RouterCount > 0
+                ? $"{_collector.Processed}/{_collector.RouterCount}" : T("Running","В процессе");
+        }
+        else if (_moduleStarted.HasValue)
+        {
+            _islandDetail = _lastWasCollection ? _collector.Outcome : _analyzer.LastStatus.Split(':')[0];
+        }
+        _island?.SetOperation(_islandOperation, _islandDetail, busy);
         if(busy&&_moduleStarted==null)_moduleStarted=DateTime.Now;
         if(!busy)_moduleStarted=null;
         OperationPanel.Visibility=_module!=""&&busy?Visibility.Visible:Visibility.Collapsed;
@@ -228,6 +253,14 @@ public partial class MainWindow
         if(_collector?.IsBusy==true||_analyzer?.IsBusy==true){ModuleStop_Click(this,new RoutedEventArgs());e.Cancel=true;AddLog(T("STOP: operation is finishing; close again when idle.","СТОП: завершаю операцию; закройте окно после остановки."));}
         base.OnClosing(e);
     }
+    internal bool ConsoleSmoke()
+    {
+        AddLog("WARNING retention marker");
+        for (int i = 0; i < 350; i++) AddLog($"INFO {i}");
+        return LogList.Columns.Count == 3 && _consoleItems.Any(e => e.Message == "WARNING retention marker")
+            && _consoleItems.Last().Formatted.EndsWith("INFO 349", StringComparison.Ordinal);
+    }
+
     internal bool ModuleSmoke()
     {
         if(_collector==null||_analyzer==null)return false;

@@ -117,7 +117,7 @@
       <Border x:Name="TileSurface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="10">
         <Grid>
           <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-          <Border x:Name="ActiveLine" Width="3" HorizontalAlignment="Left" CornerRadius="1" Background="{TemplateBinding BorderBrush}" Opacity="0" Margin="0,9,0,9"/>
+          <Border x:Name="ActiveLine" Height="3" VerticalAlignment="Bottom" CornerRadius="1" Background="{TemplateBinding BorderBrush}" Opacity="0" Margin="12,0,12,2"/>
         </Grid>
       </Border>
       <ControlTemplate.Triggers>
@@ -198,7 +198,7 @@
     <Setter Property="GridLinesVisibility" Value="Horizontal"/>
     <Setter Property="HeadersVisibility" Value="Column"/>
     <Setter Property="AutoGenerateColumns" Value="False"/>
-    <Setter Property="RowHeight" Value="36"/>
+    <Setter Property="RowHeight" Value="30"/>
     <Setter Property="ColumnHeaderHeight" Value="36"/>
     <Setter Property="CanUserAddRows" Value="False"/>
     <Setter Property="IsReadOnly" Value="True"/>
@@ -218,7 +218,7 @@
   <Style TargetType="DataGridCell">
     <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
     <Setter Property="BorderThickness" Value="0"/>
-    <Setter Property="Padding" Value="8,5"/>
+    <Setter Property="Padding" Value="8,3"/>
   </Style>
   <Style TargetType="DataGridRow">
     <Setter Property="BorderThickness" Value="0"/>

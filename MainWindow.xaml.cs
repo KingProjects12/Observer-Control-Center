@@ -37,12 +37,15 @@ public partial class MainWindow : Window
     {
         _offlineUiCheck=offlineUiCheck;
         InitializeComponent();
-        LogList.Document.Blocks.Clear();
+        LogList.ItemsSource = _consoleItems;
+        LogList.Columns[0].Header = T("Time","Время");
+        LogList.Columns[1].Header = T("Category","Категория");
+        LogList.Columns[2].Header = T("Message","Сообщение");
         TrafficGrid.ItemsSource = _devices;
         TopBars.ItemsSource = _bars;
         RefreshThemeSelection();
         FooterVersionText.Text = (UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  ТОЛЬКО РАЗРЕШЁННЫЕ СЕТИ" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  •  AUTHORIZED NETWORKS ONLY");
-        AddLog((UiText.IsRussian ? $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  ЧЁРНОЕ СТЕКЛО / копирование журнала / встроенные обновления" : $"OBSERVER {GitHubReleaseClient.AppVersionText}  //  BLACK GLASS / selectable log console / in-app updates"));
+        AddLog($"SYSTEM  //  Observer {GitHubReleaseClient.AppVersionText}");
         AddLog(UiText.T("READ-ONLY // Keenetic NAT / VPN / TOP Traffic collector. Credentials are not stored.", "READ-ONLY // Сбор NAT / VPN / TOP Traffic. Пароли не сохраняются."));
         InitializeModules();
         ShowPage("overview");
@@ -63,24 +66,18 @@ public partial class MainWindow : Window
     private void AddLog(string message)
     {
         var category=ConsoleEntry.Classify(message);
-        var entry = new ConsoleEntry($"[{DateTime.Now:HH:mm:ss}] [{category}] {message}", category);
+        var entry = new ConsoleEntry(message, category);
         _consoleItems.Add(entry);
-        LogList.Document.Blocks.Add(new Paragraph(new Run(entry.Text) { Foreground = entry.Color })
-        {
-            Margin = new Thickness(0, 0, 0, 2)
-        });
-        while (_consoleItems.Count > 300)
-        {
-            _consoleItems.RemoveAt(0);
-            if (LogList.Document.Blocks.FirstBlock is { } first)
-                LogList.Document.Blocks.Remove(first);
-        }
-        // Do not steal the scroll position while the administrator is selecting log text.
-        if (!LogList.IsKeyboardFocusWithin || LogList.Selection.IsEmpty)
-            LogList.ScrollToEnd();
         BottomStatus.Text = message;
         BottomStatus.Foreground=entry.Color;
         if(LogCount!=null)LogCount.Text=_consoleItems.Count+" "+T("events","событий");
+    }
+
+    private void ConsoleScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (e.OriginalSource is ScrollViewer scroll && e.ExtentHeightChange > 0 &&
+            e.VerticalChange == 0 && scroll.VerticalOffset + e.ViewportHeight >= e.ExtentHeight - e.ExtentHeightChange - 1)
+            scroll.ScrollToEnd();
     }
 
     private void LoadTraffic(string file,bool navigate=true)
@@ -287,7 +284,7 @@ public partial class MainWindow : Window
     {
         ThemeClassicButton.Tag=AppearanceTheme.Current.Id=="classic"?"selected":null;
         ThemeSignalButton.Tag=AppearanceTheme.IsSignal?"selected":null;
-        HeaderVersionText.Text=$"  v{GitHubReleaseClient.AppVersionText} "+AppearanceTheme.Current.Name;
+        HeaderVersionText.Text=$"v{GitHubReleaseClient.AppVersionText}";
         HeaderSnow.SetSnowRequested(AppearanceTheme.Current.HasSnow&&AppearanceTheme.SnowEnabled&&!_offlineUiCheck);
     }
     private void ChangeAppearance(bool signal)
@@ -314,9 +311,9 @@ public partial class MainWindow : Window
         if (_consoleItems.Count == 0) return;
         try
         {
-            // Copy exactly the displayed lines, including their timestamps and original order.
-            Clipboard.SetText(string.Join(Environment.NewLine, _consoleItems.Select(x => x.Text)));
-            BottomStatus.Text = (UiText.IsRussian ? $"LOG COPY  //  скопировано {_consoleItems.Count} строк; выделение фрагментов работает через Ctrl+C" : $"LOG COPY  //  copied {_consoleItems.Count} lines; select text and press Ctrl+C");
+            // Copy all session events, including their timestamps and original order.
+            Clipboard.SetText(string.Join(Environment.NewLine, _consoleItems.Select(x => x.Formatted)));
+            BottomStatus.Text = (UiText.IsRussian ? $"LOG COPY  //  скопировано {_consoleItems.Count} строк; выбранные ячейки можно скопировать через Ctrl+C" : $"LOG COPY  //  copied {_consoleItems.Count} lines; select cells and press Ctrl+C");
         }
         catch (System.Runtime.InteropServices.ExternalException ex)
         {
@@ -361,7 +358,7 @@ public partial class MainWindow : Window
                 _island.Closed += (_, _) => _island = null;
             }
             RefreshUpdateBanner();
-            _island.SetSummary(_devices.Count, UiText.T("●  Local preview", "●  Локальный просмотр"));
+            UpdateModuleSummary();
             await WindowMotion.FadeAsync(this, 0, 140);
             Hide();
             await _island.ShowAnimatedAsync();

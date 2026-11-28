@@ -16,7 +16,7 @@
  <Border x:Name="GlassShell" BorderBrush="{DynamicResource Tone_71516B74}" BorderThickness="1" Background="{DynamicResource WindowBg}">
  <Grid>
   <Grid.RowDefinitions>
-   <RowDefinition Height="64"/>
+   <RowDefinition Height="52"/>
    <RowDefinition Height="*"/>
    <RowDefinition Height="32"/>
   </Grid.RowDefinitions>
@@ -30,13 +30,13 @@
         <ColumnDefinition Width="Auto"/>
       </Grid.ColumnDefinitions>
       <ui:SnowLayer x:Name="HeaderSnow" Grid.ColumnSpan="3" IsHitTestVisible="False" ClipToBounds="True"/>
-      <Border Width="44" Height="44" CornerRadius="8" BorderBrush="{DynamicResource Tone_257D8C}" BorderThickness="1" Margin="16,0,12,0" Background="{DynamicResource Tone_080C12}">
+      <Border Width="32" Height="32" CornerRadius="8" BorderBrush="{DynamicResource Tone_257D8C}" BorderThickness="1" Margin="16,0,12,0" Background="{DynamicResource Tone_080C12}">
         <Grid><Image Source="/Assets/ObserverBrand.png" Margin="4" Stretch="UniformToFill"/></Grid>
       </Border>
       <StackPanel Grid.Column="1" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="OBSERVER" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource Tone_F5FCFF}"/>
-          <TextBlock Text="{x:Static loc:UiText.X002}" Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}" FontWeight="Normal" FontSize="14"/>
+          <TextBlock Visibility="Collapsed" Text="{x:Static loc:UiText.X002}" Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}" FontWeight="Normal" FontSize="14"/>
           <TextBlock x:Name="HeaderVersionText" Text="{x:Static loc:UiText.X003}" Margin="12,6,0,0" Foreground="{DynamicResource TextSecondary}" FontSize="12"/>
         </StackPanel>
 
@@ -45,6 +45,7 @@
         <Border Visibility="Collapsed" BorderBrush="{DynamicResource Tone_206C6F}" Background="{DynamicResource Tone_113C41}" CornerRadius="11" Padding="12,8" Margin="0,0,12,0">
           <TextBlock Text="{x:Static loc:UiText.X005}" FontSize="10" FontWeight="SemiBold" Foreground="#70E5D7"/>
         </Border>
+        <Button x:Name="HomeButton" Style="{StaticResource FlatButton}" Click="Overview_Click" Margin="0,0,8,0"/>
         <Button x:Name="BtnUpdates" Content="{x:Static loc:UiText.X006}" Style="{StaticResource FlatButton}" Click="Updates_Click" ToolTip="{x:Static loc:UiText.HintUpdates}" Margin="0,0,8,0"/>
         <Button x:Name="BtnSettings" Content="{x:Static loc:UiText.SettingsLabel}" Style="{StaticResource FlatButton}" Click="SettingsMenu_Click" Margin="0,0,8,0"/>
         <Button x:Name="BtnIsland" Content="{x:Static loc:UiText.X007}" Style="{StaticResource FlatButton}" Click="Island_Click" ToolTip="{x:Static loc:UiText.HintIsland}" Margin="0,0,8,0"/>
@@ -56,7 +57,7 @@
   </Border>
 
   <!-- Navigation and workspace -->
-  <Grid x:Name="WorkspacePanel" Grid.Row="1" Margin="16,16,16,12">
+  <Grid x:Name="WorkspacePanel" Grid.Row="1" Margin="16,8,16,8">
     <Grid.RenderTransform><TranslateTransform Y="0"/></Grid.RenderTransform>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="0"/>
@@ -183,7 +184,7 @@
       <Border x:Name="SessionPanel" Grid.Row="2" Visibility="Collapsed" Style="{StaticResource CardBorder}" Padding="12,7" Margin="0,0,0,10">
         <DockPanel>
           <Button x:Name="SessionToggle" DockPanel.Dock="Right" Style="{StaticResource FlatButton}" Click="SessionToggle_Click" Padding="7,3" Content="⌃" VerticalAlignment="Center" Margin="8,0,0,0"/>
-          <DockPanel DockPanel.Dock="Left" Width="184" VerticalAlignment="Center" Margin="0,0,12,0">
+          <DockPanel DockPanel.Dock="Left" Width="224" VerticalAlignment="Center" Margin="0,0,12,0">
             <Path DockPanel.Dock="Left" Data="M2,27 L2,19 L8,19 L8,27 Z M12,27 L12,10 L18,10 L18,27 Z M22,27 L22,2 L28,2 L28,27 Z" Stroke="{DynamicResource TextMain}" StrokeThickness="2" Width="31" Height="31" Stretch="Uniform" Margin="0,0,12,0" VerticalAlignment="Center"/>
             <StackPanel><TextBlock x:Name="SessionTitle" FontSize="17" FontWeight="SemiBold"/>
             <TextBlock x:Name="SessionHint" Style="{StaticResource LabelSmall}" TextWrapping="Wrap" Margin="0,4,0,0"/></StackPanel>
@@ -244,7 +245,7 @@
           </Grid>
         </Border>
       </Grid>
-      <Border x:Name="ModuleSurface" Grid.Row="3" Visibility="Collapsed" Style="{StaticResource WorkspaceSection}" Background="Transparent" Padding="0" Margin="0,0,0,8">
+      <Border x:Name="ModuleSurface" Grid.Row="3" Visibility="Collapsed" BorderThickness="0" Background="Transparent" Padding="0" Margin="0,0,0,8">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <Button x:Name="ModuleCollapse" DockPanel.Dock="Right" Style="{StaticResource FlatButton}" Click="ModuleCollapse_Click" Margin="8,0,0,0"/>
@@ -272,15 +273,24 @@
               <Button x:Name="ClearDashboardLog" Style="{StaticResource FlatButton}" Click="ClearDashboardLog_Click" Padding="9,5"/>
             </StackPanel>
           </Grid>
-          <RichTextBox Grid.Row="1" x:Name="LogList" Background="{DynamicResource Tone_F506080B}" Foreground="{DynamicResource Tone_BBCBD8}"
-                       FontFamily="Consolas" FontSize="15" MinHeight="48" Margin="0,6,0,0" BorderThickness="0" Padding="7,4"
-                       IsReadOnly="True" IsDocumentEnabled="False" AcceptsTab="False"
-                       SelectionBrush="{DynamicResource Tone_4D458D98}" CaretBrush="{DynamicResource Tone_43D9DC}"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto"
-                       ScrollViewer.HorizontalScrollBarVisibility="Auto">
-             <FlowDocument PagePadding="0" FontFamily="Consolas" FontSize="15"
-                           ColumnWidth="999999" TextAlignment="Left"/>
-          </RichTextBox>
+          <DataGrid x:Name="LogList" Grid.Row="1" Margin="0,8,0,0" IsReadOnly="True"
+                    AutoGenerateColumns="False" CanUserAddRows="False" CanUserSortColumns="False"
+                    CanUserReorderColumns="False" SelectionUnit="CellOrRowHeader" HeadersVisibility="Column"
+                    GridLinesVisibility="None" BorderThickness="0" RowHeight="24" FontSize="13"
+                    EnableRowVirtualization="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                    Background="{DynamicResource DialogLog}" FontFamily="Consolas"
+                    ScrollViewer.ScrollChanged="ConsoleScrollChanged">
+            <DataGrid.Columns>
+              <DataGridTextColumn Binding="{Binding Time}" Width="92"/>
+              <DataGridTextColumn Binding="{Binding Category}" Width="104">
+                <DataGridTextColumn.ElementStyle><Style TargetType="TextBlock">
+                  <Setter Property="Foreground" Value="{Binding Color}"/>
+                  <Setter Property="FontWeight" Value="SemiBold"/>
+                </Style></DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Binding="{Binding Message}" Width="SizeToCells" MinWidth="320"/>
+            </DataGrid.Columns>
+          </DataGrid>
         </Grid>
       </Border>
     </Grid>

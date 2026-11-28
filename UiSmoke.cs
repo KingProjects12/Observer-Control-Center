@@ -98,6 +98,14 @@ internal static class UiSmoke
                 Require(main.FindResource("WorkspaceSection") is Style,"shared section style");
                 Require(main.FindResource("CardGradient") is SolidColorBrush,"Signal surfaces are flat");
                 usingThemeGallery(main,before);
+                Require(main.ConsoleSmoke(), "three log columns and early warning retained after 350 events");
+                var island=windows.OfType<MiniIslandWindow>().Single();
+                island.SetOperation("NAT","12/39",true);
+                island.SetUpdateAvailable("vNext");
+                Require(((TextBlock)island.FindName("CountText")).Text=="12/39","active operation precedes update");
+                island.SetOperation("NAT","COMPLETE",false);
+                island.ClearUpdateNotice();
+                Require(((TextBlock)island.FindName("CountText")).Text=="COMPLETE","result survives update notice");
                 Click(FindButton(main,"ThemeClassicButton"));
             }
             finally { foreach(var w in windows.Reverse()) w.Close(); }

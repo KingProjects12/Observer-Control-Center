@@ -20,7 +20,7 @@ internal static class WindowMotion
     {
         // Clearing a previous animation avoids the WPF animation clock retaining its value.
         target.BeginAnimation(property, null);
-        if (ms <= 0)
+        if (ms <= 0 || !SystemParameters.ClientAreaAnimation)
         {
             ((DependencyObject)target).SetValue(property, value);
             return Task.CompletedTask;

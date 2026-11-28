@@ -29,6 +29,8 @@ internal sealed class AccessAnalyzerPanel : UserControl
     private static string T(string en,string ru)=>UiText.T(en,ru);
     internal event Action<string>? LogLine;
     internal event Action? StateChanged;
+    internal string OperationName { get; private set; } = "";
+    internal string LastStatus => _status.Text;
     internal bool IsBusy=>_running!=null;
     internal int? OpenTcp=>_analysis==null||!_analysis.Endpoints.Any(r=>r.CheckedAt.Length>0&&r.Protocol=="TCP")?null:_analysis.Endpoints.Count(r=>r.TcpStatus=="TCP OPEN");
     internal void Stop()=>_running?.Cancel();
@@ -153,7 +155,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
         }
         if(_paths.Count==0)return;
         string target=_target.Text;var files=_paths.ToArray();_analysis=null;_output=null;RefreshGrid();
-        using var cts=new CancellationTokenSource();_running=cts;SetBusy(true);Status("CHECKING CSV...");
+        using var cts=new CancellationTokenSource();OperationName=compare?T("Period comparison","Сравнение периодов"):T("CSV analysis","Анализ CSV");_running=cts;SetBusy(true);Status("CHECKING CSV...");
         try
         {
             var a=await Task.Run(()=>{
@@ -172,7 +174,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
     {
         if(_analysis==null||_running!=null)return;
         if(MessageBox.Show(DialogOwner!,T("Check only observed TCP destinations in the private target subnet from this PC? Confirm authorization. No application payload is sent.","Проверить только наблюдаемые TCP-назначения в частной целевой сети с этого ПК? Подтвердите разрешение. Прикладные данные не отправляются."),T("Observer · Access analyzer","Observer · Анализ доступов"),MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
-        using var cts=new CancellationTokenSource();_running=cts;SetBusy(true);
+        using var cts=new CancellationTokenSource();OperationName=T("TCP check","Проверка TCP");_running=cts;SetBusy(true);
         var progress=new Progress<string>(Status);
         try{await AccessAnalyzer.CheckTcp(_analysis,cts.Token,s=>((IProgress<string>)progress).Report(s));Status("COMPLETE: TCP checks finished; UDP remains observation only.");}
         catch(OperationCanceledException){Status("CANCELLED: completed checks retained.");}
@@ -184,7 +186,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
         if(_analysis==null||_running!=null)return;
         var a=_analysis;
         string folder=Path.Combine(ReportLocator.ResultsRoot,"Access_"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+"_"+Guid.NewGuid().ToString("N")[..8]);
-        using var cts=new CancellationTokenSource();_running=cts;SetBusy(true);
+        using var cts=new CancellationTokenSource();OperationName=T("Report export","Экспорт отчёта");_running=cts;SetBusy(true);
         try{var excel=await Task.Run(()=>Engine.SaveAccessReport(folder,a));_output=folder;Status(excel.Length>0?T("COMPLETE: CSV + XLSX saved.","COMPLETE: CSV и XLSX сохранены."):T("PARTIAL: CSV saved, XLSX unavailable.","PARTIAL: CSV сохранён, XLSX недоступен."));}
         catch(Exception ex){Status("ERROR: "+ex.Message);}
         finally{_running=null;SetBusy(false);}

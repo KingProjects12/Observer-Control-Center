@@ -58,6 +58,12 @@ internal sealed class LegacyCollectorPanel : UserControl
     internal event Action<string,bool>? ReportReady;
     internal bool IsNatRunning=>IsBusy&&_runningOperation=="nat";
     private string _runningOperation="";
+    internal string OperationName => _runningOperation switch {
+        "nat" => T("NAT collection","Сбор NAT"), "traffic" => T("Traffic collection","Сбор трафика"),
+        "probe" => T("Router TCP check","Проверка TCP роутера"), "import" => T("CSV import","Импорт CSV"),
+        "demo" => T("Offline test","Офлайн-тест"), _ => T("Collection","Сбор")
+    };
+    internal string Outcome { get; private set; } = "";
     private string _requestedMode="nat";
     private readonly Dictionary<string,(string Folder,string? Excel,string? Selected)> _reportsByMode=new();
     private string? _natFile;
@@ -85,7 +91,7 @@ internal sealed class LegacyCollectorPanel : UserControl
     private FrameworkElement? _natSettings;
     private FrameworkElement? _trafficSettings;
     private FrameworkElement? _routerStatusArea;
-    private bool _natFormExpanded=true,_trafficFormExpanded=true;
+    private bool _natFormExpanded=false,_trafficFormExpanded=false;
     private bool _natPreviewExpanded=false,_trafficPreviewExpanded=true;
     private Expander? _previewSection;
     private Action? _reflowWorkspace;
@@ -187,7 +193,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         {
             var b = new Button { Content = label, Style = (Style)FindResource(accent ? "AccentButton" : "FlatButton"), Margin = new Thickness(0,0,8,8), ToolTip=hint }; b.Click += handler; buttons.Children.Add(b); return b;
         }
-        _start=Button(T("▶  Start NAT collection","▶  Начать сбор NAT"),async (_,_)=>await Run(_operation),true);_start.FontSize=15;_start.Padding=new Thickness(16,10,16,10);_commands.Add(_start);
+        _start=Button(T("▶  Start NAT collection","▶  Начать сбор NAT"),async (_,_)=>await Run(_operation),true);_start.FontSize=15;_start.Padding=new Thickness(12,6,12,6);_commands.Add(_start);
         _commands.Add(Button(T("Check router TCP","Проверить TCP роутера"),async (_,_)=>await Run("probe"),false,T("Test the configured router port, not a VPN tunnel.","Проверка порта роутера, а не VPN-туннеля.")));
         _commands.Add(Button(T("Tools ▾", "Инструменты ▾"), (sender,_) => {
             var menu = new ContextMenu { PlacementTarget=(UIElement)sender, Placement=System.Windows.Controls.Primitives.PlacementMode.Bottom };
@@ -203,7 +209,7 @@ internal sealed class LegacyCollectorPanel : UserControl
         var statusArea=new StackPanel();_routerStatusArea=statusArea;
         _batchSummary=new TextBlock{Text=T("No collection started","Сбор ещё не запускался"),TextWrapping=TextWrapping.Wrap,Foreground = (Brush)FindResource("DialogAccent"),Margin=new Thickness(0,8,0,4)};statusArea.Children.Add(_batchSummary);
         _batchProgress=new ProgressBar{Minimum=0,Maximum=1,Height=6,Margin=new Thickness(0,3,0,8)};statusArea.Children.Add(_batchProgress);
-        _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=180,MinHeight=64,RowHeight=36,FontSize=14};
+        _batchGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,MaxHeight=180,MinHeight=64,RowHeight=28,FontSize=14};
         foreach(string key in new[]{"Router","Status","Samples","Office"}){var c=new DataGridTextColumn{Header=key switch{"Router"=>T("Router","Роутер"),"Status"=>T("Status","Статус"),"Samples"=>T("Snapshots","Снимки"),_=>T("Office","В офис")},Binding=new Binding(key),Width=new DataGridLength(1,DataGridLengthUnitType.Star)};if(key=="Status"){var st=new Style(typeof(TextBlock));st.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(key){Converter=new StatusBrushConverter()}));c.ElementStyle=st;}_batchGrid.Columns.Add(c);}statusArea.Children.Add(_batchGrid);
         var statusExpander=new Expander{Header=T("Router status","Статусы роутеров"),IsExpanded=!embedded,Content=statusArea,Margin=new Thickness(0,4,0,0)};section.Children.Add(statusExpander);_routerStatusArea=statusExpander;
         Group("Reports", "Отчёты", "Select a report after collection, then view it or open Excel.", "После сбора выберите отчёт и откройте его в Observer или Excel.");
@@ -236,14 +242,14 @@ internal sealed class LegacyCollectorPanel : UserControl
             settingsForm.ColumnDefinitions.Add(new ColumnDefinition());
             var leftFields=new StackPanel();leftFields.Children.Add(addressRow);leftFields.Children.Add(auth);leftFields.Children.Add(individual);settingsForm.Children.Add(leftFields);
             var rightFields=new StackPanel();rightFields.Children.Add(network);rightFields.Children.Add(protocolRow);rightFields.Children.Add(advanced);rightFields.Children.Add(periodRow);Grid.SetColumn(rightFields,2);settingsForm.Children.Add(rightFields);
-            _connection.Content=settingsForm;connectionCard.Child=_connection;
+            _connection.IsExpanded=false;_connection.Content=settingsForm;connectionCard.Child=_connection;
             connectionCard.Style=(Style)FindResource("WorkspaceSection");connectionCard.Padding=new Thickness(8);connectionCard.Margin=new Thickness(0,0,0,8);
             var actionBody=(StackPanel)actionCard.Child;
             var commandBar=(WrapPanel)actionBody.Children[2];
             actionBody.Children.Remove(commandBar);
             commandBar.Margin=new Thickness(0);
             commandBar.SetBinding(FrameworkElement.ToolTipProperty,new Binding("Text"){Source=_modeHint});
-            actionCard.Child=commandBar;actionCard.Style=(Style)FindResource("WorkspaceSection");actionCard.Padding=new Thickness(8,4,8,0);actionCard.Margin=new Thickness(0,0,0,8);
+            actionCard.Child=commandBar;actionCard.Style=(Style)FindResource("WorkspaceSection");actionCard.BorderThickness=new Thickness(0);actionCard.Padding=new Thickness(4,4,4,0);actionCard.Margin=new Thickness(0,0,0,8);
             _embeddedActions=actionCard;
             statusExpander.Content=null;statusArea.Children.Remove(_batchGrid);
             var statusBody=new Grid();statusBody.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});statusBody.RowDefinitions.Add(new RowDefinition());
@@ -255,12 +261,12 @@ internal sealed class LegacyCollectorPanel : UserControl
             var previewRoot=new DockPanel();
             DockPanel.SetDock(reportTools,Dock.Top);previewRoot.Children.Add(reportTools);
             _previewHint=new TextBlock{Text=T("No report yet — run collection to see actual data.","Отчёта пока нет — запустите сбор, чтобы увидеть данные."),TextWrapping=TextWrapping.Wrap,FontSize=13,Margin=new Thickness(0,0,0,5)};_previewHint.SetResourceReference(TextBlock.ForegroundProperty,"TextSecondary");DockPanel.SetDock(_previewHint,Dock.Top);previewRoot.Children.Add(_previewHint);
-            _preview=new DataGrid{AutoGenerateColumns=true,IsReadOnly=true,CanUserAddRows=false,FontSize=14,RowHeight=36,ColumnHeaderHeight=36};previewRoot.Children.Add(_preview);
+            _preview=new DataGrid{AutoGenerateColumns=true,IsReadOnly=true,CanUserAddRows=false,FontSize=14,RowHeight=28,ColumnHeaderHeight=36};previewRoot.Children.Add(_preview);
             _previewSection=new Expander{Header=T("Data and reports","Данные и отчёты"),IsExpanded=traffic,Content=previewRoot};
             var previewCard=new Border{Style=(Style)FindResource("WorkspaceSection"),Padding=new Thickness(8),Child=_previewSection};
             var workspace=new Grid();
             workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition());workspace.RowDefinitions.Add(new RowDefinition{Height=new GridLength(0)});
-            workspace.Children.Add(connectionCard);Grid.SetRow(actionCard,1);workspace.Children.Add(actionCard);Grid.SetRow(statusCard,2);workspace.Children.Add(statusCard);Grid.SetRow(previewCard,3);workspace.Children.Add(previewCard);
+            Grid.SetRow(connectionCard,1);workspace.Children.Add(connectionCard);workspace.Children.Add(actionCard);Grid.SetRow(statusCard,2);workspace.Children.Add(statusCard);Grid.SetRow(previewCard,3);workspace.Children.Add(previewCard);
             void Reflow()
             {
                 bool showStatus=statusExpander.Visibility==Visibility.Visible;
@@ -391,7 +397,7 @@ internal sealed class LegacyCollectorPanel : UserControl
             if (operation == "import") { var dialog = new OpenFileDialog { Filter="CSV (*.csv)|*.csv", CheckFileExists=true }; if ((DialogOwner is Window owner?dialog.ShowDialog(owner):dialog.ShowDialog())!=true) return; import=dialog.FileName; }
         }
         catch(Exception ex) { Report(ex.Message); return; }
-        using var cts = new CancellationTokenSource(); _running=cts; _runningOperation=operation; _stop.IsEnabled=true; _connection.IsExpanded=false; StateChanged?.Invoke();
+        using var cts = new CancellationTokenSource(); _running=cts; _runningOperation=operation; Outcome=T("Complete","Завершено"); _stop.IsEnabled=true; _connection.IsExpanded=false; StateChanged?.Invoke();
         foreach(var b in _commands) b.IsEnabled=false;
         _show.IsEnabled=_excel.IsEnabled=_reports.IsEnabled=_retry.IsEnabled=_access.IsEnabled=false;
         if(operation=="nat"){_live.Clear();if(prior!=null)foreach(var s in prior.Statuses)_live[s.Router]=new RouterLive{Router=s.Router,Status=s.Status,Office=s.OfficeRows};foreach(var a in routers)_live[a]=new RouterLive{Router=a};RefreshLive();}
@@ -406,6 +412,7 @@ internal sealed class LegacyCollectorPanel : UserControl
                 var uri=Engine.ParseRouterUri(addr,https);
                 var probe=await Task.Run(()=>RemoteVpn.ProbeTcp(uri,6000),cts.Token);
                 RemoteVpn.WriteProbeDiagnostic(uri,probe);
+                if (!probe.Reachable) Outcome=T("Failed","Ошибка");
                 Report(probe.Reachable ? $"TCP REACHABLE {probe.ElapsedMilliseconds} ms; local={probe.LocalAddress}; adapter={probe.NetworkAdapter}. VPN route not verified." : "TCP FAILED: "+probe.Error);
             }
             else if(operation=="traffic")
@@ -419,6 +426,8 @@ internal sealed class LegacyCollectorPanel : UserControl
                 var credentials=new Dictionary<string,(string User,string Password)>(_overrides,StringComparer.OrdinalIgnoreCase);
                 var result=await Task.Run(()=>BatchNatCollector.Run(routers,user,secret,https,vpn,samples,interval,ReportLocator.ResultsRoot,cts.Token,log,(a,ct,l)=>{var login=credentials.TryGetValue(a,out var local)?local:(user,secret);return Engine.Run(false,a,login.Item1,login.Item2,https,samples,interval,ct,l,vpn);},prior));
                 credentials.Clear();_lastBatch=result;
+                if(result.Complete < result.Statuses.Length)
+                    Outcome=T("Incomplete","Неполный сбор") + $" {result.Complete}/{result.Statuses.Length}";
                 foreach(var s in result.Statuses)_live[s.Router]=new RouterLive{Router=s.Router,Status=s.Status,Office=s.OfficeRows,Samples=_live.TryGetValue(s.Router,out var current)?current.Samples:""};RefreshLive();
                 var single=result.Statuses.Length==1&&result.Complete==1?result.Statuses[0].ReportFolder:null;
                 SetReport(single??result.Folder,single==null?result.Excel:Path.Combine(single,"Keenetic_Network_Connections.xlsx"),T("Combined office rows: ","Общий отчёт в офис: ")+result.OfficeCount+$" | OK {result.Complete} | PARTIAL {result.Partial} | FAILED {result.Failed} | CANCELLED/NOT STARTED {result.Skipped}",false);
@@ -428,11 +437,12 @@ internal sealed class LegacyCollectorPanel : UserControl
             else
             {
                 CollectionResult result = operation=="import" ? await Task.Run(()=>CentralFlowImporter.Import(import!,log,cts.Token),cts.Token) : await Task.Run(()=>Engine.Run(operation=="demo",addr,user,secret,https,samples,interval,cts.Token,log,vpn),cts.Token);
+                if (result.Partial) Outcome=T("Incomplete","Неполный сбор");
                 SetReport(result.Folder,result.Excel,$"{result.Status} | ALL {result.All.Count} | TO OFFICE {result.Target.Count} | RELATED {result.OfficeRelated.Count}",false);
             }
         }
-        catch(OperationCanceledException) when(cts.IsCancellationRequested){Report("CANCELLED: "+T("Stopped by user.","Остановлено пользователем."));}
-        catch(Exception ex){var kind=Engine.Classify(ex,cts.Token);Report(kind+": "+Engine.Friendly(ex,kind)+" | "+ex.Message);}
+        catch(OperationCanceledException) when(cts.IsCancellationRequested){Outcome=T("Stopped","Остановлено");Report("CANCELLED: "+T("Stopped by user.","Остановлено пользователем."));}
+        catch(Exception ex){Outcome=T("Failed","Ошибка");var kind=Engine.Classify(ex,cts.Token);Report(kind+": "+Engine.Friendly(ex,kind)+" | "+ex.Message);}
         finally {secret="";_running=null;_runningOperation=""; _stop.IsEnabled=false;foreach(var b in _commands)b.IsEnabled=true;_show.IsEnabled=_view.SelectedItem!=null;_excel.IsEnabled=File.Exists(_excelPath);_reports.IsEnabled=Directory.Exists(_folder);_retry.IsEnabled=_lastBatch?.Statuses.Any(s=>s.Status!="COMPLETE")==true;_access.IsEnabled=_folder!=null&&File.Exists(Path.Combine(_folder,"07_Office_To_Connections.csv"));_address.IsEnabled=_user.IsEnabled=_password.IsEnabled=_target.IsEnabled=_https.IsEnabled=_vpn.IsEnabled=_samples.IsEnabled=_interval.IsEnabled=_period.IsEnabled=true;if(_httpRadio!=null)_httpRadio.IsEnabled=true;if(_httpsRadio!=null)_httpsRadio.IsEnabled=true;SetMode(_requestedMode);StateChanged?.Invoke();}
     }
 }

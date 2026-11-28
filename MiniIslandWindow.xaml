@@ -6,54 +6,18 @@
   ShowInTaskbar="False" ShowActivated="False" Topmost="True" Opacity="0"
   ResizeMode="NoResize" AllowsTransparency="True" Background="Transparent">
   <Border x:Name="IslandSurface" Margin="8" CornerRadius="23" BorderThickness="1"
-          BorderBrush="{DynamicResource Tone_7184AAC0}" Cursor="Hand" MouseLeftButtonDown="Island_MouseLeftButtonDown"
-          MouseEnter="IslandSurface_MouseEnter" MouseLeave="IslandSurface_MouseLeave" Background="{DynamicResource IslandGradient}">
-    <Border.RenderTransform><TranslateTransform x:Name="IslandOffset" Y="-14"/></Border.RenderTransform>
+          BorderBrush="{DynamicResource Stroke}" Cursor="Hand" MouseLeftButtonDown="Island_MouseLeftButtonDown"
+          Background="{DynamicResource PanelBg}">
+    <Border.RenderTransform><TranslateTransform x:Name="IslandOffset" Y="0"/></Border.RenderTransform>
     
-    <Border.Effect>
-      <DropShadowEffect x:Name="IslandShadow" BlurRadius="19" ShadowDepth="5"
-                        Opacity="0.64" Color="#000000"/>
-    </Border.Effect>
-    <Grid Margin="12,7">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="54"/>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="Auto"/>
-      </Grid.ColumnDefinitions>
-      <Grid Width="46" Height="46" HorizontalAlignment="Left" VerticalAlignment="Center">
-        <Border Width="43" Height="43" CornerRadius="15" BorderThickness="1"
-                BorderBrush="{DynamicResource Tone_36639AA4}" Background="{DynamicResource Tone_080C12}">
-          <Image Source="/Assets/ObserverBrand.png" Margin="2" Stretch="UniformToFill"/>
-        </Border>
-      </Grid>
-      <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="1,0,0,0">
-        <TextBlock Text="OBSERVER" Foreground="{DynamicResource Tone_F3F9FF}" FontWeight="SemiBold" FontSize="13"/>
-        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-          <Ellipse Width="6" Height="6" Fill="#46E8BE" VerticalAlignment="Center"
-                   Margin="0,0,6,0">
-            <Ellipse.Triggers>
-              <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                <BeginStoryboard>
-                  <Storyboard AutoReverse="True" RepeatBehavior="Forever">
-                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                     From="0.35" To="1" Duration="0:0:1.2"/>
-                  </Storyboard>
-                </BeginStoryboard>
-              </EventTrigger>
-            </Ellipse.Triggers>
-          </Ellipse>
-          <TextBlock x:Name="StatusText" Text="{x:Static loc:UiText.X082}"
-                     Foreground="#77DBD4" FontSize="12" VerticalAlignment="Center"/>
-        </StackPanel>
+    <Grid Margin="16,0">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <Image Source="/Assets/ObserverBrand.png" Width="28" Height="28" HorizontalAlignment="Left"/>
+      <StackPanel Grid.Column="1" VerticalAlignment="Center">
+        <TextBlock Text="Observer" Foreground="{DynamicResource TextMain}" FontWeight="SemiBold" FontSize="14"/>
+        <TextBlock x:Name="StatusText" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" FontSize="13"/>
       </StackPanel>
-      <Border Grid.Column="2" Background="{DynamicResource Tone_2B1A222D}" BorderBrush="{DynamicResource Tone_365B6378}"
-              CornerRadius="11" BorderThickness="1" Padding="11,8" VerticalAlignment="Center">
-        <StackPanel Orientation="Horizontal">
-          <TextBlock x:Name="CountText" Text="{x:Static loc:UiText.X083}" Foreground="{DynamicResource Tone_DBCCFA}"
-                     VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12"/>
-          <TextBlock Text="  ↗" Foreground="{DynamicResource Tone_B592FF}" FontSize="12"/>
-        </StackPanel>
-      </Border>
+      <TextBlock Grid.Column="2" x:Name="CountText" Margin="12,0,0,0" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14"/>
     </Grid>
   </Border>
 </Window>
