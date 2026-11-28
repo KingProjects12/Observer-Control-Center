@@ -40,6 +40,53 @@
 
 ![Safety & limitations — Authorized networks only: Use only on networks you own or administer with permission. VPN REMOTE does not create a tunnel. x-ndw4 is unsupported.; Interpret results carefully: NAT snapshots may miss LAN/VPN flows; missing records are not grounds to block access. Open TCP ports do not prove service identity or business need. UDP is observed, not validated.; Keep evidence private: Credentials are not persisted. Keep internal addresses, raw dumps and customer reports private.; Windows security & updates: No trusted Authenticode signature yet. Do not disable protection. SHA-256 proves integrity, not publisher identity. Save reports before Tools → Updates; installer language is retained. Actions artifacts are not releases.; License & attribution: Interface independently developed with visual inspiration from Atoll. Retain applicable MIT notices if Atoll code is incorporated. Observer license not yet selected; public source does not grant redistribution rights.; Developer requirements: Windows 10/11 x64; .NET 10 SDK or Visual Studio with .NET desktop development.](docs/media/cards/en/limitations.svg)
 
+<a id="design-collection"></a>
+
+## Design Collection
+
+16 selected Observer themes from the current catalogue. Vector design previews show the palettes and visual character; they are not application screenshots. Themes are available under Settings → Themes.
+
+<p align="center">
+  <a href="docs/media/themes/classic.svg"><img src="docs/media/themes/classic.svg" width="49%" alt="Black Liquid Glass — design preview"></a>
+  <a href="docs/media/themes/signal.svg"><img src="docs/media/themes/signal.svg" width="49%" alt="Signal — design preview"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/blueprint.svg"><img src="docs/media/themes/blueprint.svg" width="49%" alt="Blueprint — design preview"></a>
+  <a href="docs/media/themes/carbon.svg"><img src="docs/media/themes/carbon.svg" width="49%" alt="Carbon — design preview"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/copper.svg"><img src="docs/media/themes/copper.svg" width="49%" alt="Copper Circuit — design preview"></a>
+  <a href="docs/media/themes/terminal.svg"><img src="docs/media/themes/terminal.svg" width="49%" alt="Terminal 84 — design preview"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/sakura.svg"><img src="docs/media/themes/sakura.svg" width="49%" alt="Sakura Dusk — design preview"></a>
+  <a href="docs/media/themes/tokyo.svg"><img src="docs/media/themes/tokyo.svg" width="49%" alt="Tokyo After Rain — design preview"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/dunes.svg"><img src="docs/media/themes/dunes.svg" width="49%" alt="Desert Dunes — design preview"></a>
+  <a href="docs/media/themes/volcano.svg"><img src="docs/media/themes/volcano.svg" width="49%" alt="Volcanic Glass — design preview"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/moon.svg"><img src="docs/media/themes/moon.svg" width="49%" alt="Moonlit Mountains — design preview"></a>
+  <a href="docs/media/themes/saturn.svg"><img src="docs/media/themes/saturn.svg" width="49%" alt="Saturn Station — design preview"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/prism.svg"><img src="docs/media/themes/prism.svg" width="49%" alt="Prism — design preview"></a>
+  <a href="docs/media/themes/synth.svg"><img src="docs/media/themes/synth.svg" width="49%" alt="Synthwave — design preview"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/icefire.svg"><img src="docs/media/themes/icefire.svg" width="49%" alt="Ice &amp; Fire — design preview"></a>
+  <a href="docs/media/themes/noir.svg"><img src="docs/media/themes/noir.svg" width="49%" alt="Noir Cinema — design preview"></a>
+</p>
+
+
 ## Commands
 
 ```powershell

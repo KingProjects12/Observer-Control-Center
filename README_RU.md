@@ -40,6 +40,53 @@
 
 ![Безопасность и ограничения — Только разрешённые сети: Только сети, которыми вы владеете или управляете с разрешения. VPN REMOTE не создаёт туннель. x-ndw4 не поддерживается.; Интерпретация результатов: NAT может не показать часть LAN/VPN-потоков; отсутствие записи не повод блокировать доступ. Открытый TCP-порт не доказывает назначение сервиса. UDP только наблюдается.; Конфиденциальность: Пароли не сохраняются на диске. Не публикуйте внутренние адреса, дампы и отчёты клиентов.; Защита Windows и обновления: Доверенной Authenticode-подписи пока нет. Не отключайте защиту. SHA-256 подтверждает целостность, не издателя. Перед «Инструменты → Обновления» сохраните отчёты; язык установщика сохраняется. Артефакты Actions не являются релизами.; Лицензия и авторство: Интерфейс разработан самостоятельно с визуальным вдохновением от Atoll. При использовании его кода сохраняйте применимые уведомления MIT. Лицензия Observer не выбрана; публичность исходников не даёт права распространения.; Требования для сборки: Windows 10/11 x64; .NET 10 SDK или Visual Studio с разработкой классических приложений .NET.](docs/media/cards/ru/limitations.svg)
 
+<a id="design-collection"></a>
+
+## Коллекция дизайнов
+
+16 выбранных тем Observer из текущего каталога. Векторные превью показывают палитры и характер оформления; это не скриншоты приложения. Все темы доступны в «Настройки → Темы».
+
+<p align="center">
+  <a href="docs/media/themes/classic.svg"><img src="docs/media/themes/classic.svg" width="49%" alt="Жидкое стекло — превью дизайна"></a>
+  <a href="docs/media/themes/signal.svg"><img src="docs/media/themes/signal.svg" width="49%" alt="Signal — превью дизайна"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/blueprint.svg"><img src="docs/media/themes/blueprint.svg" width="49%" alt="Чертёж — превью дизайна"></a>
+  <a href="docs/media/themes/carbon.svg"><img src="docs/media/themes/carbon.svg" width="49%" alt="Карбон — превью дизайна"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/copper.svg"><img src="docs/media/themes/copper.svg" width="49%" alt="Медная плата — превью дизайна"></a>
+  <a href="docs/media/themes/terminal.svg"><img src="docs/media/themes/terminal.svg" width="49%" alt="Терминал 84 — превью дизайна"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/sakura.svg"><img src="docs/media/themes/sakura.svg" width="49%" alt="Сакура — превью дизайна"></a>
+  <a href="docs/media/themes/tokyo.svg"><img src="docs/media/themes/tokyo.svg" width="49%" alt="Токио после дождя — превью дизайна"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/dunes.svg"><img src="docs/media/themes/dunes.svg" width="49%" alt="Дюны — превью дизайна"></a>
+  <a href="docs/media/themes/volcano.svg"><img src="docs/media/themes/volcano.svg" width="49%" alt="Вулканическое стекло — превью дизайна"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/moon.svg"><img src="docs/media/themes/moon.svg" width="49%" alt="Лунные горы — превью дизайна"></a>
+  <a href="docs/media/themes/saturn.svg"><img src="docs/media/themes/saturn.svg" width="49%" alt="Станция Сатурн — превью дизайна"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/prism.svg"><img src="docs/media/themes/prism.svg" width="49%" alt="Призма — превью дизайна"></a>
+  <a href="docs/media/themes/synth.svg"><img src="docs/media/themes/synth.svg" width="49%" alt="Синтвейв — превью дизайна"></a>
+</p>
+
+<p align="center">
+  <a href="docs/media/themes/icefire.svg"><img src="docs/media/themes/icefire.svg" width="49%" alt="Лёд и пламя — превью дизайна"></a>
+  <a href="docs/media/themes/noir.svg"><img src="docs/media/themes/noir.svg" width="49%" alt="Нуар — превью дизайна"></a>
+</p>
+
+
 ## Команды
 
 ```powershell
