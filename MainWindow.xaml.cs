@@ -120,8 +120,10 @@ public partial class MainWindow : Window
     private static string FormatBytes(decimal b)
     {
         const decimal MiB = 1024 * 1024, GiB = MiB * 1024;
-        return b >= GiB ? (b / GiB).ToString("0.00", CultureInfo.InvariantCulture) + " GiB"
-            : (b / MiB).ToString("0.0", CultureInfo.InvariantCulture) + " MiB";
+        if (b < 1024) return b.ToString("0") + T(" B"," Б");
+        if (b < MiB) return (b / 1024).ToString("0.#") + T(" KiB"," КиБ");
+        return b >= GiB ? (b / GiB).ToString("0.##") + T(" GiB"," ГиБ")
+            : (b / MiB).ToString("0.##") + T(" MiB"," МиБ");
     }
 
     private void ShowPage(string page)

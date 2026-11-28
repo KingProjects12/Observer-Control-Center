@@ -324,7 +324,12 @@ internal sealed class LegacyCollectorPanel : UserControl
     }
     private void RefreshLive()
     {
-        _batchGrid.ItemsSource=_live.Values.ToArray();
+        if (_batchGrid.ItemsSource == null)
+            _batchGrid.ItemsSource = _live.Values;
+        var selected = (_batchGrid.SelectedItem as RouterLive)?.Router;
+        CollectionViewSource.GetDefaultView(_batchGrid.ItemsSource).Refresh();
+        if (selected != null && _live.TryGetValue(selected, out var row))
+            _batchGrid.SelectedItem = row;
         int done=_live.Values.Count(r=>r.Status is "COMPLETE" or "PARTIAL" or "CANCELLED" || r.Status.StartsWith("FAILED"));
         _batchProgress.Maximum=Math.Max(1,_live.Count);_batchProgress.Value=done;
         _batchSummary.Text=$"{done}/{_live.Count} | OK {_live.Values.Count(r=>r.Status=="COMPLETE")} | PARTIAL {_live.Values.Count(r=>r.Status=="PARTIAL")} | FAILED {_live.Values.Count(r=>r.Status.StartsWith("FAILED"))} | CANCELLED {_live.Values.Count(r=>r.Status=="CANCELLED")}";
@@ -393,7 +398,7 @@ internal sealed class LegacyCollectorPanel : UserControl
             }
             if (operation == "demo") Engine.SetTargetSubnet(Engine.DemoSubnet);
             if (operation is "nat" or "import") { Engine.SetTargetSubnet(_target.Text); if(prior!=null&&prior.Target!=Engine.TargetSubnet)throw new ArgumentException("Retry requires the original target.");SaveTarget(Engine.TargetSubnet); }
-            if (operation == "nat" && (!int.TryParse(_samples.Text,out samples) || samples is <1 or >12 || !int.TryParse(_interval.Text,out interval) || interval is <1 or >60)) throw new ArgumentException(T("Invalid sample settings.", "Некорректные параметры снимков."));
+            if (operation == "nat" && (!int.TryParse(_samples.Text,out samples) || samples is <1 or >12 || !int.TryParse(_interval.Text,out interval) || interval is <1 or >60)) throw new ArgumentException(T("Use 1–12 snapshots at intervals of 1–60 seconds.", "Укажите от 1 до 12 снимков с интервалом от 1 до 60 секунд."));
             if (operation == "import") { var dialog = new OpenFileDialog { Filter="CSV (*.csv)|*.csv", CheckFileExists=true }; if ((DialogOwner is Window owner?dialog.ShowDialog(owner):dialog.ShowDialog())!=true) return; import=dialog.FileName; }
         }
         catch(Exception ex) { Report(ex.Message); return; }
@@ -419,7 +424,7 @@ internal sealed class LegacyCollectorPanel : UserControl
             {
                 var login=_overrides.TryGetValue(addr,out var local)?local:(user,secret);
                 var result=await Task.Run(()=>TrafficMonitor.Run(addr,login.Item1,login.Item2,https,vpn,detail,cts.Token,log),cts.Token);
-                SetReport(result.Folder,result.Excel,T("Traffic devices: ","Устройств в рейтинге: ")+result.Rows.Count,true);
+                SetReport(result.Folder,result.Excel,T("Traffic devices: ","Устройств в рейтинге: ")+result.Rows.Count+" · "+_period.Items[detail],true);
             }
             else if(operation=="nat")
             {

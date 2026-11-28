@@ -38,7 +38,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
     {
         if(IsBusy||!File.Exists(path))return;
         if(_paths.Count==1&&string.Equals(_paths[0],path,StringComparison.OrdinalIgnoreCase)&&_target.Text==target)return;
-        _paths.Clear();_paths.Add(path);_target.Text=target;_analysis=null;_output=null;ShowPaths();RefreshGrid();SetBusy(false);
+        _paths.Clear();_paths.Add(path);_target.Text=target;ShowPaths();SetBusy(false);
         Status(T("READY: current NAT CSV loaded.","READY: текущий CSV NAT загружен."));
     }
     private int _connectionsView;
@@ -99,6 +99,39 @@ internal sealed class AccessAnalyzerPanel : UserControl
         _filter=new TextBox{ToolTip=T("Search all displayed columns","Поиск по всем столбцам"),Margin=new Thickness(0,0,0,0)};controls.Children.Add(_filter);
         _grid=new DataGrid{IsReadOnly=true,AutoGenerateColumns=true,CanUserAddRows=false,SelectionMode=DataGridSelectionMode.Extended,FontSize=14,RowHeight=36,ColumnHeaderHeight=36};
         _grid.AutoGeneratingColumn+=(_,e)=>{
+            e.Column.Header = e.PropertyName switch
+            {
+                "SourceIP" => T("Source IP","IP источника"),
+                "SourceName" => T("Source name","Имя источника"),
+                "SourceMAC" => T("Source MAC","MAC источника"),
+                "DestinationIP" => T("Destination IP","IP назначения"),
+                "DestinationPort" => T("Destination port","Порт назначения"),
+                "FirstSeen" => T("First seen","Первое наблюдение"),
+                "LastSeen" => T("Last seen","Последнее наблюдение"),
+                "TcpStatus" => T("TCP status","Статус TCP"),
+                "CheckDetail" => T("Check detail","Детали проверки"),
+                "CheckedAt" => T("Checked at","Время проверки"),
+                "ServiceHint" => T("Service hint","Сервис"),
+                "ReverseOrOutside" => T("Reverse or outside","Обратные и внешние"),
+                "Router" => T("Router","Роутер"),
+                "Port" => T("Port","Порт"),
+                "Protocol" => T("Protocol","Протокол"),
+                "Observations" => T("Observations","Наблюдения"),
+                "Sources" => T("Sources","Источники"),
+                "Routers" => T("Routers","Роутеры"),
+                "Review" => T("Review","Проверка"),
+                "File" => T("File","Файл"),
+                "Result" => T("Result","Результат"),
+                "Rows" => T("Rows","Строки"),
+                "Accepted" => T("Accepted","Принято"),
+                "Duplicate" => T("Duplicates","Дубликаты"),
+                "Invalid" => T("Invalid","Некорректные"),
+                "Unsupported" => T("Unsupported","Не поддерживается"),
+                "Earlier" => T("Earlier period","Ранний период"),
+                "Later" => T("Later period","Поздний период"),
+                "Change" => T("Change","Изменение"),
+                _ => e.PropertyName
+            };
             if(e.PropertyName is "TcpStatus" or "Change" or "Result")
             {
                 var style=new Style(typeof(TextBlock));style.Setters.Add(new Setter(TextBlock.ForegroundProperty,new Binding(e.PropertyName){Converter=new StatusBrushConverter()}));
@@ -123,7 +156,9 @@ internal sealed class AccessAnalyzerPanel : UserControl
             _resultsExpander.Expanded+=(_,_)=>Reflow();_resultsExpander.Collapsed+=(_,_)=>Reflow();
             Reflow();Content=workspace;
         }
-        _view.SelectionChanged+=(_,_)=>RefreshGrid();_filter.TextChanged+=(_,_)=>RefreshFilter();
+        _view.SelectionChanged+=(_,_)=>RefreshGrid();var filterDelay = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(180) };
+        filterDelay.Tick += (_,_) => { filterDelay.Stop(); RefreshFilter(); };
+        _filter.TextChanged += (_,_) => { filterDelay.Stop(); filterDelay.Start(); };
         if(initialFile!=null&&File.Exists(initialFile))_paths.Add(initialFile);
         ShowPaths();SetBusy(false);
         Status(T("Select original NAT CSV files or compare two periods. TCP checks are optional and require authorized access.","Выберите исходные CSV NAT или сравните два периода. Проверка TCP — отдельно, только при разрешённом доступе."));PanelPalette.Bind(this);SetTcpMode(false);
@@ -134,7 +169,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
         var d=new OpenFileDialog{Title=title,Filter="CSV (*.csv)|*.csv",Multiselect=true,CheckFileExists=true,InitialDirectory=Directory.Exists(ReportLocator.ResultsRoot)?ReportLocator.ResultsRoot:Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)};
         return (DialogOwner is Window owner?d.ShowDialog(owner):d.ShowDialog())==true?d.FileNames:null;
     }
-    private void Pick(){var selected=SelectFiles(T("Choose original NAT CSV files","Выберите исходные CSV NAT"));if(selected==null)return;_paths.Clear();_paths.AddRange(selected);_analysis=null;_output=null;ShowPaths();RefreshGrid();SetBusy(false);}
+    private void Pick(){var selected=SelectFiles(T("Choose original NAT CSV files","Выберите исходные CSV NAT"));if(selected==null)return;_paths.Clear();_paths.AddRange(selected);ShowPaths();SetBusy(false);}
     private void ShowPaths(){_files.Text=string.Join(Environment.NewLine,_paths);if(_filesExpander!=null)_filesExpander.Header=T("Input reports: ","Исходные отчёты: ")+_paths.Count;}
     private void Status(string message){_status.Text=message;_status.Foreground=new ConsoleEntry(message,ConsoleEntry.Classify(message)).Color;LogLine?.Invoke(message);StateChanged?.Invoke();}
     private void SetBusy(bool busy)
@@ -154,7 +189,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
             _paths.Clear();_paths.AddRange(earlier.Concat(later).Distinct(StringComparer.OrdinalIgnoreCase));ShowPaths();
         }
         if(_paths.Count==0)return;
-        string target=_target.Text;var files=_paths.ToArray();_analysis=null;_output=null;RefreshGrid();
+        string target=_target.Text;var files=_paths.ToArray();
         using var cts=new CancellationTokenSource();OperationName=compare?T("Period comparison","Сравнение периодов"):T("CSV analysis","Анализ CSV");_running=cts;SetBusy(true);Status("CHECKING CSV...");
         try
         {
@@ -163,6 +198,9 @@ internal sealed class AccessAnalyzerPanel : UserControl
                 if(earlier!=null&&later!=null)AccessAnalyzer.Compare(result,AccessAnalyzer.Analyze(earlier,target,cts.Token),AccessAnalyzer.Analyze(later,target,cts.Token));
                 return result;
             },cts.Token);
+            if (a.Audit.Count > 0 && a.Audit.All(row => row.Result.StartsWith("ERROR")))
+                throw new InvalidDataException(a.Audit[0].Result);
+            _output=null;
             _analysis=a;_view.SelectedIndex=compare&&!_tcpMode?3:0;RefreshGrid();
             Status(a.Audit.Any(r=>r.Result.StartsWith("ERROR"))?T("PARTIAL: inspect import audit; some input files failed.","PARTIAL: проверьте аудит, часть файлов не обработана."):T("COMPLETE: analysis ready. No firewall decision is made automatically.","COMPLETE: анализ готов. Решения о правилах автоматически не принимаются."));
         }
@@ -203,11 +241,31 @@ internal sealed class AccessAnalyzerPanel : UserControl
             2=>a.Audit.Select(r=>new{r.File,r.Result,r.Rows,r.Accepted,r.Duplicate,r.ReverseOrOutside,r.Invalid,r.Unsupported}).ToArray(),
             3=>a.Changes.Select(r=>new{r.IP,r.Port,r.Protocol,r.Earlier,r.Later,r.Change}).ToArray(),
             4=>a.SourceChanges.Select(r=>new{r.Router,r.SourceIP,r.DestinationIP,r.DestinationPort,r.Protocol,r.Earlier,r.Later,r.Change}).ToArray(),
-            _=>a.Endpoints.Where(r=>!_tcpMode||r.Protocol=="TCP").Select(r=>new{r.IP,r.Port,r.Protocol,r.Observations,r.Sources,r.Routers,r.TcpStatus,r.ServiceHint,r.Review,r.CheckedAt,r.FirstSeen,r.LastSeen,r.CheckDetail}).ToArray()
+            _=>a.Endpoints.Where(r=>!_tcpMode||r.Protocol=="TCP").Select(r=>new{r.IP,r.Port,r.Protocol,r.Observations,r.Sources,r.Routers,TcpStatus=TcpLabel(r.TcpStatus),r.ServiceHint,r.Review,r.CheckedAt,r.FirstSeen,r.LastSeen,r.CheckDetail}).ToArray()
         };
         RefreshFilter();
     }
-    private void RefreshFilter(){if(_grid?.ItemsSource==null)return;string q=_filter.Text.Trim();CollectionViewSource.GetDefaultView(_grid.ItemsSource).Filter=o=>q.Length==0||o.GetType().GetProperties().Any(p=>(p.GetValue(o)?.ToString()??"").Contains(q,StringComparison.OrdinalIgnoreCase));}
+    private static string TcpLabel(string status) => status switch
+    {
+        "TCP OPEN" => T("Open","Открыт"),
+        "TCP REFUSED" => T("Refused","Отказ"),
+        "TCP TIMEOUT" => T("Timeout","Тайм-аут"),
+        "TCP ERROR" => T("Connection error","Ошибка подключения"),
+        "NOT CHECKED" => T("Not checked","Не проверено"),
+        "UDP OBSERVED" => T("UDP observation","Наблюдение UDP"),
+        _ => status
+    };
+
+    private void RefreshFilter()
+    {
+        if (_grid?.ItemsSource == null) return;
+        var view = CollectionViewSource.GetDefaultView(_grid.ItemsSource);
+        var query = _filter.Text.Trim();
+        var type = _grid.ItemsSource.Cast<object>().FirstOrDefault()?.GetType();
+        var properties = type?.GetProperties() ?? [];
+        view.Filter = query.Length == 0 ? null : row => properties.Any(p =>
+            p.GetValue(row)?.ToString()?.Contains(query, StringComparison.OrdinalIgnoreCase) == true);
+    }
 }
 
 internal sealed class AccessAnalyzerWindow : Window
