@@ -10,10 +10,13 @@ public static class SelfUpdate
     public const string HelperArgument = "--observer-apply-update";
     private const string ExeName = "Observer.ControlCenter.exe";
 
+    public static bool HasOriginalName(string? path) =>
+        string.Equals(Path.GetFileName(path), ExeName, StringComparison.OrdinalIgnoreCase);
+
     public static void StartHelper(VerifiedUpdate update)
     {
         string target = Environment.ProcessPath ?? throw new InvalidOperationException(UiText.T("Current EXE not found.", "Не найден текущий EXE."));
-        if (!string.Equals(Path.GetFileName(target), ExeName, StringComparison.OrdinalIgnoreCase))
+        if (!HasOriginalName(target))
             throw new InvalidOperationException(UiText.T("Self-update requires the original filename Observer.ControlCenter.exe.", "Для автообновления нужен исходный файл Observer.ControlCenter.exe."));
         string folder = Path.GetDirectoryName(update.Path)!;
         string helperFolder = Path.Combine(folder, "helper");
@@ -78,7 +81,7 @@ public static class SelfUpdate
             replaced = true;
             if (OperatingSystem.IsWindows())
                 File.WriteAllText(target + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\n");
-            Launch(target);
+            Launch(target, verifyStartup:true);
             // Retain the backup for manual recovery if the new app crashes after process creation.
         }
         catch (Exception ex)
@@ -104,10 +107,12 @@ public static class SelfUpdate
     public static void ReplaceWithBackup(string stage, string target, string backup) => File.Replace(stage, target, backup);
     public static void RestoreBackup(string backup, string target) => File.Replace(backup, target, null);
 
-    private static void Launch(string target)
+    private static void Launch(string target, bool verifyStartup=false)
     {
         using var process = Process.Start(new ProcessStartInfo(target)
         { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(target)! })
             ?? throw new InvalidOperationException(UiText.T("Could not start Observer.", "Не удалось запустить Observer."));
+        if (verifyStartup && process.WaitForExit(5000) && process.ExitCode != 0)
+            throw new IOException(UiText.T("Updated Observer exited during startup.","Обновлённый Observer завершился с ошибкой при запуске.") + $" ({process.ExitCode})");
     }
 }

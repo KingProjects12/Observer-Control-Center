@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Observer.ControlCenter</AssemblyName>
     <RootNamespace>Observer.ControlCenter</RootNamespace>
-    <Version>2.5.4</Version>
+    <Version>2.5.5</Version>
     <ObserverUpdateRepo Condition="'$(ObserverUpdateRepo)' == ''"></ObserverUpdateRepo>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\ObserverApp.ico</ApplicationIcon>

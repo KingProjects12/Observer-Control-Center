@@ -133,7 +133,7 @@ public static class UiText
     public static string X060 => T("Updates", "Обновления");
     public static string X061 => T("UPDATE SOURCE · GitHub Releases", "ИСТОЧНИК ОБНОВЛЕНИЙ · GitHub Releases");
     public static string X062 => T("owner/repo, e.g. example/observer", "owner/repo, например example/observer");
-    public static string X063 => T("Check at startup and every minute (test mode)", "Проверять при запуске и каждую минуту (тестовый режим)");
+    public static string X063 => T("Check at startup and every six hours", "Проверять при запуске и каждые шесть часов");
     public static string X064 => T("SAVE", "СОХРАНИТЬ");
     public static string X065 => T("Checking for updates", "Проверка обновлений");
     public static string X066 => T("Updates are checked while Observer is running. EXE replacement requires confirmation.", "Обновления проверяются только при запущенной программе. EXE заменяется только по твоему подтверждению.");

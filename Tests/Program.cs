@@ -44,11 +44,13 @@ Assert(GitHubReleaseClient.ParseLatest(Json("v2.1.0", draft: true), "example/obs
 Assert(UpdateSettingsStore.ResolveRepository("attacker/repo", "owner/observer") == "owner/observer", "embedded repository wins");
 Assert(UpdateSettingsStore.ResolveRepository("owner/custom", "") == "owner/custom", "local preview may select repository");
 Assert(UpdateSettingsStore.ResolveRepository("invalid/slash/slug", "") == "", "invalid repository ignored");
-Assert(UpdatePollingPolicy.TestInterval == TimeSpan.FromMinutes(1), "testing interval is exactly one minute");
+Assert(UpdatePollingPolicy.AutomaticInterval == TimeSpan.FromHours(6), "automatic checks every six hours");
 Assert(UpdatePollingPolicy.RateLimitCooldown == TimeSpan.FromMinutes(30), "rate limit cooldown is thirty minutes");
 var blockedAt = DateTimeOffset.Parse("2026-11-25T00:00:00Z");
 Assert(UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(1), blockedAt.AddMinutes(30)), "rate limited checks are skipped");
 Assert(!UpdatePollingPolicy.IsThrottled(blockedAt.AddMinutes(30), blockedAt.AddMinutes(30)), "checks resume when cooldown ends");
+Assert(!SelfUpdate.HasOriginalName("observer-renamed.exe") && !SelfUpdate.HasOriginalName(null), "renamed or missing EXE rejected");
+Assert(SelfUpdate.HasOriginalName("Observer.ControlCenter.exe"), "official EXE accepted");
 const string installerName = "Observer.ControlCenter.exe";
 string prefix = "https://github.com/" + UpdateInstaller.OfficialRepository + "/releases/download/v2.1.0/";
 string WithAssets(string download, bool checksum = true, long size = 12345) =>

@@ -71,6 +71,16 @@ public partial class UpdateCenterWindow : Window
     private async void Install_Click(object sender, RoutedEventArgs e)
     {
         if (_installCancellation != null || _installLaunching || _main.LatestUpdate is not { Installer: { } asset } release) return;
+        if (!SelfUpdate.HasOriginalName(Environment.ProcessPath))
+        {
+            StatusText.Text = UiText.T("Rename the EXE to Observer.ControlCenter.exe before updating.","Перед обновлением верните файлу имя Observer.ControlCenter.exe.");
+            return;
+        }
+        if (_main.HasActiveOperation)
+        {
+            StatusText.Text = UiText.T("Wait for the active operation to finish, then retry.","Дождитесь завершения операции и повторите обновление.");
+            return;
+        }
         if (MessageBox.Show(this,
             (UiText.IsRussian ? $"Обновить Observer до {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} МиБ)?\n\n" : $"Update Observer to {release.Tag} ({asset.Size / 1024.0 / 1024.0:F1} MiB)?\n\n") +
             UiText.T("Only the EXE will be downloaded. Observer will close, replace the file and restart. Save important reports. The EXE may be unsigned; do not disable Windows security.", "Будет скачан только EXE, программа закроется, заменит файл и запустится снова. Сохраните важные отчёты. EXE может быть без цифровой подписи; не отключайте защиту Windows."),
@@ -98,6 +108,8 @@ public partial class UpdateCenterWindow : Window
             StatusText.Text = UiText.T("SHA-256 verified. Restarting Observer…", "SHA-256 совпадает. Перезапускаю Observer…");
             StatusText.Foreground=System.Windows.Media.Brushes.LightGreen;
             CancelInstallButton.IsEnabled = false;
+            if (_main.HasActiveOperation)
+                throw new InvalidOperationException(UiText.T("An operation is running. Retry after it finishes.","Идёт операция. Повторите обновление после её завершения."));
             SelfUpdate.StartHelper(downloaded);
             _installLaunching = true;
             Application.Current.Shutdown();

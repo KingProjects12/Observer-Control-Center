@@ -12,7 +12,7 @@ public partial class MainWindow
 {
     private readonly UpdateSettings _updateSettings = UpdateSettingsStore.Load();
     private readonly CancellationTokenSource _updateShutdown = new();
-    private readonly DispatcherTimer _updateTimer = new() { Interval = UpdatePollingPolicy.TestInterval };
+    private readonly DispatcherTimer _updateTimer = new() { Interval = UpdatePollingPolicy.AutomaticInterval };
     private DateTimeOffset _updatesBlockedUntilUtc = DateTimeOffset.MinValue;
     private bool _updateCheckBusy;
     private GitHubRelease? _latestRelease;
@@ -21,6 +21,7 @@ public partial class MainWindow
     private UpdateNoticeWindow? _updateNotice;
     private string _updateMessage = UiText.T("Update repository has not been configured.", "Репозиторий обновлений ещё не задан.");
 
+    internal bool HasActiveOperation => _collector?.IsBusy == true || _analyzer?.IsBusy == true;
     internal string UpdatesRepository => _updateSettings.Repository;
     internal bool UpdatesAutoCheck => _updateSettings.AutoCheck;
     internal GitHubRelease? LatestUpdate => _latestRelease;
@@ -108,7 +109,7 @@ public partial class MainWindow
         catch (HttpRequestException e)
         {
             // The public GitHub API may limit unauthenticated clients to ~60 requests/hour.
-            // Poll every minute during testing, but stop if GitHub returns HTTP 403 or 429.
+            // Pause polling if GitHub returns HTTP 403 or 429.
             bool limited = e.StatusCode == HttpStatusCode.Forbidden || (int?)e.StatusCode == 429;
             if (limited)
                 _updatesBlockedUntilUtc = DateTimeOffset.UtcNow + UpdatePollingPolicy.RateLimitCooldown;

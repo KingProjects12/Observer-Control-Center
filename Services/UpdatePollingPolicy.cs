@@ -1,12 +1,11 @@
 namespace Observer.ControlCenter.Services;
 
 /// <summary>
-/// Temporary rapid polling while we validate GitHub Releases notifications.
-/// Return to six-hour checks before the production release.
+/// Automatic polling and the separate rate-limit cooldown.
 /// </summary>
 public static class UpdatePollingPolicy
 {
-    public static readonly TimeSpan TestInterval = TimeSpan.FromMinutes(1);
+    public static readonly TimeSpan AutomaticInterval = TimeSpan.FromHours(6);
     public static readonly TimeSpan RateLimitCooldown = TimeSpan.FromMinutes(30);
 
     public static bool IsThrottled(DateTimeOffset now, DateTimeOffset resumeAtUtc) =>
