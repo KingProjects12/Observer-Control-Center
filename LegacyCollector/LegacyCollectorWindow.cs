@@ -76,7 +76,16 @@ internal sealed class LegacyCollectorPanel : UserControl
     internal int OfficeCount => IsNatRunning?_live.Values.Sum(r=>int.TryParse(r.Office,out int n)?n:0):_lastBatch?.OfficeCount??0;
     internal int FailedCount => _live.Values.Count(r=>r.Status.StartsWith("FAILED"));
     internal int PartialCount => _live.Values.Count(r=>r.Status=="PARTIAL");
-    internal object[] Issues => _live.Values.Where(r=>r.Status.StartsWith("FAILED")||r.Status is "PARTIAL" or "CANCELLED" or "NOT_STARTED").Select(r=>(object)new {r.Router,r.Status,r.Samples,r.Office}).ToArray();
+    internal object[] Issues => _live.Values.Where(r=>r.Status.StartsWith("FAILED")||r.Status is "PARTIAL" or "CANCELLED" or "NOT_STARTED").Select(r=>(object)new {r.Router, Kind=IssueKind(r.Status),r.Status,r.Samples,r.Office}).ToArray();
+    private static string IssueKind(string status) => status switch
+    {
+        "FAILED: AUTH FAILED" => T("Authentication","Авторизация"),
+        "FAILED: TIMEOUT" or "FAILED: NETWORK ERROR" => T("Connection","Подключение"),
+        "PARTIAL" => T("Partial collection","Неполный сбор"),
+        "CANCELLED" => T("Stopped","Остановлено"),
+        "NOT_STARTED" => T("Pending","Ожидание"),
+        _ => T("Collection error","Ошибка сбора")
+    };
     internal string Target => _target.Text;
     internal bool CanRetry => !IsBusy && _lastBatch?.Statuses.Any(s=>s.Status!="COMPLETE")==true;
     internal Task RetryAsync()=>Run("retry");
@@ -305,9 +314,10 @@ internal sealed class LegacyCollectorPanel : UserControl
     {
         _logText.AppendLine(message); LogLine?.Invoke(message);
         var entry=new ConsoleEntry(message,ConsoleEntry.Classify(message));
+        bool followTail = _log.VerticalOffset + _log.ViewportHeight >= _log.ExtentHeight - 1;
         _log.Document.Blocks.Add(new Paragraph(new System.Windows.Documents.Run(message){Foreground=entry.Color}){Margin=new Thickness(0,0,0,2)});
         while(_log.Document.Blocks.Count>2500 && _log.Document.Blocks.FirstBlock is { } first)_log.Document.Blocks.Remove(first);
-        if(!_log.IsKeyboardFocusWithin||_log.Selection.IsEmpty)_log.ScrollToEnd();
+        if(followTail && _log.Selection.IsEmpty)_log.ScrollToEnd();
         _status.Text=message;_status.Foreground=entry.Color;
         if(message.StartsWith("[")&&message.IndexOf(']') is int end&&end>0&&_live.TryGetValue(message[1..end],out var r))
         {

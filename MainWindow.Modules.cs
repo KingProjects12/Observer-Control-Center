@@ -86,7 +86,7 @@ public partial class MainWindow
         _retryIssues.Click+=async (_,_)=>{ShowModule("routers");await _collector.RetryAsync();};issuesHeader.Children.Add(_retryIssues);
         var issueTable=new Grid();_issuesPanel.Children.Add(issueTable);
         _issuesGrid=new DataGrid{AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,FontSize=14,RowHeight=36,ColumnHeaderHeight=36};
-        foreach(var (key,label) in new[]{("Router",T("Router","Роутер")),("Status",T("Status / reason","Статус / причина")),("Samples",T("Snapshots","Снимки")),("Office",T("Office rows","Строк в офис"))})
+        foreach(var (key,label) in new[]{("Router",T("Router","Роутер")),("Kind",T("Category","Категория")),("Status",T("Status / reason","Статус / причина")),("Samples",T("Snapshots","Снимки")),("Office",T("Office rows","Строк в офис"))})
         {
             var col=new DataGridTextColumn{Header=label,Binding=new System.Windows.Data.Binding(key),Width=new DataGridLength(key=="Status"?2:1,DataGridLengthUnitType.Star)};
             if(key=="Status"){var style=new Style(typeof(TextBlock));style.Setters.Add(new Setter(TextBlock.ForegroundProperty,new System.Windows.Data.Binding(key){Converter=new StatusBrushConverter()}));col.ElementStyle=style;}
@@ -236,7 +236,7 @@ public partial class MainWindow
         _sessionValues[1].Text=_collector.RouterCount==0?"—":_collector.OfficeCount.ToString();
         _sessionValues[2].Text=_analyzer.OpenTcp?.ToString()??"—";
         _sessionValues[3].Text=_collector.RouterCount==0?"—":_collector.FailedCount+"/"+_collector.PartialCount;
-        ModuleSummary.Text=busy?T("Operation running","Выполняется операция"):T("Ready","Готово");
+        ModuleSummary.Text=busy?_islandOperation+" · "+_islandDetail:T("Ready","Готово");
         ModuleProgressText.Text=(busy?(DateTime.Now-_moduleStarted!.Value).ToString(@"hh\:mm\:ss")+"  •  ":"")+_lastModuleLog;
         if(_issuesGrid!=null&&_issuesEmpty!=null)
         {

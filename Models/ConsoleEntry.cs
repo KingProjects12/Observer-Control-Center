@@ -44,6 +44,10 @@ public sealed class ConsoleEntry
     public static string Classify(string message)
     {
         string line = message.ToUpperInvariant();
+        if (line is "ОТКРЫТ" or "OPEN") return "SUCCESS";
+        if (line is "НЕ ПРОВЕРЕНО" or "NOT CHECKED") return "INFO";
+        if (line is "ТАЙМ-АУТ") return "ERROR";
+        if (line.StartsWith("PARTIAL:")) return "WARNING";
         if (line.Contains("ERROR") || line.Contains("FAILED") || line.Contains("REFUSED") || line.Contains("TIMEOUT") || line.Contains("UNREACHABLE") ||
             line.Contains("EXCEPTION") || line.Contains("ОШИБК") ||
             line.Contains("ОТКАЗ") || line.Contains("DENIED"))
