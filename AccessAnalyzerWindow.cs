@@ -198,7 +198,7 @@ internal sealed class AccessAnalyzerPanel : UserControl
                 if(earlier!=null&&later!=null)AccessAnalyzer.Compare(result,AccessAnalyzer.Analyze(earlier,target,cts.Token),AccessAnalyzer.Analyze(later,target,cts.Token));
                 return result;
             },cts.Token);
-            if (a.Audit.Count > 0 && a.Audit.All(row => row.Result.StartsWith("ERROR")))
+            if (_analysis != null && a.Audit.Count > 0 && a.Audit.All(row => row.Result.StartsWith("ERROR")))
                 throw new InvalidDataException(a.Audit[0].Result);
             _output=null;
             _analysis=a;_view.SelectedIndex=compare&&!_tcpMode?3:0;RefreshGrid();

@@ -332,6 +332,30 @@ internal sealed class LegacyCollectorPanel : UserControl
             RefreshLive();
         }
     }
+    internal bool VerifyStatusTableRefresh()
+    {
+        const string address = "192.0.2.1";
+        var row = new RouterLive { Router = address };
+        _live.Add(address,row);
+        try
+        {
+            RefreshLive();
+            var view = CollectionViewSource.GetDefaultView(_batchGrid.ItemsSource);
+            view.SortDescriptions.Add(new System.ComponentModel.SortDescription("Router", System.ComponentModel.ListSortDirection.Descending));
+            _batchGrid.SelectedItem=row;
+            row.Status="COMPLETE";
+            RefreshLive();
+            return ReferenceEquals(_batchGrid.SelectedItem,row) && view.SortDescriptions.Count == 1 &&
+                _batchGrid.Items.Cast<RouterLive>().Single().Status == "COMPLETE";
+        }
+        finally
+        {
+            _live.Clear();
+            CollectionViewSource.GetDefaultView(_batchGrid.ItemsSource).SortDescriptions.Clear();
+            RefreshLive();
+        }
+    }
+
     private void RefreshLive()
     {
         if (_batchGrid.ItemsSource == null)

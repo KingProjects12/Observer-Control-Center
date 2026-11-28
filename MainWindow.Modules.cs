@@ -267,7 +267,7 @@ public partial class MainWindow
         ShowPage("overview");
         if(ModuleTiles.Columns!=1||LogPanel.Visibility!=Visibility.Collapsed||OldReportPanel.Visibility!=Visibility.Collapsed||SessionPanel.Visibility!=Visibility.Collapsed||RetiredSidebar.Visibility!=Visibility.Collapsed)return false;
         ShowModule("routers");
-        if(!_collector.EmbeddedActionsVisible())return false;
+        if(!_collector.VerifyStatusTableRefresh() || !_collector.EmbeddedActionsVisible())return false;
         bool expanded=_logExpanded;LogToggle_Click(this,new RoutedEventArgs());
         if(LogList.Visibility!=(expanded?Visibility.Collapsed:Visibility.Visible)||ConsoleRow.Height.IsAuto!=expanded)return false;
         LogToggle_Click(this,new RoutedEventArgs());

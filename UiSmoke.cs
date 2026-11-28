@@ -33,6 +33,7 @@ internal static class UiSmoke
             foreach(var preset in ThemeCatalog.All)
             {
                 gallery.Choose(preset.Id);Layout(gallery);Layout(main);
+                Require(main.ModuleSmoke(), "navigation, status sorting and selection: " + preset.Id);
                 Require(AppearanceTheme.Current.Id==preset.Id,"theme selection "+preset.Id);
                 Require(((SolidColorBrush)main.FindResource("Accent")).Color==(Color)ColorConverter.ConvertFromString(preset.Accent)!,"theme accent "+preset.Id);
                 Require(ReferenceEquals(before,((DataGrid)main.FindName("TrafficGrid")).ItemsSource),"theme keeps data");
